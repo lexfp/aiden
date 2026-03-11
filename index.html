@@ -1,1201 +1,692 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>JJK Fighter</title>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    background:#000;
-    display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    min-height:100vh;
-    font-family:'Georgia',serif;
-    user-select:none;
-  }
-  #game { display:block; cursor:none; }
-  #ui-bar {
-    display:flex; align-items:center; justify-content:center;
-    gap:12px; margin-top:8px;
-  }
-  #help-btn {
-    background: transparent;
-    border: 1px solid #2a2a4a;
-    color: #556;
-    font-family: Georgia, serif;
-    font-size: 12px;
-    letter-spacing: 2px;
-    padding: 6px 18px;
-    cursor: pointer;
-    border-radius: 2px;
-    transition: all .2s;
-  }
-  #help-btn:hover {
-    border-color: #6f42c1;
-    color: #b88cf8;
-    box-shadow: 0 0 12px rgba(111,66,193,.4);
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>∞ Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --void: #010108;
+      --deep: #05050f;
+      --horizon: #0a0a20;
+      --pulse: #4f46e5;
+      --glow: #818cf8;
+      --star: #e0e7ff;
+      --mist: rgba(79,70,229,0.12);
+      --rim: rgba(129,140,248,0.25);
+    }
 
-  /* Modal overlay */
-  #modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,.82);
-    z-index: 999;
-    align-items: center;
-    justify-content: center;
-  }
-  #modal-overlay.open { display: flex; }
-  #modal {
-    background: #0a0a14;
-    border: 1px solid #2a1a4a;
-    box-shadow: 0 0 60px rgba(111,66,193,.35), 0 0 120px rgba(13,202,240,.1);
-    border-radius: 4px;
-    padding: 36px 44px;
-    min-width: 420px;
-    max-width: 94vw;
-    position: relative;
-    font-family: Georgia, serif;
-  }
-  #modal h2 {
-    font-size: 1rem;
-    letter-spacing: .25em;
-    color: #b88cf8;
-    text-align: center;
-    margin-bottom: 6px;
-    text-shadow: 0 0 18px #6f42c1;
-  }
-  #modal .subtitle {
-    text-align: center;
-    font-size: .72rem;
-    color: #3a3050;
-    letter-spacing: .2em;
-    margin-bottom: 28px;
-  }
-  .modal-section { margin-bottom: 22px; }
-  .modal-section h3 {
-    font-size: .68rem;
-    letter-spacing: .25em;
-    color: #0dcaf0;
-    text-transform: uppercase;
-    border-bottom: 1px solid #0d1a2a;
-    padding-bottom: 5px;
-    margin-bottom: 12px;
-  }
-  .key-grid {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 8px 16px;
-    align-items: center;
-  }
-  .key {
-    display: inline-flex; align-items: center; justify-content: center;
-    background: #13132a;
-    border: 1px solid #2a2a4a;
-    border-bottom: 3px solid #2a2a4a;
-    border-radius: 4px;
-    font-size: .7rem; font-family: monospace;
-    color: #ccc;
-    min-width: 30px; height: 26px;
-    padding: 0 8px;
-    white-space: nowrap;
-    justify-self: start;
-  }
-  .key-desc { font-size: .78rem; color: #6a6080; }
-  .key-desc strong { color: #9a90b0; font-style: normal; }
-  .tip {
-    background: rgba(111,66,193,.07);
-    border: 1px solid rgba(111,66,193,.2);
-    border-radius: 3px;
-    padding: 10px 14px;
-    font-size: .75rem;
-    color: #7a6090;
-    line-height: 1.6;
-    margin-top: 4px;
-  }
-  .tip b { color: #b88cf8; }
-  #modal-close {
-    position: absolute; top: 14px; right: 18px;
-    background: none; border: none;
-    color: #3a3050; font-size: 1.3rem;
-    cursor: pointer; line-height: 1;
-    transition: color .2s;
-  }
-  #modal-close:hover { color: #b88cf8; }
-</style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--void);
+      color: var(--star);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── Custom Cursor ── */
+    #cursor {
+      position: fixed; top: 0; left: 0;
+      width: 10px; height: 10px;
+      background: var(--glow);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: transform 0.08s, width 0.3s, height 0.3s, opacity 0.3s;
+      mix-blend-mode: screen;
+    }
+    #cursor-ring {
+      position: fixed; top: 0; left: 0;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(129,140,248,0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: transform 0.18s ease-out, width 0.3s, height 0.3s, border-color 0.3s;
+    }
+    body:has(a:hover) #cursor { width: 18px; height: 18px; }
+    body:has(a:hover) #cursor-ring { width: 52px; height: 52px; border-color: var(--glow); }
+
+    /* ── Stars Canvas ── */
+    #starfield {
+      position: fixed; inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Infinity Ring ── */
+    #infinity-canvas {
+      position: fixed; inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.45;
+    }
+
+    /* ── Layout ── */
+    .wrapper { position: relative; z-index: 2; }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(0.85rem, 1.5vw, 1.05rem);
+      letter-spacing: 0.35em;
+      color: var(--glow);
+      opacity: 0;
+      animation: fadeUp 1s 0.3s forwards;
+    }
+
+    .hero-name {
+      font-size: clamp(3.5rem, 10vw, 9rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 0.92;
+      margin: 0.3em 0 0.25em;
+      background: linear-gradient(135deg, #e0e7ff 0%, var(--glow) 45%, #312e81 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0;
+      animation: fadeUp 1s 0.55s forwards;
+    }
+
+    .hero-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(1rem, 2.5vw, 1.5rem);
+      color: rgba(224,231,255,0.55);
+      letter-spacing: 0.05em;
+      opacity: 0;
+      animation: fadeUp 1s 0.8s forwards;
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0;
+      animation: fadeUp 1s 1.4s forwards;
+    }
+    .hero-scroll span {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: var(--rim);
+    }
+    .scroll-line {
+      width: 1px;
+      height: 50px;
+      background: linear-gradient(to bottom, var(--glow), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%,100% { opacity: 0.3; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.1); }
+    }
+
+    /* ── Section ── */
+    .section {
+      padding: clamp(4rem, 10vw, 9rem) clamp(1.5rem, 6vw, 5rem);
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      color: var(--glow);
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 30px;
+      height: 1px;
+      background: var(--glow);
+    }
+
+    /* ── Projects Grid ── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+      gap: 1.5px;
+      margin-top: 3rem;
+    }
+
+    .project-card {
+      position: relative;
+      background: var(--deep);
+      padding: 2.5rem 2rem;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+      group: true;
+    }
+
+    .project-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at var(--mx,50%) var(--my,50%), rgba(79,70,229,0.18) 0%, transparent 65%);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .project-card:hover::before { opacity: 1; }
+
+    .project-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--rim);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .project-card:hover::after { opacity: 1; }
+
+    .project-card:hover { transform: translateY(-4px); }
+
+    .card-number {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: rgba(129,140,248,0.4);
+      margin-bottom: 2.5rem;
+    }
+
+    .card-title {
+      font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 0.9rem;
+      background: linear-gradient(135deg, var(--star), var(--glow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .card-desc {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-weight: 300;
+      line-height: 1.65;
+      color: rgba(224,231,255,0.5);
+      margin-bottom: 2rem;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tag {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      padding: 0.3em 0.75em;
+      border: 1px solid rgba(129,140,248,0.2);
+      color: rgba(129,140,248,0.7);
+      border-radius: 999px;
+    }
+
+    .card-arrow {
+      position: absolute;
+      bottom: 2rem;
+      right: 2rem;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--rim);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--glow);
+      font-size: 1rem;
+      transition: transform 0.3s, background 0.3s;
+    }
+    .project-card:hover .card-arrow {
+      transform: translate(3px,-3px);
+      background: var(--pulse);
+      border-color: var(--pulse);
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--rim), transparent);
+      margin: 0 clamp(1.5rem, 6vw, 5rem);
+    }
+
+    /* ── About ── */
+    .about-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+    }
+    @media(max-width:700px){ .about-inner { grid-template-columns: 1fr; gap: 2rem; } }
+
+    .about-heading {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1.05;
+      background: linear-gradient(135deg, var(--star) 0%, var(--glow) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .about-body {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 1.8vw, 1.2rem);
+      font-weight: 300;
+      line-height: 1.8;
+      color: rgba(224,231,255,0.6);
+    }
+    .about-body p + p { margin-top: 1.2rem; }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--rim);
+      padding: 2.5rem clamp(1.5rem, 6vw, 5rem);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-mark {
+      font-size: 1.4rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--star), var(--glow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .footer-links a {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(224,231,255,0.4);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-links a:hover { color: var(--glow); }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* ── Nebula orbs ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+      animation: orbDrift 20s ease-in-out infinite alternate;
+    }
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(67,56,202,0.25), transparent 70%);
+      top: -150px; right: -100px;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(99,102,241,0.18), transparent 70%);
+      bottom: 10%; left: -80px;
+      animation-delay: -8s;
+    }
+    .orb-3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(139,92,246,0.12), transparent 70%);
+      top: 50%; left: 50%;
+      animation-delay: -14s;
+    }
+    @keyframes orbDrift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 40px) scale(1.08); }
+    }
+  </style>
 </head>
 <body>
-<canvas id="game"></canvas>
 
-<div id="ui-bar">
-  <button id="help-btn">⚔ CONTROLS</button>
-</div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
 
-<!-- Instructions Modal -->
-<div id="modal-overlay">
-  <div id="modal">
-    <button id="modal-close" title="Close">✕</button>
-    <h2>呪術廻戦 · CONTROLS</h2>
-    <div class="subtitle">— Jujutsu Sorcerer Battle —</div>
+<canvas id="starfield"></canvas>
+<canvas id="infinity-canvas"></canvas>
 
-    <div class="modal-section">
-      <h3>Movement</h3>
-      <div class="key-grid">
-        <span class="key">A</span><span class="key-desc"><strong>Move Left</strong></span>
-        <span class="key">D</span><span class="key-desc"><strong>Move Right</strong></span>
-        <span class="key">W</span><span class="key-desc"><strong>Jump</strong></span>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="wrapper">
+
+  <!-- HERO -->
+  <section class="hero">
+    <p class="hero-eyebrow">∞ &nbsp; beyond limits &nbsp; ∞</p>
+    <h1 class="hero-name">Aiden</h1>
+    <p class="hero-sub">Designer · Developer · Creator</p>
+    <div class="hero-scroll">
+      <span>scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <div class="divider"></div>
+  <section class="section">
+    <p class="section-label reveal">Projects</p>
+    <div class="projects-grid">
+
+      <a href="https://chromewebstore.google.com/detail/last-run/ddhphodlieccpiikndhfmggmdnbnlggh" target="_blank" class="project-card reveal reveal-delay-1">
+        <p class="card-number">001</p>
+        <h2 class="card-title">Last Run</h2>
+        <p class="card-desc">A Chrome extension platformer where you play as a dog. Built for sharing and teaching — a 5-star game living right in your browser.</p>
+        <div class="card-tags">
+          <span class="tag">Chrome Extension</span>
+          <span class="tag">Platformer</span>
+          <span class="tag">Game</span>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+      <a href="https://furrycoder67.github.io/infinitycorp" target="_blank" class="project-card reveal reveal-delay-2">
+        <p class="card-number">002</p>
+        <h2 class="card-title">Infinity Corp</h2>
+        <p class="card-desc">A corporate empire idle game where you battle cursed spirits, collect upgrades, prestige to transcend your limits, and climb the leaderboard.</p>
+        <div class="card-tags">
+          <span class="tag">Idle Game</span>
+          <span class="tag">Clicker</span>
+          <span class="tag">Prestige</span>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+      <a href="https://furrycoder67.github.io/JJK-Arena/" target="_blank" class="project-card reveal reveal-delay-3">
+        <p class="card-number">003</p>
+        <h2 class="card-title">JJK Arena</h2>
+        <p class="card-desc">A Jujutsu Kaisen browser fighter — battle opponents in best-of-3 rounds using punches, kicks, blocks, and the devastating Domain Expansion.</p>
+        <div class="card-tags">
+          <span class="tag">Fighting Game</span>
+          <span class="tag">Browser</span>
+          <span class="tag">JJK</span>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+      <a href="#" class="project-card reveal reveal-delay-1">
+        <p class="card-number">004</p>
+        <h2 class="card-title">Project Delta</h2>
+        <p class="card-desc">Boundaries dissolve. Possibilities multiply. This one proves the theorem.</p>
+        <div class="card-tags">
+          <span class="tag">Swift</span>
+          <span class="tag">iOS</span>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+      <a href="#" class="project-card reveal reveal-delay-2">
+        <p class="card-number">005</p>
+        <h2 class="card-title">Project Epsilon</h2>
+        <p class="card-desc">The fifth iteration. Each one better than the last, looping forever forward.</p>
+        <div class="card-tags">
+          <span class="tag">Three.js</span>
+          <span class="tag">WebGL</span>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+      <a href="#" class="project-card reveal reveal-delay-3">
+        <p class="card-number">006</p>
+        <h2 class="card-title">Project Zeta</h2>
+        <p class="card-desc">Where the journey curves back on itself and begins anew — infinity made manifest.</p>
+        <div class="card-tags">
+          <span class="tag">Figma</span>
+          <span class="tag">Interaction</span>
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <div class="divider"></div>
+  <section class="section">
+    <p class="section-label reveal">About</p>
+    <div class="about-inner">
+      <div class="reveal">
+        <h2 class="about-heading">Endlessly<br/>curious.</h2>
+      </div>
+      <div class="about-body reveal reveal-delay-1">
+        <p>I build things that live at the edge of what's possible — software, interfaces, and experiences that push beyond the obvious and reach toward something worth remembering.</p>
+        <p>Every project is a loop: an idea that spirals outward, collects friction, gathers momentum, and returns refined. There is no finish line, only the next horizon.</p>
+        <p>This space is a living record of those loops — each one a small proof that the universe has no walls.</p>
       </div>
     </div>
+  </section>
 
-    <div class="modal-section">
-      <h3>Combat</h3>
-      <div class="key-grid">
-        <span class="key">J</span><span class="key-desc"><strong>Light Punch</strong> — fast, low cost</span>
-        <span class="key">K</span><span class="key-desc"><strong>Heavy Punch</strong> — slow, spends 12 CE for bonus damage</span>
-        <span class="key">L</span><span class="key-desc"><strong>Kick</strong> — mid-range, good knockback</span>
-        <span class="key">SPACE</span><span class="key-desc"><strong>Domain Expansion</strong> — massive AoE hit (costs 50 CE)</span>
-        <span class="key">S</span><span class="key-desc"><strong>Block</strong> — hold to reduce incoming damage by ~88%</span>
-      </div>
-    </div>
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-mark">∞</span>
+    <ul class="footer-links">
+      <li><a href="#">GitHub</a></li>
+      <li><a href="#">Twitter</a></li>
+      <li><a href="#">Email</a></li>
+    </ul>
+  </footer>
 
-    <div class="modal-section">
-      <h3>Cursed Energy (CE)</h3>
-      <div class="tip">
-        <b>CE regenerates passively</b> over time and charges faster when you <b>land hits</b>.<br>
-        Save up to <b>50 CE</b> to unleash <b>Domain Expansion</b> — the most powerful attack.<br>
-        Press <b>H</b> to toggle hitbox debug view.
-      </div>
-    </div>
-
-    <div class="modal-section">
-      <h3>Match Rules</h3>
-      <div class="tip">
-        Best of <b>3 rounds</b>. Reduce your opponent's HP to zero to win the round.<br>
-        Press <b>ENTER</b> between rounds to continue.
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
-  const helpBtn = document.getElementById('help-btn');
-  const overlay = document.getElementById('modal-overlay');
-  const closeBtn = document.getElementById('modal-close');
-  helpBtn.addEventListener('click', () => overlay.classList.add('open'));
-  closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
-  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.classList.remove('open'); });
-  document.addEventListener('keydown', e => { if(e.key==='Escape') overlay.classList.remove('open'); });
-</script>
+/* ── Cursor ── */
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursor-ring');
+let mx = window.innerWidth/2, my = window.innerHeight/2;
+let rx = mx, ry = my;
 
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-const W = 920, H = 500;
-canvas.width = W; canvas.height = H;
-
-const FLOOR = 400;
-const GRAV  = 0.58;
-
-// ── Keys ──
-const keys = {};
-document.addEventListener('keydown', e => {
-  keys[e.code] = true;
-  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top  = my + 'px';
 });
-document.addEventListener('keyup', e => { keys[e.code] = false; });
-function keyOnce(code) { if(keys[code]){ keys[code]=false; return true; } return false; }
+(function animRing(){
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px';
+  ring.style.top  = ry + 'px';
+  requestAnimationFrame(animRing);
+})();
 
-// ── Math utils ──
-const lerp = (a,b,t) => a+(b-a)*t;
-const clamp = (v,mn,mx) => Math.max(mn,Math.min(mx,v));
-const rand = (a,b) => a+Math.random()*(b-a);
-
-// ── Screen shake ──
-let shakeAmt=0;
-function shake(m){ shakeAmt=Math.max(shakeAmt,m); }
-function getShake(){ return shakeAmt>0?{x:(Math.random()-.5)*shakeAmt,y:(Math.random()-.5)*shakeAmt}:{x:0,y:0}; }
-
-// ── Hit flash ──
-let hitFlash=0;
-function triggerFlash(){ hitFlash=1; }
-
-// ── Particles ──
-const parts = [];
-function spawnParts(x,y,col,n,spd,sz){
-  for(let i=0;i<n;i++){
-    const a=rand(0,Math.PI*2), s=rand(spd*.5,spd);
-    parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1,col,sz:rand(sz*.5,sz),life:1,decay:rand(.03,.06)});
-  }
-}
-function updateParts(){
-  for(let i=parts.length-1;i>=0;i--){
-    const p=parts[i];
-    p.x+=p.vx; p.y+=p.vy; p.vy+=.12; p.vx*=.93;
-    p.life-=p.decay;
-    if(p.life<=0) parts.splice(i,1);
-  }
-}
-function drawParts(){
-  parts.forEach(p=>{
-    ctx.save(); ctx.globalAlpha=p.life;
-    ctx.fillStyle=p.col; ctx.shadowColor=p.col; ctx.shadowBlur=8;
-    ctx.beginPath(); ctx.arc(p.x,p.y,p.sz,0,Math.PI*2); ctx.fill();
-    ctx.restore();
+/* ── Card glow follow ── */
+document.querySelectorAll('.project-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width  * 100).toFixed(1);
+    const y = ((e.clientY - r.top)  / r.height * 100).toFixed(1);
+    card.style.setProperty('--mx', x + '%');
+    card.style.setProperty('--my', y + '%');
   });
-}
+});
 
-// ── Floating damage texts ──
-const dmgTexts=[];
-function spawnDmg(x,y,txt,col){
-  dmgTexts.push({x,y,txt,col,life:1,vy:-2.5});
-}
-function updateDmgTexts(){
-  for(let i=dmgTexts.length-1;i>=0;i--){
-    const d=dmgTexts[i];
-    d.y+=d.vy; d.vy*=.93; d.life-=.022;
-    if(d.life<=0) dmgTexts.splice(i,1);
+/* ── Starfield ── */
+(function(){
+  const c  = document.getElementById('starfield');
+  const ct = c.getContext('2d');
+  let W, H;
+  const STAR_COUNT = 260;
+  const stars = [];
+
+  function resize(){
+    W = c.width  = window.innerWidth;
+    H = c.height = window.innerHeight;
   }
-}
-function drawDmgTexts(){
-  dmgTexts.forEach(d=>{
-    ctx.save(); ctx.globalAlpha=d.life;
-    ctx.font=`bold ${26+Math.floor((1-d.life)*8)}px Georgia`;
-    ctx.fillStyle=d.col; ctx.shadowColor=d.col; ctx.shadowBlur=14;
-    ctx.textAlign='center'; ctx.fillText(d.txt,d.x,d.y);
-    ctx.restore();
-  });
-}
+  resize();
+  window.addEventListener('resize', resize);
 
-// ── Domain overlay text ──
-let domainText='', domainTextT=0;
-function showDomain(name){ domainText=name; domainTextT=150; }
-function drawDomainText(){
-  if(domainTextT<=0) return; domainTextT--;
-  const a = domainTextT>110?1:domainTextT/110;
-  const sc = 1+(domainTextT>130?(150-domainTextT)*.015:0);
-  ctx.save();
-  ctx.globalAlpha=a;
-  ctx.translate(W/2,H/2-50); ctx.scale(sc,sc);
-  ctx.textAlign='center';
-  ctx.font="bold 48px Georgia";
-  ctx.fillStyle='#b88cf8'; ctx.shadowColor='#6f42c1'; ctx.shadowBlur=50;
-  ctx.fillText(domainText,0,0);
-  ctx.font="15px Georgia";
-  ctx.fillStyle='#7a6090'; ctx.shadowBlur=0;
-  ctx.fillText('— Domain Expansion —',0,30);
-  ctx.restore();
-}
-
-// ═══════════════════════════════════════════
-//  FIGHTER CLASS
-// ═══════════════════════════════════════════
-class Fighter {
-  constructor(cfg){
-    this.id       = cfg.id;
-    this.name     = cfg.name;
-    this.x        = cfg.x;
-    this.y        = FLOOR;
-    this.vx       = 0; this.vy = 0;
-    this.facing   = cfg.facing;    // 1=right  -1=left
-    this.hp       = cfg.hp;  this.maxHp = cfg.hp;
-    this.ce       = cfg.ce;  this.maxCe = cfg.ce;
-    this.isPlayer = cfg.isPlayer;
-    this.color    = cfg.color;
-    this.domainName = cfg.domainName;
-
-    this.state      = 'idle';
-    this.stateTimer = 0;
-    this.onGround   = true;
-
-    // Attack
-    this.atkType   = null;
-    this.atkFrame  = 0;
-    this.atkCd     = 0;
-    this.hitActive = false;
-    this.hitDone   = false;  // already landed this swing
-    this.atkDmg    = 0;
-
-    // Hurt / invincible
-    this.hurtTimer = 0;
-    this.invTimer  = 0;
-    this.blocking  = false;
-
-    // Domain
-    this.domainOn  = false;
-    this.domainT   = 0;
-
-    // Combo
-    this.combo     = 0;
-    this.comboT    = 0;
-
-    // Anim
-    this.walkCycle = 0;
-    this.idleT     = Math.random()*Math.PI*2;
-
-    // AI
-    this.aiTimer   = 0;
-    this.aiAct     = 'approach';
-    this.aiJumpCd  = 0;
+  for(let i = 0; i < STAR_COUNT; i++){
+    stars.push({
+      x: Math.random(),
+      y: Math.random(),
+      r: Math.random() * 1.2 + 0.2,
+      a: Math.random(),
+      speed: Math.random() * 0.0004 + 0.0001,
+      phase: Math.random() * Math.PI * 2
+    });
   }
 
-  // Hurtbox (world coords)
-  hurtbox(){ return { x:this.x-22, y:this.y-130, w:44, h:130 }; }
+  function draw(t){
+    ct.clearRect(0, 0, W, H);
+    stars.forEach(s => {
+      const alpha = s.a * (0.5 + 0.5 * Math.sin(t * s.speed * 1000 + s.phase));
+      ct.beginPath();
+      ct.arc(s.x * W, s.y * H, s.r, 0, Math.PI*2);
+      ct.fillStyle = `rgba(200,210,255,${alpha})`;
+      ct.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
 
-  // Active attack hitbox (world coords, already facing-adjusted)
-  attackbox(){
-    if(!this.hitActive) return null;
-    let lx,ly,lw,lh;
-    switch(this.atkType){
-      case 'light':  lx=20; ly=-100; lw=55; lh=35; break;
-      case 'heavy':  lx=18; ly=-95;  lw=65; lh=45; break;
-      case 'kick':   lx=20; ly=-60;  lw=65; lh=35; break;
-      case 'domain': lx=-140; ly=-140; lw=300; lh=150; break;
-      default: return null;
-    }
-    // facing 1 = right (normal), -1 = left (flip x)
-    const bx = this.facing===1 ? this.x+lx : this.x-lx-lw;
-    return { x:bx, y:this.y+ly, w:lw, h:lh };
+/* ── Infinity Symbol ── */
+(function(){
+  const c  = document.getElementById('infinity-canvas');
+  const ct = c.getContext('2d');
+  let W, H;
+
+  function resize(){
+    W = c.width  = window.innerWidth;
+    H = c.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  let t = 0;
+
+  function lemniscate(theta, a){
+    // Bernoulli lemniscate: parametric form
+    const denom = 1 + Math.sin(theta) * Math.sin(theta);
+    const x = a * Math.cos(theta) / denom;
+    const y = a * Math.sin(theta) * Math.cos(theta) / denom;
+    return { x, y };
   }
 
-  startAttack(type){
-    if(this.hurtTimer>0) return;
-    if(this.state==='attack') return;
-    if(this.atkCd>0) return;
-    if(type==='domain' && this.ce<50) return;
+  function draw(){
+    ct.clearRect(0, 0, W, H);
 
-    this.state    = 'attack';
-    this.stateTimer = 0;
-    this.atkType  = type;
-    this.atkFrame = 0;
-    this.hitActive= false;
-    this.hitDone  = false;
+    const cx  = W / 2;
+    const cy  = H / 2;
+    const a   = Math.min(W, H) * 0.28;
+    const pts = 420;
 
-    if(type==='domain'){
-      this.ce -= 50;
-      this.atkDmg = Math.floor(rand(55,80));
-      this.atkCd  = 90;
-      this.domainOn = true;
-      this.domainT  = 0;
-      showDomain(this.domainName);
-    } else if(type==='heavy'){
-      this.atkDmg = Math.floor(rand(18,27));
-      if(this.ce>=12){ this.ce-=12; this.atkDmg+=8; }
-      this.atkCd = 38;
-    } else if(type==='kick'){
-      this.atkDmg = Math.floor(rand(13,19));
-      this.atkCd  = 28;
-    } else { // light
-      this.atkDmg = Math.floor(rand(8,14));
-      this.atkCd  = 20;
-    }
-  }
+    // Outer glow pass
+    for(let pass = 0; pass < 3; pass++){
+      const width = [12, 5, 1.5][pass];
+      const alpha = [0.06, 0.12, 0.55][pass];
 
-  update(other){
-    if(this.atkCd>0) this.atkCd--;
-    if(this.hurtTimer>0){ this.hurtTimer--; if(this.hurtTimer===0) this.state='idle'; }
-    if(this.invTimer>0) this.invTimer--;
-    if(this.comboT>0){ this.comboT--; if(this.comboT===0) this.combo=0; }
-    if(this.domainOn){ this.domainT++; if(this.domainT>100) this.domainOn=false; }
-
-    // CE passive regen
-    if(this.ce<this.maxCe) this.ce=Math.min(this.maxCe,this.ce+.07);
-
-    // Attack state machine
-    if(this.state==='attack'){
-      this.atkFrame++;
-      let st,ac,rc; // startup, active, recovery
-      switch(this.atkType){
-        case 'light':  st=5;  ac=4;  rc=10; break;
-        case 'heavy':  st=10; ac=6;  rc=20; break;
-        case 'kick':   st=7;  ac=5;  rc=14; break;
-        case 'domain': st=28; ac=50; rc=12; break;
-        default:       st=5;  ac=4;  rc=10;
+      ct.beginPath();
+      for(let i = 0; i <= pts; i++){
+        const theta = (i / pts) * Math.PI * 2;
+        const p = lemniscate(theta, a);
+        if(i === 0) ct.moveTo(cx + p.x, cy + p.y);
+        else        ct.lineTo(cx + p.x, cy + p.y);
       }
-      this.hitActive = (this.atkFrame>=st && this.atkFrame<st+ac);
-      if(this.atkFrame>=st+ac+rc){ this.state='idle'; this.hitActive=false; }
+      ct.closePath();
+
+      // Travelling gradient
+      const grad = ct.createLinearGradient(cx - a, cy, cx + a, cy);
+      const offset = ((t * 0.0004) % 1);
+      grad.addColorStop((offset + 0)   % 1, `rgba(99,102,241,0)`);
+      grad.addColorStop((offset + 0.2) % 1, `rgba(129,140,248,${alpha})`);
+      grad.addColorStop((offset + 0.5) % 1, `rgba(167,139,250,${alpha * 0.7})`);
+      grad.addColorStop((offset + 0.8) % 1, `rgba(99,102,241,${alpha * 0.4})`);
+      grad.addColorStop((offset + 1.0) % 1, `rgba(99,102,241,0)`);
+
+      ct.strokeStyle = grad;
+      ct.lineWidth   = width;
+      ct.stroke();
     }
 
-    // Input / AI
-    if(this.isPlayer) this._playerInput();
-    else              this._ai(other);
+    // Travelling dot
+    const dotTheta = ((t * 0.0008) % 1) * Math.PI * 2;
+    const dp = lemniscate(dotTheta, a);
+    const grd = ct.createRadialGradient(cx+dp.x, cy+dp.y, 0, cx+dp.x, cy+dp.y, 14);
+    grd.addColorStop(0,   'rgba(224,231,255,0.9)');
+    grd.addColorStop(0.3, 'rgba(129,140,248,0.5)');
+    grd.addColorStop(1,   'rgba(99,102,241,0)');
+    ct.beginPath();
+    ct.arc(cx + dp.x, cy + dp.y, 14, 0, Math.PI*2);
+    ct.fillStyle = grd;
+    ct.fill();
 
-    // Physics
-    this.vy += GRAV;
-    this.x += this.vx; this.y += this.vy;
+    ct.beginPath();
+    ct.arc(cx + dp.x, cy + dp.y, 3, 0, Math.PI*2);
+    ct.fillStyle = 'rgba(255,255,255,0.95)';
+    ct.fill();
 
-    if(this.y>=FLOOR){ this.y=FLOOR; this.vy=0; this.onGround=true; }
-    else this.onGround=false;
-
-    this.x = clamp(this.x,25,W-25);
-
-    // Friction
-    if(this.onGround && this.state!=='attack') this.vx*=0.76;
-
-    // Always face opponent (unless attacking)
-    if(this.state!=='attack') this.facing = other.x>this.x?1:-1;
-
-    // Update walk/idle states
-    if(this.state!=='attack' && this.hurtTimer===0){
-      if(!this.onGround)          this.state='jump';
-      else if(Math.abs(this.vx)>0.8) this.state='walk';
-      else                        this.state='idle';
-    }
-
-    // Walk / idle animation
-    if(this.state==='walk') this.walkCycle+=0.14;
-    this.idleT+=0.028;
+    t++;
+    requestAnimationFrame(draw);
   }
+  draw();
+})();
 
-  _playerInput(){
-    if(this.hurtTimer>0) return;
-    if(keys['KeyA']||keys['ArrowLeft'])  this.vx=-4.2;
-    if(keys['KeyD']||keys['ArrowRight']) this.vx=4.2;
-    if((keys['KeyW']||keys['ArrowUp']) && this.onGround && this.state!=='attack'){
-      this.vy=-13.5; this.onGround=false;
-    }
-    this.blocking = !!(keys['KeyS']||keys['ArrowDown']);
-    if(keyOnce('KeyJ'))  this.startAttack('light');
-    if(keyOnce('KeyK'))  this.startAttack('heavy');
-    if(keyOnce('KeyL'))  this.startAttack('kick');
-    if(keyOnce('Space')) this.startAttack('domain');
-  }
-
-  _ai(other){
-    this.aiTimer--;
-    if(this.aiJumpCd>0) this.aiJumpCd--;
-
-    if(this.state==='attack'||this.hurtTimer>0) return;
-
-    const dist = Math.abs(this.x-other.x);
-
-    // Re-decide
-    if(this.aiTimer<=0){
-      const r=Math.random();
-      if(r<.35)      this.aiAct='approach';
-      else if(r<.52) this.aiAct='retreat';
-      else if(r<.75) this.aiAct='attack';
-      else           this.aiAct='idle';
-      this.aiTimer = 25+rand(0,55)|0;
-    }
-
-    // Move
-    const dir = Math.sign(other.x-this.x);
-    if(this.aiAct==='approach'||dist>220)  this.vx=dir*3.2;
-    else if(this.aiAct==='retreat')        this.vx=-dir*3;
-    else if(this.aiAct==='idle')           this.vx*=.7;
-
-    // Attack in range
-    if(dist<130 && this.atkCd<=0){
-      const r=Math.random();
-      if(r<.42)       this.startAttack('light');
-      else if(r<.72)  this.startAttack('heavy');
-      else if(r<.86)  this.startAttack('kick');
-      else if(this.ce>=50) this.startAttack('domain');
-    }
-
-    // Jump occasionally
-    if(this.onGround && this.aiJumpCd<=0 && Math.random()<.007){
-      this.vy=-13; this.aiJumpCd=80;
-    }
-
-    this.blocking = Math.random()<.12;
-  }
-
-  takeHit(dmg, kb, attacker){
-    if(this.invTimer>0) return false;
-    if(this.blocking && this.onGround) { dmg=Math.floor(dmg*.12); kb*=.25; }
-    this.hp = Math.max(0,this.hp-dmg);
-    this.vx = -Math.sign(attacker.x-this.x)*kb;
-    this.vy = -2.5;
-    this.state='hurt'; this.hurtTimer=22; this.invTimer=16;
-    // CE gain for attacker
-    attacker.ce = Math.min(attacker.maxCe, attacker.ce+Math.floor(dmg*.35));
-    attacker.combo++; attacker.comboT=85;
-    return true;
-  }
-}
-
-// ═══════════════════════════════════════════
-//  CHARACTER DRAWING — GOJO
-// ═══════════════════════════════════════════
-
-function drawGojo(f){
-  const {x,y,facing,state,atkFrame,atkType,walkCycle,idleT,hurtTimer,domainOn,domainT,hitActive} = f;
-  ctx.save();
-  ctx.translate(x,y);
-  ctx.scale(facing,1);
-
-  const p = gojoP(state,atkFrame,atkType,walkCycle,idleT,hurtTimer);
-
-  // Colors
-  const SKIN='#f0e0ce', UNI='#12122a', HAIR='#e8e8e8', BF='#0a0a14', ACC='#0dcaf0';
-
-  // Domain aura
-  if(domainOn){
-    ctx.save();
-    ctx.globalAlpha=.15+Math.sin(domainT*.15)*.1;
-    for(let i=0;i<4;i++){
-      const r=30+i*22+(domainT%30);
-      ctx.strokeStyle=ACC; ctx.shadowColor=ACC; ctx.shadowBlur=20; ctx.lineWidth=1.5;
-      ctx.beginPath(); ctx.arc(0,-65,r,0,Math.PI*2); ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  // CE hand glow when attacking
-  const ceGlow = hitActive && atkType!=='kick';
-
-  // Back leg
-  drawLeg2(p.legR, UNI, '#0a0a14', false);
-  // Front leg
-  drawLeg2(p.legL, UNI, '#0a0a14', true);
-  // Back arm
-  drawArm2(p.armR, UNI, SKIN, false, false, '');
-  // Torso
-  const tx=p.torso.x, ty=p.torso.y;
-  ctx.fillStyle=UNI;
-  ctx.beginPath(); ctx.roundRect(tx-15,ty-44,30,48,6); ctx.fill();
-  // Uniform detail
-  ctx.fillStyle=BF;
-  ctx.fillRect(tx-5,ty-44,10,14);
-  ctx.fillStyle='#1e1e50';
-  ctx.fillRect(tx-15,ty-16,30,5);
-  // Head
-  ctx.shadowColor=ACC; ctx.shadowBlur=8;
-  ctx.fillStyle=SKIN;
-  ctx.beginPath(); ctx.arc(p.head.x,p.head.y,21,0,Math.PI*2); ctx.fill();
-  // Hair
-  ctx.fillStyle=HAIR; ctx.shadowBlur=0;
-  ctx.beginPath(); ctx.arc(p.head.x,p.head.y-4,22,Math.PI,Math.PI*2); ctx.fill();
-  // Hair spikes
-  for(let i=0;i<6;i++){
-    const a=Math.PI+(i/5)*Math.PI;
-    ctx.beginPath(); ctx.arc(p.head.x+Math.cos(a)*20,p.head.y-4+Math.sin(a)*20,6,0,Math.PI*2); ctx.fill();
-  }
-  // Blindfold
-  ctx.fillStyle='#0a0a0a';
-  ctx.fillRect(p.head.x-21,p.head.y-8,42,10);
-  // Nose / mouth
-  ctx.fillStyle='#c8a090';
-  ctx.beginPath(); ctx.arc(p.head.x+7,p.head.y+5,2.5,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='#b09080'; ctx.lineWidth=1.5;
-  ctx.beginPath(); ctx.arc(p.head.x+3,p.head.y+11,5,0,Math.PI); ctx.stroke();
-
-  // Front arm
-  drawArm2(p.armL, UNI, SKIN, true, ceGlow, ACC);
-
-  // Kick foot effect
-  if(hitActive && atkType==='kick'){
-    const fp=getFootPos(p.legL);
-    ctx.save();
-    ctx.shadowColor=ACC; ctx.shadowBlur=22;
-    ctx.fillStyle=ACC; ctx.globalAlpha=.7;
-    ctx.beginPath(); ctx.arc(fp.x,fp.y,10,0,Math.PI*2); ctx.fill();
-    ctx.restore();
-  }
-
-  ctx.restore();
-}
-
-function gojoP(state,atkFrame,atkType,wc,idT,hurtT){
-  // idle
-  const b=Math.sin(idT)*2;
-  const I={
-    head:{x:0,y:-122+b}, torso:{x:0,y:-77+b*.5},
-    armL:{ang:-.18,fore:.28}, armR:{ang:.12,fore:-.18},
-    legL:{ang:.05,low:0},   legR:{ang:-.05,low:0}
-  };
-  if(state==='idle') return I;
-  if(state==='walk'){
-    const t=wc;
-    return{
-      head:{x:0,y:-122+Math.sin(t*2)*2}, torso:{x:0,y:-77+Math.sin(t*2)},
-      armL:{ang:Math.sin(t)*.55-.1, fore:Math.abs(Math.sin(t))*.25},
-      armR:{ang:-Math.sin(t)*.55+.1,fore:Math.abs(Math.sin(t))*.25},
-      legL:{ang:Math.sin(t)*.65,   low:Math.max(0,Math.sin(t+.5)*.55)},
-      legR:{ang:-Math.sin(t)*.65,  low:Math.max(0,Math.sin(t-.5)*.55)}
-    };
-  }
-  if(state==='jump') return{
-    head:{x:0,y:-128}, torso:{x:0,y:-82},
-    armL:{ang:-.85,fore:-.5}, armR:{ang:-.85,fore:-.5},
-    legL:{ang:.55,low:.8},   legR:{ang:-.3,low:.5}
-  };
-  if(state==='hurt') return{
-    head:{x:6,y:-116}, torso:{x:5,y:-71},
-    armL:{ang:.9,fore:.6}, armR:{ang:1.3,fore:.9},
-    legL:{ang:-.2,low:.3}, legR:{ang:.2,low:.1}
-  };
-  if(state==='attack'){
-    const tot = atkType==='light'?19:atkType==='heavy'?36:atkType==='kick'?26:90;
-    const t=Math.min(atkFrame/tot,1);
-    if(atkType==='light'){
-      const ext=t<.45?t/.45:1-(t-.45)/.55;
-      return{
-        head:{x:ext*3,y:-122}, torso:{x:ext*2,y:-77},
-        armL:{ang:-.3-ext*.2,fore:-ext*1.3},
-        armR:{ang:.2,fore:.2},
-        legL:{ang:.1,low:0}, legR:{ang:-.1,low:0}
-      };
-    }
-    if(atkType==='heavy'){
-      const wind=t<.28?-t/.28:0;
-      const ext=t>=.28?Math.min((t-.28)/.35,1):0;
-      return{
-        head:{x:ext*6+wind*2,y:-122+wind*4}, torso:{x:ext*4+wind*2,y:-77+wind*3},
-        armL:{ang:-.4+wind*1.6-ext*.9, fore:wind*.4-ext*1.6},
-        armR:{ang:.8+wind*.5,fore:.5},
-        legL:{ang:.3,low:.2}, legR:{ang:-.25,low:.1}
-      };
-    }
-    if(atkType==='kick'){
-      const ext=t<.5?t*2:2-t*2;
-      return{
-        head:{x:0,y:-122}, torso:{x:0,y:-77},
-        armL:{ang:.5,fore:.3}, armR:{ang:-.5,fore:-.3},
-        legL:{ang:-.3-ext*2.0,low:-ext*.4},
-        legR:{ang:.25,low:.3}
-      };
-    }
-    if(atkType==='domain'){
-      return{
-        head:{x:0,y:-128}, torso:{x:0,y:-82},
-        armL:{ang:-1.5,fore:-.3}, armR:{ang:1.5,fore:.3},
-        legL:{ang:.3,low:0},     legR:{ang:-.3,low:0}
-      };
-    }
-  }
-  return I;
-}
-
-function drawLeg2(leg,col,shoe,front){
-  const thigh=34,shin=32;
-  const kx=Math.sin(leg.ang)*thigh, ky=Math.cos(leg.ang)*thigh;
-  ctx.strokeStyle=col; ctx.lineWidth=front?13:11; ctx.lineCap='round';
-  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(kx,ky); ctx.stroke();
-  const fa=leg.ang+leg.low;
-  const fx=kx+Math.sin(fa)*shin, fy=ky+Math.cos(fa)*shin;
-  ctx.lineWidth=front?12:10;
-  ctx.beginPath(); ctx.moveTo(kx,ky); ctx.lineTo(fx,fy); ctx.stroke();
-  ctx.fillStyle=shoe;
-  ctx.beginPath(); ctx.ellipse(fx+8,fy,14,7,0,0,Math.PI*2); ctx.fill();
-}
-
-function getFootPos(leg){
-  const thigh=34,shin=32;
-  const kx=Math.sin(leg.ang)*thigh, ky=Math.cos(leg.ang)*thigh;
-  const fa=leg.ang+leg.low;
-  return {x:kx+Math.sin(fa)*shin, y:ky+Math.cos(fa)*shin};
-}
-
-function drawArm2(arm,col,skin,front,ceGlow,glowCol){
-  const upper=27,fore=24;
-  const sx=front?-2:2, sy=-37;
-  const ex=sx+Math.sin(arm.ang)*upper, ey=sy+Math.cos(arm.ang)*upper;
-  ctx.strokeStyle=col; ctx.lineWidth=front?11:9; ctx.lineCap='round';
-  ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke();
-  const ha=arm.ang+arm.fore;
-  const hx=ex+Math.sin(ha)*fore, hy=ey+Math.cos(ha)*fore;
-  ctx.lineWidth=front?10:8;
-  ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(hx,hy); ctx.stroke();
-  if(ceGlow){ ctx.shadowColor=glowCol; ctx.shadowBlur=22; }
-  ctx.fillStyle=skin;
-  ctx.beginPath(); ctx.arc(hx,hy,7,0,Math.PI*2); ctx.fill();
-  if(ceGlow){
-    ctx.fillStyle=glowCol; ctx.globalAlpha=.7;
-    ctx.beginPath(); ctx.arc(hx,hy,11+Math.sin(Date.now()*.05)*3,0,Math.PI*2); ctx.fill();
-    ctx.globalAlpha=1;
-  }
-  ctx.shadowBlur=0;
-}
-
-// ═══════════════════════════════════════════
-//  CHARACTER DRAWING — JOGO
-// ═══════════════════════════════════════════
-
-function drawJogo(f){
-  const {x,y,facing,state,atkFrame,atkType,walkCycle,idleT,hurtTimer,domainOn,domainT,hitActive,hp,maxHp} = f;
-  ctx.save();
-  ctx.translate(x,y);
-  ctx.scale(facing,1);
-
-  const ROBE='#180800', SKIN='#3a1205', FIRE='#ff5500', LAVA='#ff2200', EYE='#ff3300';
-  const p=jogoP(state,atkFrame,atkType,walkCycle,idleT,hurtTimer);
-
-  // Domain aura
-  if(domainOn){
-    ctx.save();
-    for(let i=0;i<4;i++){
-      const r=30+i*22+(domainT%30);
-      ctx.globalAlpha=.18+Math.sin(domainT*.15)*.08;
-      ctx.strokeStyle=FIRE; ctx.shadowColor=FIRE; ctx.shadowBlur=20; ctx.lineWidth=1.5;
-      ctx.beginPath(); ctx.arc(0,-65,r,0,Math.PI*2); ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  // Back leg
-  drawJogoLimb(p.legR,'leg',ROBE,FIRE,false);
-  drawJogoLimb(p.legL,'leg',ROBE,FIRE,true);
-  // Back arm
-  drawJogoLimb(p.armR,'arm',ROBE,FIRE,false);
-
-  // Robe/body
-  const tx=p.torso.x, ty=p.torso.y;
-  ctx.fillStyle=ROBE;
-  ctx.beginPath(); ctx.roundRect(tx-17,ty-48,34,62,5); ctx.fill();
-  // Robe fire trim
-  ctx.strokeStyle=FIRE; ctx.lineWidth=1.5; ctx.shadowColor=FIRE; ctx.shadowBlur=6;
-  ctx.strokeRect(tx-17,ty-48,34,62);
-  ctx.shadowBlur=0;
-
-  // ── VOLCANO HEAD ──
-  const hx=p.head.x, hy=p.head.y;
-  // Base
-  ctx.fillStyle=SKIN; ctx.shadowColor=FIRE; ctx.shadowBlur=12;
-  ctx.beginPath();
-  ctx.moveTo(hx-23,hy+10); ctx.lineTo(hx-15,hy-32); ctx.lineTo(hx+15,hy-32); ctx.lineTo(hx+23,hy+10);
-  ctx.closePath(); ctx.fill(); ctx.shadowBlur=0;
-  // Crater (top)
-  ctx.fillStyle='#1a0500';
-  ctx.beginPath(); ctx.ellipse(hx,hy-32,11,5.5,0,0,Math.PI*2); ctx.fill();
-  // Lava glow
-  ctx.save(); ctx.globalAlpha=.5+Math.sin(idleT*2)*.3;
-  ctx.fillStyle=FIRE; ctx.shadowColor=FIRE; ctx.shadowBlur=18;
-  ctx.beginPath(); ctx.ellipse(hx,hy-32,7,3.5,0,0,Math.PI*2); ctx.fill();
-  ctx.restore();
-  // Lava drips
-  ctx.fillStyle=LAVA; ctx.globalAlpha=.6;
-  for(let i=0;i<3;i++){
-    const drx=hx-8+i*8, dry=hy-28+(Math.sin(idleT*1.5+i)*4);
-    ctx.beginPath(); ctx.arc(drx,dry,2.5,0,Math.PI*2); ctx.fill();
-  }
-  ctx.globalAlpha=1;
-  // Eye socket
-  ctx.fillStyle='#000';
-  ctx.beginPath(); ctx.ellipse(hx,hy-8,9,11,0,0,Math.PI*2); ctx.fill();
-  // Iris
-  ctx.fillStyle=EYE; ctx.shadowColor=EYE; ctx.shadowBlur=14;
-  ctx.beginPath(); ctx.ellipse(hx,hy-8,6,7.5,0,0,Math.PI*2); ctx.fill();
-  // Pupil
-  ctx.fillStyle='#fff'; ctx.shadowBlur=0;
-  ctx.beginPath(); ctx.ellipse(hx+2,hy-9,2,3,0,0,Math.PI*2); ctx.fill();
-  // Lava cracks
-  ctx.strokeStyle=FIRE; ctx.lineWidth=1.5; ctx.shadowColor=FIRE; ctx.shadowBlur=6;
-  [[hx-9,hy-3,hx-7,hy+6],[hx,hy+2,hx+2,hy+8],[hx+8,hy-1,hx+7,hy+5]].forEach(([ax,ay,bx,by])=>{
-    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+/* ── Scroll reveal ── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) e.target.classList.add('visible');
   });
-  ctx.shadowBlur=0;
+}, { threshold: 0.12 });
 
-  // Front arm (with fire on fist if attacking)
-  drawJogoLimb(p.armL,'arm',ROBE,FIRE,true);
-  if(hitActive){
-    const fp=getJogoFist(p.armL);
-    ctx.save();
-    ctx.shadowColor=FIRE; ctx.shadowBlur=24;
-    for(let i=0;i<3;i++){
-      const a=(i/3)*Math.PI*2+idleT*2;
-      ctx.fillStyle=i%2?FIRE:LAVA; ctx.globalAlpha=.8;
-      ctx.beginPath(); ctx.arc(fp.x+Math.cos(a)*14,fp.y+Math.sin(a)*14,5,0,Math.PI*2); ctx.fill();
-    }
-    ctx.restore();
-  }
-
-  ctx.restore();
-}
-
-function jogoP(state,atkFrame,atkType,wc,idT,hurtT){
-  const b=Math.sin(idT)*2;
-  const I={
-    head:{x:0,y:-118+b}, torso:{x:0,y:-74+b*.5},
-    armL:{ang:.28,fore:-.2},  armR:{ang:-.2,fore:.2},
-    legL:{ang:.07,low:0},    legR:{ang:-.07,low:0}
-  };
-  if(state==='idle') return I;
-  if(state==='walk'){
-    const t=wc;
-    return{
-      head:{x:0,y:-118+Math.sin(t*2)*2}, torso:{x:0,y:-74+Math.sin(t*2)},
-      armL:{ang:.28+Math.sin(t)*.5,  fore:-.2+Math.abs(Math.sin(t))*.3},
-      armR:{ang:-.2-Math.sin(t)*.5,  fore:.2+Math.abs(Math.sin(t))*.3},
-      legL:{ang:Math.sin(t)*.6,      low:Math.max(0,Math.sin(t+.5)*.5)},
-      legR:{ang:-Math.sin(t)*.6,     low:Math.max(0,Math.sin(t-.5)*.5)}
-    };
-  }
-  if(state==='jump') return{
-    head:{x:0,y:-124}, torso:{x:0,y:-79},
-    armL:{ang:-.75,fore:-.4}, armR:{ang:-.75,fore:-.4},
-    legL:{ang:.45,low:.75},  legR:{ang:-.25,low:.45}
-  };
-  if(state==='hurt') return{
-    head:{x:7,y:-112}, torso:{x:6,y:-69},
-    armL:{ang:.95,fore:.65}, armR:{ang:1.35,fore:.95},
-    legL:{ang:-.15,low:.25}, legR:{ang:.15,low:.1}
-  };
-  if(state==='attack'){
-    const tot=atkType==='light'?19:atkType==='heavy'?36:atkType==='kick'?26:90;
-    const t=Math.min(atkFrame/tot,1);
-    if(atkType==='light'||atkType==='kick'){
-      const ext=t<.45?t/.45:1-(t-.45)/.55;
-      return{
-        head:{x:ext*3,y:-118}, torso:{x:ext*3,y:-74},
-        armL:{ang:.28-ext*.6,fore:-.2-ext*1.2},
-        armR:{ang:-.2,fore:.2},
-        legL:{ang:.1,low:0}, legR:{ang:-.1,low:0}
-      };
-    }
-    if(atkType==='heavy'||atkType==='domain'){
-      const ext=t<.4?t/.4:1;
-      return{
-        head:{x:ext*6,y:-118}, torso:{x:ext*5,y:-74},
-        armL:{ang:.28-ext*1.1,fore:-.2-ext*1.5},
-        armR:{ang:-.2-ext*.9,fore:.2-ext*1.3},
-        legL:{ang:.3,low:.2}, legR:{ang:-.2,low:.15}
-      };
-    }
-  }
-  return I;
-}
-
-function drawJogoLimb(limb,type,col,glow,front){
-  const isLeg=type==='leg';
-  const u=isLeg?33:26, f2=isLeg?31:23;
-  const sx=front?-2:2, sy=front?0:2;
-  const o=isLeg?{x:0,y:0}:{x:sx,y:-39};
-  const kx=o.x+Math.sin(limb.ang)*u, ky=o.y+Math.cos(limb.ang)*u;
-  ctx.strokeStyle=col; ctx.lineWidth=front?(isLeg?13:11):(isLeg?11:9); ctx.lineCap='round';
-  ctx.beginPath(); ctx.moveTo(o.x,o.y); ctx.lineTo(kx,ky); ctx.stroke();
-  const fa=limb.ang+limb.low;
-  const ex2=kx+Math.sin(fa)*f2, ey2=ky+Math.cos(fa)*f2;
-  ctx.lineWidth=front?(isLeg?12:10):(isLeg?10:8);
-  ctx.beginPath(); ctx.moveTo(kx,ky); ctx.lineTo(ex2,ey2); ctx.stroke();
-  if(isLeg){
-    ctx.fillStyle='#0a0300';
-    ctx.beginPath(); ctx.ellipse(ex2+7,ey2,12,6,0,0,Math.PI*2); ctx.fill();
-  } else {
-    ctx.fillStyle='#3a1205'; ctx.shadowColor=glow; ctx.shadowBlur=front?8:0;
-    ctx.beginPath(); ctx.arc(ex2,ey2,7,0,Math.PI*2); ctx.fill();
-    ctx.shadowBlur=0;
-  }
-}
-
-function getJogoFist(arm){
-  const upper=26,fore=23;
-  const sx=-2,sy=-39;
-  const ex=sx+Math.sin(arm.ang)*upper, ey=sy+Math.cos(arm.ang)*upper;
-  const ha=arm.ang+arm.fore;
-  return{x:ex+Math.sin(ha)*fore, y:ey+Math.cos(ha)*fore};
-}
-
-// ═══════════════════════════════════════════
-//  BACKGROUND
-// ═══════════════════════════════════════════
-const bgPts=[];
-for(let i=0;i<70;i++) bgPts.push({
-  x:rand(0,W),y:rand(0,H),vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.25-.1,
-  sz:rand(.5,2.5),a:rand(.1,.4),
-  col:['#0dcaf0','#6f42c1','#dc3545','#ffd700'][Math.floor(Math.random()*4)]
-});
-
-function drawBG(p1,p2){
-  // Sky
-  const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'#020206'); g.addColorStop(.7,'#08011a'); g.addColorStop(1,'#12021f');
-  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-
-  // Cursed circle on floor
-  ctx.save(); ctx.globalAlpha=.1;
-  ctx.strokeStyle='#6f42c1'; ctx.lineWidth=1;
-  for(let r=80;r<=240;r+=60){
-    ctx.beginPath(); ctx.arc(W/2,FLOOR,r*.6,Math.PI,Math.PI*2); ctx.stroke();
-  }
-  // Pentagram
-  for(let i=0;i<5;i++){
-    const a1=(i/5)*Math.PI*2-Math.PI/2, a2=((i+2)/5)*Math.PI*2-Math.PI/2;
-    ctx.beginPath();
-    ctx.moveTo(W/2+Math.cos(a1)*240,FLOOR+Math.sin(a1)*70);
-    ctx.lineTo(W/2+Math.cos(a2)*240,FLOOR+Math.sin(a2)*70);
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  // Domain background glow
-  [p1,p2].forEach(p=>{
-    if(!p.domainOn) return;
-    const col=p.id==='gojo'?'#4020c0':'#cc3300';
-    ctx.save();
-    const gr=ctx.createRadialGradient(p.x,p.y-65,0,p.x,p.y-65,320);
-    gr.addColorStop(0,col+'66'); gr.addColorStop(1,'transparent');
-    ctx.globalAlpha=.3+Math.sin(p.domainT*.1)*.15;
-    ctx.fillStyle=gr; ctx.fillRect(0,0,W,H);
-    ctx.restore();
-  });
-
-  // Floor
-  const fg=ctx.createLinearGradient(0,FLOOR,0,H);
-  fg.addColorStop(0,'#0c0220'); fg.addColorStop(1,'#060010');
-  ctx.fillStyle=fg; ctx.fillRect(0,FLOOR,W,H-FLOOR);
-  // Glow line
-  ctx.save(); ctx.shadowColor='#6f42c1'; ctx.shadowBlur=18;
-  ctx.strokeStyle='#2d0a5a'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(0,FLOOR); ctx.lineTo(W,FLOOR); ctx.stroke();
-  ctx.restore();
-  // Grid
-  ctx.save(); ctx.globalAlpha=.05; ctx.strokeStyle='#8040ff'; ctx.lineWidth=1;
-  for(let x=0;x<W;x+=45){ ctx.beginPath(); ctx.moveTo(x,FLOOR); ctx.lineTo(x+25,H); ctx.stroke(); }
-  ctx.restore();
-
-  // BG particles
-  bgPts.forEach(p=>{
-    p.x+=p.vx; p.y+=p.vy;
-    if(p.x<0)p.x=W; if(p.x>W)p.x=0; if(p.y<0)p.y=H; if(p.y>H)p.y=0;
-    ctx.save(); ctx.globalAlpha=p.a;
-    ctx.fillStyle=p.col; ctx.shadowColor=p.col; ctx.shadowBlur=5;
-    ctx.beginPath(); ctx.arc(p.x,p.y,p.sz,0,Math.PI*2); ctx.fill();
-    ctx.restore();
-  });
-}
-
-// ═══════════════════════════════════════════
-//  HUD
-// ═══════════════════════════════════════════
-function drawHUD(p1,p2){
-  const PAD=28, BY=28, BW=310, BH=22, CH=10;
-
-  // ── Player bar ──
-  drawBar(PAD,BY,BW,BH,p1.hp/p1.maxHp,'#e74c3c','#ff6b6b',true);
-  drawBar(PAD,BY+BH+5,BW,CH,p1.ce/p1.maxCe,'#0a60b0','#0dcaf0',true);
-  // ── Enemy bar ──
-  drawBar(W-PAD-BW,BY,BW,BH,p2.hp/p2.maxHp,'#e74c3c','#ff6b6b',false);
-  drawBar(W-PAD-BW,BY+BH+5,BW,CH,p2.ce/p2.maxCe,'#0a60b0','#0dcaf0',false);
-
-  // HP text in bars
-  ctx.fillStyle='#fff'; ctx.font='bold 11px monospace';
-  ctx.textAlign='left'; ctx.fillText(`${Math.ceil(Math.max(0,p1.hp))} / ${p1.maxHp}`,PAD+4,BY+15);
-  ctx.textAlign='right'; ctx.fillText(`${Math.ceil(Math.max(0,p2.hp))} / ${p2.maxHp}`,W-PAD-4,BY+15);
-
-  // CE label
-  ctx.font='10px monospace'; ctx.fillStyle='#0dcaf0';
-  ctx.textAlign='left'; ctx.fillText(`CE ${Math.floor(p1.ce)}`,PAD,BY+BH+CH+22);
-  ctx.textAlign='right'; ctx.fillText(`CE ${Math.floor(p2.ce)}`,W-PAD,BY+BH+CH+22);
-
-  // Names
-  ctx.font="bold 12px Georgia"; ctx.fillStyle='#aaa'; ctx.letterSpacing='1px';
-  ctx.textAlign='left'; ctx.fillText('GOJO SATORU',PAD,BY-6);
-  ctx.textAlign='right'; ctx.fillText('JOGO',W-PAD,BY-6);
-
-  // VS + Round
-  ctx.textAlign='center'; ctx.fillStyle='#2a2a3a'; ctx.font="bold 20px Georgia";
-  ctx.fillText('VS',W/2,BY+16);
-  ctx.fillStyle='#445'; ctx.font="11px Georgia";
-  ctx.fillText(`ROUND ${game.round}  ·  ${game.p1Wins}-${game.p2Wins}`,W/2,BY+34);
-
-  // Combo
-  if(p1.combo>=2&&p1.comboT>0){
-    ctx.save();
-    ctx.textAlign='left'; ctx.font=`bold ${18+p1.combo}px Georgia`;
-    ctx.fillStyle='#ffd700'; ctx.shadowColor='#ffd700'; ctx.shadowBlur=14;
-    ctx.fillText(`${p1.combo} HIT!`,PAD,FLOOR-20);
-    ctx.restore();
-  }
-
-  // Domain CE hint
-  if(p1.ce<50){
-    ctx.textAlign='left'; ctx.font='10px monospace'; ctx.fillStyle='#333';
-    ctx.fillText(`Domain: ${50-Math.floor(p1.ce)} CE needed`,PAD,H-10);
-  }
-}
-
-function drawBar(x,y,w,h,pct,loCol,hiCol,ltr){
-  ctx.fillStyle='#141414'; ctx.fillRect(x,y,w,h);
-  const fw=Math.max(0,pct)*w;
-  const col=pct>.5?hiCol:pct>.25?'#e67e22':loCol;
-  ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=7;
-  if(ltr) ctx.fillRect(x,y,fw,h);
-  else    ctx.fillRect(x+w-fw,y,fw,h);
-  ctx.shadowBlur=0;
-  ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=1; ctx.strokeRect(x,y,w,h);
-}
-
-// ── Debug hitboxes (toggle with H) ──
-let showHB=false;
-document.addEventListener('keydown',e=>{ if(e.code==='KeyH') showHB=!showHB; });
-function drawHitboxes(p1,p2){
-  if(!showHB) return;
-  [p1,p2].forEach(f=>{
-    const hb=f.hurtbox();
-    ctx.strokeStyle='rgba(0,255,0,.4)'; ctx.lineWidth=1;
-    ctx.strokeRect(hb.x,hb.y,hb.w,hb.h);
-    const ab=f.attackbox();
-    if(ab){ ctx.strokeStyle='rgba(255,0,0,.5)'; ctx.strokeRect(ab.x,ab.y,ab.w,ab.h); }
-  });
-}
-
-// ═══════════════════════════════════════════
-//  COLLISION CHECK
-// ═══════════════════════════════════════════
-function rectsOverlap(a,b){
-  return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
-}
-
-function checkHits(atk,def){
-  if(atk.hitDone) return;
-  const ab=atk.attackbox();
-  if(!ab) return;
-  const hb=def.hurtbox();
-  if(!rectsOverlap(ab,hb)) return;
-
-  const hit=def.takeHit(atk.atkDmg, atk.atkType==='domain'?14:atk.atkType==='heavy'?8:5, atk);
-  if(!hit) return;
-  atk.hitDone=true;
-
-  const cx=def.x, cy=def.y-70;
-  const col=atk.id==='gojo'?'#0dcaf0':'#ff5500';
-  const big=atk.atkType==='domain'||atk.atkType==='heavy';
-  spawnParts(cx,cy,col,big?18:8,big?5:3,big?5:3);
-  spawnDmg(cx,cy-50,`-${atk.atkDmg}`,col);
-  shake(big?10:atk.atkType==='kick'?5:3);
-  triggerFlash();
-  if(atk.atkType==='domain') showDomain(atk.domainName);
-}
-
-// ═══════════════════════════════════════════
-//  ROUND END SCREEN
-// ═══════════════════════════════════════════
-let roundMsg='', roundTimer=0;
-function drawRoundEnd(){
-  if(roundTimer<=0) return;
-  roundTimer--;
-  ctx.save();
-  const a=roundTimer>100?1:roundTimer/100;
-  ctx.globalAlpha=a*.7; ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H); ctx.globalAlpha=a;
-  const pwin=roundMsg.includes('GOJO');
-  ctx.textAlign='center';
-  ctx.font="bold 58px Georgia";
-  ctx.fillStyle=pwin?'#ffd700':'#ff4444';
-  ctx.shadowColor=pwin?'#ffd700':'#ff4400'; ctx.shadowBlur=50;
-  ctx.fillText(roundMsg,W/2,H/2-10);
-  ctx.shadowBlur=0;
-  ctx.font="18px Georgia"; ctx.fillStyle='#888';
-  const tot=game.p1Wins+game.p2Wins;
-  if(tot>=2){
-    ctx.fillText(`${game.p1Wins>game.p2Wins?'GOJO':'JOGO'} WINS THE MATCH!`,W/2,H/2+38);
-    ctx.font="13px monospace"; ctx.fillStyle='#444';
-    ctx.fillText('Press ENTER to play again',W/2,H/2+72);
-  } else {
-    ctx.fillText(`Press ENTER for Round ${game.round+1}`,W/2,H/2+38);
-  }
-  ctx.restore();
-
-  if(roundTimer<=0||keyOnce('Enter')){
-    const tot2=game.p1Wins+game.p2Wins;
-    if(tot2>=2){ game.p1Wins=0; game.p2Wins=0; game.round=1; }
-    else game.round++;
-    resetFighters();
-    game.phase='fight';
-    keys['Enter']=false;
-  }
-}
-
-// ── Countdown ──
-let cdTimer=0, cdText='';
-function startCountdown(){
-  game.phase='countdown';
-  cdTimer=120;
-}
-function drawCountdown(){
-  if(cdTimer<=0){ game.phase='fight'; return; }
-  cdTimer--;
-  const sec=Math.ceil(cdTimer/40);
-  const label=cdTimer<15?'FIGHT!':String(sec);
-  const sc=1+(cdTimer%40<10?(10-(cdTimer%40))*.05:0);
-  ctx.save();
-  ctx.textAlign='center';
-  ctx.translate(W/2,H/2-30); ctx.scale(sc,sc);
-  ctx.font="bold 72px Georgia";
-  ctx.fillStyle=cdTimer<15?'#ffd700':'#fff';
-  ctx.shadowColor=cdTimer<15?'#ffd700':'#aaa'; ctx.shadowBlur=30;
-  ctx.fillText(label,0,0);
-  ctx.restore();
-}
-
-// ═══════════════════════════════════════════
-//  GAME STATE
-// ═══════════════════════════════════════════
-const game={ round:1, p1Wins:0, p2Wins:0, phase:'countdown' };
-
-let p1,p2;
-function createFighters(){
-  p1=new Fighter({
-    id:'gojo', name:'Gojo Satoru',
-    x:220, facing:1, hp:220, ce:100, isPlayer:true,
-    color:'#0dcaf0', domainName:'UNLIMITED VOID'
-  });
-  p2=new Fighter({
-    id:'jogo', name:'Jogo',
-    x:700, facing:-1, hp:180, ce:80, isPlayer:false,
-    color:'#ff5500', domainName:'COFFIN OF THE IRON MOUNTAIN'
-  });
-}
-function resetFighters(){
-  parts.length=0; dmgTexts.length=0;
-  createFighters();
-  startCountdown();
-}
-
-createFighters();
-startCountdown();
-
-// ═══════════════════════════════════════════
-//  MAIN LOOP
-// ═══════════════════════════════════════════
-function loop(){
-  // Update
-  updateParts(); updateDmgTexts();
-  shakeAmt*=.82; if(shakeAmt<.3) shakeAmt=0;
-
-  if(game.phase==='fight'){
-    p1.update(p2); p2.update(p1);
-    if(p1.hitActive && !p1.hitDone) checkHits(p1,p2);
-    if(p2.hitActive && !p2.hitDone) checkHits(p2,p1);
-
-    // Win check
-    if(p1.hp<=0||p2.hp<=0){
-      if(p1.hp<=0) { game.p2Wins++; roundMsg='JOGO WINS'; }
-      else         { game.p1Wins++; roundMsg='GOJO WINS'; }
-      roundTimer=180;
-      game.phase='roundEnd';
-    }
-  }
-
-  // Render
-  const sk=getShake();
-  ctx.save(); ctx.translate(sk.x,sk.y);
-
-  drawBG(p1,p2);
-  drawParts();
-  drawGojo(p1);
-  drawJogo(p2);
-  drawHitboxes(p1,p2);
-
-  if(hitFlash>0){
-    ctx.save(); ctx.globalAlpha=hitFlash*.25;
-    ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
-    ctx.restore(); hitFlash-=.12;
-  }
-
-  drawDomainText();
-  drawDmgTexts();
-  drawHUD(p1,p2);
-
-  if(game.phase==='countdown') drawCountdown();
-  if(game.phase==='roundEnd')  drawRoundEnd();
-
-  ctx.restore();
-  requestAnimationFrame(loop);
-}
-
-loop();
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 </script>
 </body>
 </html>
