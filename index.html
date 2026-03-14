@@ -1,693 +1,360 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>∞ Portfolio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
-  <style>
-    :root {
-      --void: #010108;
-      --deep: #05050f;
-      --horizon: #0a0a20;
-      --pulse: #4f46e5;
-      --glow: #818cf8;
-      --star: #e0e7ff;
-      --mist: rgba(79,70,229,0.12);
-      --rim: rgba(129,140,248,0.25);
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    <title>Aiden Portfolio</title>
 
-    html { scroll-behavior: smooth; }
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Syne:wght@400;700;800&display=swap"
+        rel="stylesheet">
 
-    body {
-      background: var(--void);
-      color: var(--star);
-      font-family: 'Syne', sans-serif;
-      overflow-x: hidden;
-      cursor: none;
-    }
+    <style>
+        :root {
+            --void: #010108;
+            --deep: #05050f;
+            --pulse: #4f46e5;
+            --glow: #818cf8;
+            --star: #e0e7ff;
+            --rim: rgba(129, 140, 248, 0.25);
+        }
 
-    /* ── Custom Cursor ── */
-    #cursor {
-      position: fixed; top: 0; left: 0;
-      width: 10px; height: 10px;
-      background: var(--glow);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%,-50%);
-      transition: transform 0.08s, width 0.3s, height 0.3s, opacity 0.3s;
-      mix-blend-mode: screen;
-    }
-    #cursor-ring {
-      position: fixed; top: 0; left: 0;
-      width: 36px; height: 36px;
-      border: 1px solid rgba(129,140,248,0.5);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9998;
-      transform: translate(-50%,-50%);
-      transition: transform 0.18s ease-out, width 0.3s, height 0.3s, border-color 0.3s;
-    }
-    body:has(a:hover) #cursor { width: 18px; height: 18px; }
-    body:has(a:hover) #cursor-ring { width: 52px; height: 52px; border-color: var(--glow); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    /* ── Stars Canvas ── */
-    #starfield {
-      position: fixed; inset: 0;
-      z-index: 0;
-      pointer-events: none;
-    }
+        body {
+            background: var(--void);
+            color: var(--star);
+            font-family: 'Syne', sans-serif;
+            overflow-x: hidden;
+        }
 
-    /* ── Infinity Ring ── */
-    #infinity-canvas {
-      position: fixed; inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      opacity: 0.45;
-    }
+        /* HERO */
 
-    /* ── Layout ── */
-    .wrapper { position: relative; z-index: 2; }
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
 
-    /* ── Hero ── */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 2rem;
-      position: relative;
-    }
+        .hero-name {
+            font-size: clamp(4rem, 10vw, 8rem);
+            font-weight: 800;
 
-    .hero-eyebrow {
-      font-family: 'Cormorant Garamond', serif;
-      font-style: italic;
-      font-weight: 300;
-      font-size: clamp(0.85rem, 1.5vw, 1.05rem);
-      letter-spacing: 0.35em;
-      color: var(--glow);
-      opacity: 0;
-      animation: fadeUp 1s 0.3s forwards;
-    }
+            background: linear-gradient(135deg, #e0e7ff, var(--glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-    .hero-name {
-      font-size: clamp(3.5rem, 10vw, 9rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 0.92;
-      margin: 0.3em 0 0.25em;
-      background: linear-gradient(135deg, #e0e7ff 0%, var(--glow) 45%, #312e81 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      opacity: 0;
-      animation: fadeUp 1s 0.55s forwards;
-    }
+        .hero-sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            opacity: .6;
+            margin-top: .5rem;
+        }
 
-    .hero-sub {
-      font-family: 'Cormorant Garamond', serif;
-      font-weight: 300;
-      font-size: clamp(1rem, 2.5vw, 1.5rem);
-      color: rgba(224,231,255,0.55);
-      letter-spacing: 0.05em;
-      opacity: 0;
-      animation: fadeUp 1s 0.8s forwards;
-    }
+        /* SECTION */
 
-    .hero-scroll {
-      position: absolute;
-      bottom: 2.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      opacity: 0;
-      animation: fadeUp 1s 1.4s forwards;
-    }
-    .hero-scroll span {
-      font-size: 0.65rem;
-      letter-spacing: 0.3em;
-      color: var(--rim);
-    }
-    .scroll-line {
-      width: 1px;
-      height: 50px;
-      background: linear-gradient(to bottom, var(--glow), transparent);
-      animation: scrollPulse 2s ease-in-out infinite;
-    }
-    @keyframes scrollPulse {
-      0%,100% { opacity: 0.3; transform: scaleY(1); }
-      50% { opacity: 1; transform: scaleY(1.1); }
-    }
+        .section {
+            padding: 6rem 2rem;
+            max-width: 1300px;
+            margin: auto;
+        }
 
-    /* ── Section ── */
-    .section {
-      padding: clamp(4rem, 10vw, 9rem) clamp(1.5rem, 6vw, 5rem);
-      max-width: 1300px;
-      margin: 0 auto;
-    }
+        .section-label {
+            letter-spacing: .4em;
+            font-size: .7rem;
+            color: var(--glow);
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
 
-    .section-label {
-      font-size: 0.7rem;
-      letter-spacing: 0.4em;
-      color: var(--glow);
-      text-transform: uppercase;
-      margin-bottom: 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .section-label::before {
-      content: '';
-      display: block;
-      width: 30px;
-      height: 1px;
-      background: var(--glow);
-    }
+        /* PROJECT GRID */
 
-    /* ── Projects Grid ── */
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
-      gap: 1.5px;
-      margin-top: 3rem;
-    }
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2px;
+        }
 
-    .project-card {
-      position: relative;
-      background: var(--deep);
-      padding: 2.5rem 2rem;
-      overflow: hidden;
-      text-decoration: none;
-      color: inherit;
-      display: block;
-      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
-      group: true;
-    }
+        /* CARD */
 
-    .project-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at var(--mx,50%) var(--my,50%), rgba(79,70,229,0.18) 0%, transparent 65%);
-      opacity: 0;
-      transition: opacity 0.4s;
-    }
-    .project-card:hover::before { opacity: 1; }
+        .project-card {
+            background: var(--deep);
+            padding: 2rem;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            transition: .3s;
+        }
 
-    .project-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border: 1px solid var(--rim);
-      opacity: 0;
-      transition: opacity 0.4s;
-    }
-    .project-card:hover::after { opacity: 1; }
+        .project-card:hover {
+            transform: translateY(-5px);
+        }
 
-    .project-card:hover { transform: translateY(-4px); }
+        .card-number {
+            font-size: .65rem;
+            letter-spacing: .3em;
+            opacity: .4;
+            margin-bottom: 1.5rem;
+        }
 
-    .card-number {
-      font-size: 0.65rem;
-      letter-spacing: 0.3em;
-      color: rgba(129,140,248,0.4);
-      margin-bottom: 2.5rem;
-    }
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: .7rem;
 
-    .card-title {
-      font-size: clamp(1.3rem, 2.5vw, 1.75rem);
-      font-weight: 700;
-      line-height: 1.15;
-      margin-bottom: 0.9rem;
-      background: linear-gradient(135deg, var(--star), var(--glow));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+            background: linear-gradient(135deg, var(--star), var(--glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-    .card-desc {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.05rem;
-      font-weight: 300;
-      line-height: 1.65;
-      color: rgba(224,231,255,0.5);
-      margin-bottom: 2rem;
-    }
+        .card-desc {
+            font-family: 'Cormorant Garamond', serif;
+            opacity: .6;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
 
-    .card-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+        }
 
-    .tag {
-      font-size: 0.65rem;
-      letter-spacing: 0.12em;
-      padding: 0.3em 0.75em;
-      border: 1px solid rgba(129,140,248,0.2);
-      color: rgba(129,140,248,0.7);
-      border-radius: 999px;
-    }
+        .tag {
+            border: 1px solid rgba(129, 140, 248, .3);
+            padding: .25rem .6rem;
+            font-size: .6rem;
+            border-radius: 999px;
+            color: var(--glow);
+        }
 
-    .card-arrow {
-      position: absolute;
-      bottom: 2rem;
-      right: 2rem;
-      width: 36px;
-      height: 36px;
-      border: 1px solid var(--rim);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--glow);
-      font-size: 1rem;
-      transition: transform 0.3s, background 0.3s;
-    }
-    .project-card:hover .card-arrow {
-      transform: translate(3px,-3px);
-      background: var(--pulse);
-      border-color: var(--pulse);
-    }
+        /* FEATURED PROJECT */
 
-    /* ── Divider ── */
-    .divider {
-      height: 1px;
-      background: linear-gradient(to right, transparent, var(--rim), transparent);
-      margin: 0 clamp(1.5rem, 6vw, 5rem);
-    }
+        .featured-project {
+            grid-column: span 2;
 
-    /* ── About ── */
-    .about-inner {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      align-items: start;
-    }
-    @media(max-width:700px){ .about-inner { grid-template-columns: 1fr; gap: 2rem; } }
+            background: radial-gradient(circle at center,
+                    rgba(79, 70, 229, 0.3),
+                    var(--deep));
 
-    .about-heading {
-      font-size: clamp(2.2rem, 5vw, 4rem);
-      font-weight: 800;
-      line-height: 1.05;
-      background: linear-gradient(135deg, var(--star) 0%, var(--glow) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+            border: 1px solid rgba(129, 140, 248, 0.4);
 
-    .about-body {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1rem, 1.8vw, 1.2rem);
-      font-weight: 300;
-      line-height: 1.8;
-      color: rgba(224,231,255,0.6);
-    }
-    .about-body p + p { margin-top: 1.2rem; }
+            box-shadow:
+                0 0 40px rgba(79, 70, 229, 0.5),
+                0 0 100px rgba(79, 70, 229, 0.25);
+        }
 
-    /* ── Footer ── */
-    footer {
-      border-top: 1px solid var(--rim);
-      padding: 2.5rem clamp(1.5rem, 6vw, 5rem);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
+        .featured-project .card-title {
+            font-size: 2.2rem;
+        }
 
-    .footer-mark {
-      font-size: 1.4rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--star), var(--glow));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+        .featured-project .card-desc {
+            font-size: 1.15rem;
+        }
 
-    .footer-links {
-      display: flex;
-      gap: 2rem;
-      list-style: none;
-    }
-    .footer-links a {
-      font-size: 0.75rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(224,231,255,0.4);
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-    .footer-links a:hover { color: var(--glow); }
+        /* FOOTER */
 
-    /* ── Animations ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+        footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            border-top: 1px solid var(--rim);
 
-    .reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
-    }
-    .reveal.visible { opacity: 1; transform: none; }
-    .reveal-delay-1 { transition-delay: 0.1s; }
-    .reveal-delay-2 { transition-delay: 0.2s; }
-    .reveal-delay-3 { transition-delay: 0.3s; }
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
 
-    /* ── Nebula orbs ── */
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(90px);
-      pointer-events: none;
-      z-index: 0;
-      animation: orbDrift 20s ease-in-out infinite alternate;
-    }
-    .orb-1 {
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(67,56,202,0.25), transparent 70%);
-      top: -150px; right: -100px;
-    }
-    .orb-2 {
-      width: 400px; height: 400px;
-      background: radial-gradient(circle, rgba(99,102,241,0.18), transparent 70%);
-      bottom: 10%; left: -80px;
-      animation-delay: -8s;
-    }
-    .orb-3 {
-      width: 300px; height: 300px;
-      background: radial-gradient(circle, rgba(139,92,246,0.12), transparent 70%);
-      top: 50%; left: 50%;
-      animation-delay: -14s;
-    }
-    @keyframes orbDrift {
-      from { transform: translate(0, 0) scale(1); }
-      to   { transform: translate(30px, 40px) scale(1.08); }
-    }
-  </style>
+        .footer-mark {
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            font-size: .75rem;
+            letter-spacing: .2em;
+            color: rgba(224, 231, 255, .4);
+        }
+
+        .footer-links a:hover {
+            color: var(--glow);
+        }
+    </style>
+
 </head>
+
 <body>
 
-<div id="cursor"></div>
-<div id="cursor-ring"></div>
+    <!-- HERO -->
 
-<canvas id="starfield"></canvas>
-<canvas id="infinity-canvas"></canvas>
+    <section class="hero">
 
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-<div class="orb orb-3"></div>
+        <h1 class="hero-name">Aiden</h1>
 
-<div class="wrapper">
+        <p class="hero-sub">
+            Designer · Developer · Creator
+        </p>
 
-  <!-- HERO -->
-  <section class="hero">
-    <p class="hero-eyebrow">∞ &nbsp; beyond limits &nbsp; ∞</p>
-    <h1 class="hero-name">Aiden</h1>
-    <p class="hero-sub">Designer · Developer · Creator</p>
-    <div class="hero-scroll">
-      <span>scroll</span>
-      <div class="scroll-line"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- PROJECTS -->
-  <div class="divider"></div>
-  <section class="section">
-    <p class="section-label reveal">Projects</p>
-    <div class="projects-grid">
+    <!-- PROJECTS -->
 
-      <a href="https://chromewebstore.google.com/detail/last-run/ddhphodlieccpiikndhfmggmdnbnlggh" target="_blank" class="project-card reveal reveal-delay-1">
-        <p class="card-number">001</p>
-        <h2 class="card-title">Last Run</h2>
-        <p class="card-desc">A Chrome extension platformer where you play as a dog. Built for sharing and teaching — a 5-star game living right in your browser.</p>
-        <div class="card-tags">
-          <span class="tag">Chrome Extension</span>
-          <span class="tag">Platformer</span>
-          <span class="tag">Game</span>
+    <section class="section">
+
+        <p class="section-label">Projects</p>
+
+        <div class="projects-grid">
+
+            <!-- FEATURED NEXUS -->
+
+            <a href="https://furrycoder67.github.io/NEXUS-PLATFORM/" target="_blank"
+                class="project-card featured-project">
+
+                <p class="card-number">★ FEATURED</p>
+
+                <h2 class="card-title">NEXUS Platform</h2>
+
+                <p class="card-desc">
+                    A Roblox-style browser platform where players can build, publish,
+                    and play games created by the community.
+                    A hub for experimentation, creativity, and shared worlds.
+                </p>
+
+                <div class="card-tags">
+                    <span class="tag">Game Platform</span>
+                    <span class="tag">Browser Engine</span>
+                    <span class="tag">Community</span>
+                </div>
+
+            </a>
+
+            <!-- PROJECT 1 -->
+
+            <a href="https://chromewebstore.google.com/detail/last-run/ddhphodlieccpiikndhfmggmdnbnlggh" target="_blank"
+                class="project-card">
+
+                <p class="card-number">001</p>
+
+                <h2 class="card-title">Last Run</h2>
+
+                <p class="card-desc">
+                    A Chrome extension platformer where you play as a dog.
+                </p>
+
+                <div class="card-tags">
+                    <span class="tag">Chrome Extension</span>
+                    <span class="tag">Game</span>
+                </div>
+
+            </a>
+
+            <!-- PROJECT 2 -->
+
+            <a href="https://furrycoder67.github.io/infinitycorp" target="_blank" class="project-card">
+
+                <p class="card-number">002</p>
+
+                <h2 class="card-title">Infinity Corp</h2>
+
+                <p class="card-desc">
+                    Corporate empire idle game with prestige upgrades.
+                </p>
+
+                <div class="card-tags">
+                    <span class="tag">Idle Game</span>
+                    <span class="tag">Clicker</span>
+                </div>
+
+            </a>
+
+            <!-- PROJECT 3 -->
+
+            <a href="https://furrycoder67.github.io/JJK-Arena/" target="_blank" class="project-card">
+
+                <p class="card-number">003</p>
+
+                <h2 class="card-title">JJK Arena</h2>
+
+                <p class="card-desc">
+                    Jujutsu Kaisen browser fighting game.
+                </p>
+
+                <div class="card-tags">
+                    <span class="tag">Fighting Game</span>
+                    <span class="tag">Browser</span>
+                </div>
+
+            </a>
+
+            <!-- PROJECT 4 -->
+
+            <a href="https://furrycoder67.github.io/multiplicationgame" target="_blank" class="project-card">
+
+                <p class="card-number">004</p>
+
+                <h2 class="card-title">Multiplication Games</h2>
+
+                <p class="card-desc">
+                    Interactive math game for learning multiplication.
+                </p>
+
+                <div class="card-tags">
+                    <span class="tag">Education</span>
+                    <span class="tag">Math</span>
+                </div>
+
+            </a>
+
         </div>
-        <div class="card-arrow">↗</div>
-      </a>
 
-      <a href="https://furrycoder67.github.io/infinitycorp" target="_blank" class="project-card reveal reveal-delay-2">
-        <p class="card-number">002</p>
-        <h2 class="card-title">Infinity Corp</h2>
-        <p class="card-desc">A corporate empire idle game where you battle cursed spirits, collect upgrades, prestige to transcend your limits, and climb the leaderboard.</p>
-        <div class="card-tags">
-          <span class="tag">Idle Game</span>
-          <span class="tag">Clicker</span>
-          <span class="tag">Prestige</span>
-        </div>
-        <div class="card-arrow">↗</div>
-      </a>
+    </section>
 
-      <a href="https://furrycoder67.github.io/JJK-Arena/" target="_blank" class="project-card reveal reveal-delay-3">
-        <p class="card-number">003</p>
-        <h2 class="card-title">JJK Arena</h2>
-        <p class="card-desc">A Jujutsu Kaisen browser fighter — battle opponents in best-of-3 rounds using punches, kicks, blocks, and the devastating Domain Expansion.</p>
-        <div class="card-tags">
-          <span class="tag">Fighting Game</span>
-          <span class="tag">Browser</span>
-          <span class="tag">JJK</span>
-        </div>
-        <div class="card-arrow">↗</div>
-      </a>
+    <footer>
 
-      <a href="https://furrycoder67.github.io/multiplicationgame" target="_blank" class="project-card reveal reveal-delay-1">
-        <p class="card-number">004</p>
-        <h2 class="card-title">Multiplication Games</h2>
-        <p class="card-desc">A fun, interactive browser game for learning and mastering multiplication — making math feel less like work and more like play.</p>
-        <div class="card-tags">
-          <span class="tag">Education</span>
-          <span class="tag">Math</span>
-          <span class="tag">Browser Game</span>
-        </div>
-        <div class="card-arrow">↗</div>
-      </a>
+        <span class="footer-mark">∞</span>
 
-      <a href="#" class="project-card reveal reveal-delay-2">
-        <p class="card-number">005</p>
-        <h2 class="card-title">Project Epsilon</h2>
-        <p class="card-desc">The fifth iteration. Each one better than the last, looping forever forward.</p>
-        <div class="card-tags">
-          <span class="tag">Three.js</span>
-          <span class="tag">WebGL</span>
-        </div>
-        <div class="card-arrow">↗</div>
-      </a>
+        <ul class="footer-links">
 
-      <a href="#" class="project-card reveal reveal-delay-3">
-        <p class="card-number">006</p>
-        <h2 class="card-title">Project Zeta</h2>
-        <p class="card-desc">Where the journey curves back on itself and begins anew — infinity made manifest.</p>
-        <div class="card-tags">
-          <span class="tag">Figma</span>
-          <span class="tag">Interaction</span>
-        </div>
-        <div class="card-arrow">↗</div>
-      </a>
+            <li>
+                <a href="https://github.com/FurryCoder67">
+                    GitHub
+                </a>
+            </li>
 
-    </div>
-  </section>
+            <li>
+                <a href="#">
+                    Twitter
+                </a>
+            </li>
 
-  <!-- ABOUT -->
-  <div class="divider"></div>
-  <section class="section">
-    <p class="section-label reveal">About</p>
-    <div class="about-inner">
-      <div class="reveal">
-        <h2 class="about-heading">Endlessly<br/>curious.</h2>
-      </div>
-      <div class="about-body reveal reveal-delay-1">
-        <p>I build things that live at the edge of what's possible — software, interfaces, and experiences that push beyond the obvious and reach toward something worth remembering.</p>
-        <p>Every project is a loop: an idea that spirals outward, collects friction, gathers momentum, and returns refined. There is no finish line, only the next horizon.</p>
-        <p>This space is a living record of those loops — each one a small proof that the universe has no walls.</p>
-      </div>
-    </div>
-  </section>
+            <li>
+                <a href="#">
+                    Email
+                </a>
+            </li>
 
-  <!-- FOOTER -->
-  <footer>
-    <span class="footer-mark">∞</span>
-    <ul class="footer-links">
-      <li><a href="#">GitHub</a></li>
-      <li><a href="#">Twitter</a></li>
-      <li><a href="#">Email</a></li>
-    </ul>
-  </footer>
+        </ul>
 
-</div>
+    </footer>
 
-<script>
-/* ── Cursor ── */
-const cursor = document.getElementById('cursor');
-const ring   = document.getElementById('cursor-ring');
-let mx = window.innerWidth/2, my = window.innerHeight/2;
-let rx = mx, ry = my;
-
-document.addEventListener('mousemove', e => {
-  mx = e.clientX; my = e.clientY;
-  cursor.style.left = mx + 'px';
-  cursor.style.top  = my + 'px';
-});
-(function animRing(){
-  rx += (mx - rx) * 0.12;
-  ry += (my - ry) * 0.12;
-  ring.style.left = rx + 'px';
-  ring.style.top  = ry + 'px';
-  requestAnimationFrame(animRing);
-})();
-
-/* ── Card glow follow ── */
-document.querySelectorAll('.project-card').forEach(card => {
-  card.addEventListener('mousemove', e => {
-    const r = card.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width  * 100).toFixed(1);
-    const y = ((e.clientY - r.top)  / r.height * 100).toFixed(1);
-    card.style.setProperty('--mx', x + '%');
-    card.style.setProperty('--my', y + '%');
-  });
-});
-
-/* ── Starfield ── */
-(function(){
-  const c  = document.getElementById('starfield');
-  const ct = c.getContext('2d');
-  let W, H;
-  const STAR_COUNT = 260;
-  const stars = [];
-
-  function resize(){
-    W = c.width  = window.innerWidth;
-    H = c.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  for(let i = 0; i < STAR_COUNT; i++){
-    stars.push({
-      x: Math.random(),
-      y: Math.random(),
-      r: Math.random() * 1.2 + 0.2,
-      a: Math.random(),
-      speed: Math.random() * 0.0004 + 0.0001,
-      phase: Math.random() * Math.PI * 2
-    });
-  }
-
-  function draw(t){
-    ct.clearRect(0, 0, W, H);
-    stars.forEach(s => {
-      const alpha = s.a * (0.5 + 0.5 * Math.sin(t * s.speed * 1000 + s.phase));
-      ct.beginPath();
-      ct.arc(s.x * W, s.y * H, s.r, 0, Math.PI*2);
-      ct.fillStyle = `rgba(200,210,255,${alpha})`;
-      ct.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-  requestAnimationFrame(draw);
-})();
-
-/* ── Infinity Symbol ── */
-(function(){
-  const c  = document.getElementById('infinity-canvas');
-  const ct = c.getContext('2d');
-  let W, H;
-
-  function resize(){
-    W = c.width  = window.innerWidth;
-    H = c.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  let t = 0;
-
-  function lemniscate(theta, a){
-    // Bernoulli lemniscate: parametric form
-    const denom = 1 + Math.sin(theta) * Math.sin(theta);
-    const x = a * Math.cos(theta) / denom;
-    const y = a * Math.sin(theta) * Math.cos(theta) / denom;
-    return { x, y };
-  }
-
-  function draw(){
-    ct.clearRect(0, 0, W, H);
-
-    const cx  = W / 2;
-    const cy  = H / 2;
-    const a   = Math.min(W, H) * 0.28;
-    const pts = 420;
-
-    // Outer glow pass
-    for(let pass = 0; pass < 3; pass++){
-      const width = [12, 5, 1.5][pass];
-      const alpha = [0.06, 0.12, 0.55][pass];
-
-      ct.beginPath();
-      for(let i = 0; i <= pts; i++){
-        const theta = (i / pts) * Math.PI * 2;
-        const p = lemniscate(theta, a);
-        if(i === 0) ct.moveTo(cx + p.x, cy + p.y);
-        else        ct.lineTo(cx + p.x, cy + p.y);
-      }
-      ct.closePath();
-
-      // Travelling gradient
-      const grad = ct.createLinearGradient(cx - a, cy, cx + a, cy);
-      const offset = ((t * 0.0004) % 1);
-      grad.addColorStop((offset + 0)   % 1, `rgba(99,102,241,0)`);
-      grad.addColorStop((offset + 0.2) % 1, `rgba(129,140,248,${alpha})`);
-      grad.addColorStop((offset + 0.5) % 1, `rgba(167,139,250,${alpha * 0.7})`);
-      grad.addColorStop((offset + 0.8) % 1, `rgba(99,102,241,${alpha * 0.4})`);
-      grad.addColorStop((offset + 1.0) % 1, `rgba(99,102,241,0)`);
-
-      ct.strokeStyle = grad;
-      ct.lineWidth   = width;
-      ct.stroke();
-    }
-
-    // Travelling dot
-    const dotTheta = ((t * 0.0008) % 1) * Math.PI * 2;
-    const dp = lemniscate(dotTheta, a);
-    const grd = ct.createRadialGradient(cx+dp.x, cy+dp.y, 0, cx+dp.x, cy+dp.y, 14);
-    grd.addColorStop(0,   'rgba(224,231,255,0.9)');
-    grd.addColorStop(0.3, 'rgba(129,140,248,0.5)');
-    grd.addColorStop(1,   'rgba(99,102,241,0)');
-    ct.beginPath();
-    ct.arc(cx + dp.x, cy + dp.y, 14, 0, Math.PI*2);
-    ct.fillStyle = grd;
-    ct.fill();
-
-    ct.beginPath();
-    ct.arc(cx + dp.x, cy + dp.y, 3, 0, Math.PI*2);
-    ct.fillStyle = 'rgba(255,255,255,0.95)';
-    ct.fill();
-
-    t++;
-    requestAnimationFrame(draw);
-  }
-  draw();
-})();
-
-/* ── Scroll reveal ── */
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if(e.isIntersecting) e.target.classList.add('visible');
-  });
-}, { threshold: 0.12 });
-
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-</script>
 </body>
+
 </html>
