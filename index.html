@@ -1,347 +1,304 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aiden Portfolio</title>
 
-    <title>Aiden Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Syne:wght@400;700;800&display=swap"
-        rel="stylesheet">
+<style>
+:root{
+--void:#010108;
+--deep:#05050f;
+--pulse:#4f46e5;
+--glow:#818cf8;
+--star:#e0e7ff;
+--rim:rgba(129,140,248,0.25);
+}
 
-    <style>
-        :root {
-            --void: #010108;
-            --deep: #05050f;
-            --pulse: #4f46e5;
-            --glow: #818cf8;
-            --star: #e0e7ff;
-            --rim: rgba(129, 140, 248, 0.25);
-        }
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+background:var(--void);
+color:var(--star);
+font-family:'Syne',sans-serif;
+overflow-x:hidden;
+cursor:none;
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+/* Custom Cursor */
+#cursor{
+position:fixed; top:0; left:0;
+width:10px; height:10px;
+background:var(--glow);
+border-radius:50%;
+pointer-events:none;
+z-index:9999;
+transform:translate(-50%,-50%);
+transition: transform .08s, width .3s, height .3s, opacity .3s;
+mix-blend-mode:screen;
+}
+#cursor-ring{
+position:fixed; top:0; left:0;
+width:36px; height:36px;
+border:1px solid rgba(129,140,248,.5);
+border-radius:50%;
+pointer-events:none;
+z-index:9998;
+transform:translate(-50%,-50%);
+transition: transform .18s ease-out,width .3s,height .3s,border-color .3s;
+}
+body:has(a:hover) #cursor{width:18px;height:18px;}
+body:has(a:hover) #cursor-ring{width:52px;height:52px;border-color:var(--glow);}
 
-        body {
-            background: var(--void);
-            color: var(--star);
-            font-family: 'Syne', sans-serif;
-            overflow-x: hidden;
-        }
+/* Starfield & Infinity */
+#starfield, #infinity-canvas{
+position:fixed;
+inset:0;
+pointer-events:none;
+z-index:0;
+}
+#infinity-canvas{opacity:.45;}
 
-        /* HERO */
+/* Hero */
+.hero{
+min-height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+text-align:center;
+position:relative;
+z-index:2;
+}
+.hero-name{
+font-size:clamp(4rem,10vw,8rem);
+font-weight:800;
+background:linear-gradient(135deg,#e0e7ff,var(--glow));
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+.hero-sub{
+font-family:'Cormorant Garamond',serif;
+font-size:1.3rem;
+opacity:.6;
+margin-top:.5rem;
+}
 
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
+/* Section */
+.section{
+padding:6rem 2rem;
+max-width:1300px;
+margin:auto;
+}
+.section-label{
+letter-spacing:.4em;
+font-size:.7rem;
+color:var(--glow);
+text-transform:uppercase;
+margin-bottom:2rem;
+}
 
-        .hero-name {
-            font-size: clamp(4rem, 10vw, 8rem);
-            font-weight: 800;
+/* Projects Grid */
+.projects-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+gap:2px;
+}
 
-            background: linear-gradient(135deg, #e0e7ff, var(--glow));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+/* Cards */
+.project-card{
+background:var(--deep);
+padding:2rem;
+text-decoration:none;
+color:inherit;
+position:relative;
+transition:.3s;
+}
+.project-card:hover{transform:translateY(-5px);}
+.card-number{font-size:.65rem;letter-spacing:.3em;opacity:.4;margin-bottom:1.5rem;}
+.card-title{
+font-size:1.6rem;font-weight:700;margin-bottom:.7rem;
+background:linear-gradient(135deg,var(--star),var(--glow));
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+.card-desc{
+font-family:'Cormorant Garamond',serif;
+opacity:.6;
+margin-bottom:1.5rem;
+line-height:1.6;
+}
+.card-tags{
+display:flex;flex-wrap:wrap;gap:.4rem;
+}
+.tag{
+border:1px solid rgba(129,140,248,.3);
+padding:.25rem .6rem;
+font-size:.6rem;
+border-radius:999px;
+color:var(--glow);
+}
 
-        .hero-sub {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.3rem;
-            opacity: .6;
-            margin-top: .5rem;
-        }
+/* FEATURED PROJECT */
+.featured-project{
+grid-column:span 2;
+background:radial-gradient(circle at center, rgba(79,70,229,0.3), var(--deep));
+border:1px solid rgba(129,140,248,0.4);
+box-shadow:0 0 40px rgba(79,70,229,0.5),0 0 100px rgba(79,70,229,0.25);
+}
+.featured-project .card-title{font-size:2.2rem;}
+.featured-project .card-desc{font-size:1.15rem;}
 
-        /* SECTION */
+/* Footer */
+footer{
+margin-top:4rem;padding:2rem;border-top:1px solid var(--rim);
+display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
+}
+.footer-mark{font-size:1.4rem;font-weight:800;}
+.footer-links{display:flex;gap:2rem;list-style:none;}
+.footer-links a{text-decoration:none;font-size:.75rem;letter-spacing:.2em;color:rgba(224,231,255,.4);}
+.footer-links a:hover{color:var(--glow);}
 
-        .section {
-            padding: 6rem 2rem;
-            max-width: 1300px;
-            margin: auto;
-        }
-
-        .section-label {
-            letter-spacing: .4em;
-            font-size: .7rem;
-            color: var(--glow);
-            text-transform: uppercase;
-            margin-bottom: 2rem;
-        }
-
-        /* PROJECT GRID */
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 2px;
-        }
-
-        /* CARD */
-
-        .project-card {
-            background: var(--deep);
-            padding: 2rem;
-            text-decoration: none;
-            color: inherit;
-            position: relative;
-            transition: .3s;
-        }
-
-        .project-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .card-number {
-            font-size: .65rem;
-            letter-spacing: .3em;
-            opacity: .4;
-            margin-bottom: 1.5rem;
-        }
-
-        .card-title {
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: .7rem;
-
-            background: linear-gradient(135deg, var(--star), var(--glow));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .card-desc {
-            font-family: 'Cormorant Garamond', serif;
-            opacity: .6;
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-        }
-
-        .card-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: .4rem;
-        }
-
-        .tag {
-            border: 1px solid rgba(129, 140, 248, .3);
-            padding: .25rem .6rem;
-            font-size: .6rem;
-            border-radius: 999px;
-            color: var(--glow);
-        }
-
-        /* FEATURED PROJECT */
-
-        .featured-project {
-            grid-column: span 2;
-
-            background: radial-gradient(circle at center,
-                    rgba(79, 70, 229, 0.3),
-                    var(--deep));
-
-            border: 1px solid rgba(129, 140, 248, 0.4);
-
-            box-shadow:
-                0 0 40px rgba(79, 70, 229, 0.5),
-                0 0 100px rgba(79, 70, 229, 0.25);
-        }
-
-        .featured-project .card-title {
-            font-size: 2.2rem;
-        }
-
-        .featured-project .card-desc {
-            font-size: 1.15rem;
-        }
-
-        /* FOOTER */
-
-        footer {
-            margin-top: 4rem;
-            padding: 2rem;
-            border-top: 1px solid var(--rim);
-
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .footer-mark {
-            font-size: 1.4rem;
-            font-weight: 800;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .footer-links a {
-            text-decoration: none;
-            font-size: .75rem;
-            letter-spacing: .2em;
-            color: rgba(224, 231, 255, .4);
-        }
-
-        .footer-links a:hover {
-            color: var(--glow);
-        }
-    </style>
-
+</style>
 </head>
 
 <body>
 
-    <!-- HERO -->
+<!-- Cursor -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
 
-    <section class="hero">
+<!-- Starfield & Infinity -->
+<canvas id="starfield"></canvas>
+<canvas id="infinity-canvas"></canvas>
 
-        <h1 class="hero-name">Aiden</h1>
+<!-- Hero -->
+<section class="hero">
+<h1 class="hero-name">Aiden</h1>
+<p class="hero-sub">Designer · Developer · Creator</p>
+</section>
 
-        <p class="hero-sub">
-            Designer · Developer · Creator
-        </p>
+<!-- Projects -->
+<section class="section">
+<p class="section-label">Projects</p>
+<div class="projects-grid">
 
-    </section>
+<!-- FEATURED NEXUS -->
+<a href="https://furrycoder67.github.io/NEXUS-PLATFORM/" target="_blank" class="project-card featured-project">
+<p class="card-number">★ FEATURED</p>
+<h2 class="card-title">NEXUS Platform</h2>
+<p class="card-desc">
+A Roblox-style browser platform where players can build, publish, and play games created by the community. A hub for experimentation, creativity, and shared worlds.
+</p>
+<div class="card-tags">
+<span class="tag">Game Platform</span>
+<span class="tag">Browser Engine</span>
+<span class="tag">Community</span>
+</div>
+</a>
 
-    <!-- PROJECTS -->
+<!-- Other Projects -->
+<a href="https://chromewebstore.google.com/detail/last-run/ddhphodlieccpiikndhfmggmdnbnlggh" target="_blank" class="project-card">
+<p class="card-number">001</p>
+<h2 class="card-title">Last Run</h2>
+<p class="card-desc">A Chrome extension platformer where you play as a dog.</p>
+<div class="card-tags"><span class="tag">Chrome Extension</span><span class="tag">Game</span></div>
+</a>
 
-    <section class="section">
+<a href="https://furrycoder67.github.io/infinitycorp" target="_blank" class="project-card">
+<p class="card-number">002</p>
+<h2 class="card-title">Infinity Corp</h2>
+<p class="card-desc">Corporate empire idle game with prestige upgrades.</p>
+<div class="card-tags"><span class="tag">Idle Game</span><span class="tag">Clicker</span></div>
+</a>
 
-        <p class="section-label">Projects</p>
+<a href="https://furrycoder67.github.io/JJK-Arena/" target="_blank" class="project-card">
+<p class="card-number">003</p>
+<h2 class="card-title">JJK Arena</h2>
+<p class="card-desc">Jujutsu Kaisen browser fighting game.</p>
+<div class="card-tags"><span class="tag">Fighting Game</span><span class="tag">Browser</span></div>
+</a>
 
-        <div class="projects-grid">
+<a href="https://furrycoder67.github.io/multiplicationgame" target="_blank" class="project-card">
+<p class="card-number">004</p>
+<h2 class="card-title">Multiplication Games</h2>
+<p class="card-desc">Interactive math game for learning multiplication.</p>
+<div class="card-tags"><span class="tag">Education</span><span class="tag">Math</span></div>
+</a>
 
-            <!-- FEATURED NEXUS -->
+</div>
+</section>
 
-            <a href="https://furrycoder67.github.io/NEXUS-PLATFORM/" target="_blank"
-                class="project-card featured-project">
+<footer>
+<span class="footer-mark">∞</span>
+<ul class="footer-links">
+<li><a href="https://github.com/FurryCoder67">GitHub</a></li>
+<li><a href="#">Twitter</a></li>
+<li><a href="#">Email</a></li>
+</ul>
+</footer>
 
-                <p class="card-number">★ FEATURED</p>
+<!-- JS for Starfield, Infinity Symbol, Cursor -->
+<script>
+/* Cursor */
+const cursor=document.getElementById('cursor');
+const ring=document.getElementById('cursor-ring');
+let mx=window.innerWidth/2,my=window.innerHeight/2;
+let rx=mx,ry=my;
+document.addEventListener('mousemove',e=>{
+mx=e.clientX; my=e.clientY;
+cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+});
+(function animRing(){
+rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
+ring.style.left=rx+'px'; ring.style.top=ry+'px';
+requestAnimationFrame(animRing);
+})();
 
-                <h2 class="card-title">NEXUS Platform</h2>
+/* Starfield */
+(function(){
+const c=document.getElementById('starfield'); const ct=c.getContext('2d');
+let W,H; const STAR_COUNT=260; const stars=[];
+function resize(){W=c.width=window.innerWidth; H=c.height=window.innerHeight;}
+resize(); window.addEventListener('resize',resize);
+for(let i=0;i<STAR_COUNT;i++){stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.2+0.2,a:Math.random(),speed:Math.random()*0.0004+0.0001,phase:Math.random()*Math.PI*2});}
+function draw(t){ct.clearRect(0,0,W,H); stars.forEach(s=>{const alpha=s.a*(0.5+0.5*Math.sin(t*s.speed*1000+s.phase)); ct.beginPath(); ct.arc(s.x*W,s.y*H,s.r,0,Math.PI*2); ct.fillStyle=`rgba(200,210,255,${alpha})`; ct.fill();}); requestAnimationFrame(draw);}
+requestAnimationFrame(draw);
+})();
 
-                <p class="card-desc">
-                    A browser platform where players can build, publish,
-                    and play games created by the community.
-                    A hub for experimentation, creativity, and shared worlds.
-                </p>
-
-                <div class="card-tags">
-                    <span class="tag">Game Platform</span>
-                    <span class="tag">Browser Engine</span>
-                    <span class="tag">Community</span>
-                </div>
-
-            </a>
-
-            <!-- PROJECT 1 -->
-
-            <a href="https://chromewebstore.google.com/detail/last-run/ddhphodlieccpiikndhfmggmdnbnlggh" target="_blank"
-                class="project-card">
-
-                <p class="card-number">001</p>
-
-                <h2 class="card-title">Last Run</h2>
-
-                <p class="card-desc">
-                    A Chrome extension platformer where you play as a dog.
-                </p>
-
-                <div class="card-tags">
-                    <span class="tag">Chrome Extension</span>
-                    <span class="tag">Game</span>
-                </div>
-
-            </a>
-
-            <!-- PROJECT 2 -->
-
-            <a href="https://furrycoder67.github.io/infinitycorp" target="_blank" class="project-card">
-
-                <p class="card-number">002</p>
-
-                <h2 class="card-title">Infinity Corp</h2>
-
-                <p class="card-desc">
-                    Corporate empire idle game with prestige upgrades.
-                </p>
-
-                <div class="card-tags">
-                    <span class="tag">Idle Game</span>
-                    <span class="tag">Clicker</span>
-                </div>
-
-            </a>
-
-            <!-- PROJECT 3 -->
-
-            <a href="https://furrycoder67.github.io/JJK-Arena/" target="_blank" class="project-card">
-
-                <p class="card-number">003</p>
-
-                <h2 class="card-title">JJK Arena</h2>
-
-                <p class="card-desc">
-                    Jujutsu Kaisen browser fighting game.
-                </p>
-
-                <div class="card-tags">
-                    <span class="tag">Fighting Game</span>
-                    <span class="tag">Browser</span>
-                </div>
-
-            </a>
-
-            <!-- PROJECT 4 -->
-
-            <a href="https://furrycoder67.github.io/multiplicationgame" target="_blank" class="project-card">
-
-                <p class="card-number">004</p>
-
-                <h2 class="card-title">Multiplication Games</h2>
-
-                <p class="card-desc">
-                    Interactive math game for learning multiplication.
-                </p>
-
-                <div class="card-tags">
-                    <span class="tag">Education</span>
-                    <span class="tag">Math</span>
-                </div>
-
-            </a>
-
-        </div>
-
-    </section>
-
-    <footer>
-
-        <span class="footer-mark">∞</span>
-
-        <ul class="footer-links">
-
-            <li>
-                <a href="https://github.com/FurryCoder67">
-                    GitHub
-                </a>
-            </li>
-        </ul>
-
-    </footer>
+/* Infinity symbol */
+(function(){
+const c=document.getElementById('infinity-canvas'); const ct=c.getContext('2d');
+let W,H;
+function resize(){W=c.width=window.innerWidth; H=c.height=window.innerHeight;}
+resize(); window.addEventListener('resize',resize);
+let t=0;
+function lemniscate(theta,a){const denom=1+Math.sin(theta)**2; return{x:a*Math.cos(theta)/denom, y:a*Math.sin(theta)*Math.cos(theta)/denom};}
+function draw(){
+ct.clearRect(0,0,W,H); const cx=W/2,cy=H/2,a=Math.min(W,H)*0.28,pts=420;
+for(let pass=0;pass<3;pass++){
+const width=[12,5,1.5][pass],alpha=[0.06,0.12,0.55][pass]; ct.beginPath();
+for(let i=0;i<=pts;i++){const theta=(i/pts)*Math.PI*2; const p=lemniscate(theta,a); if(i===0) ct.moveTo(cx+p.x,cy+p.y); else ct.lineTo(cx+p.x,cy+p.y);}
+ct.closePath(); const grad=ct.createLinearGradient(cx-a,cy,cx+a,cy); const offset=((t*0.0004)%1);
+grad.addColorStop((offset+0)%1,`rgba(99,102,241,0)`); grad.addColorStop((offset+0.2)%1,`rgba(129,140,248,${alpha})`);
+grad.addColorStop((offset+0.5)%1,`rgba(167,139,250,${alpha*0.7})`);
+grad.addColorStop((offset+0.8)%1,`rgba(99,102,241,${alpha*0.4})`);
+grad.addColorStop((offset+1.0)%1,`rgba(99,102,241,0)`);
+ct.strokeStyle=grad; ct.lineWidth=width; ct.stroke();}
+const dotTheta=((t*0.0008)%1)*Math.PI*2; const dp=lemniscate(dotTheta,a);
+const grd=ct.createRadialGradient(cx+dp.x,cy+dp.y,0,cx+dp.x,cy+dp.y,14);
+grd.addColorStop(0,'rgba(224,231,255,0.9)');
+grd.addColorStop(0.3,'rgba(129,140,248,0.5)');
+grd.addColorStop(1,'rgba(99,102,241,0)');
+ct.beginPath(); ct.arc(cx+dp.x,cy+dp.y,14,0,Math.PI*2); ct.fillStyle=grd; ct.fill();
+ct.beginPath(); ct.arc(cx+dp.x,cy+dp.y,3,0,Math.PI*2); ct.fillStyle='rgba(255,255,255,0.95)'; ct.fill();
+t++; requestAnimationFrame(draw);
+}
+draw();
+})();
+</script>
 
 </body>
-
 </html>
