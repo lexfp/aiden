@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cursed Realm - Anime Combat RPG</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{overflow:hidden;background:#000;font-family:'Segoe UI',sans-serif;cursor:crosshair;user-select:none;}
+canvas{display:block;}
+
+/* ─── UI OVERLAY ─── */
+#ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;}
+
+/* Health & Energy bars */
+#bars{position:absolute;bottom:40px;left:40px;}
+.bar-container{width:280px;height:18px;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.2);border-radius:9px;margin-bottom:8px;overflow:hidden;position:relative;}
+.bar-fill{height:100%;border-radius:9px;transition:width 0.3s;}
+.bar-label{position:absolute;top:0;left:10px;line-height:18px;font-size:11px;font-weight:700;color:#fff;text-shadow:0 0 4px rgba(0,0,0,0.8);letter-spacing:1px;}
+#health-fill{background:linear-gradient(90deg,#ff2244,#ff4466);box-shadow:inset 0 0 10px rgba(255,255,255,0.2);}
+#energy-fill{background:linear-gradient(90deg,#4400ff,#8844ff,#cc66ff);box-shadow:inset 0 0 10px rgba(255,255,255,0.2);}
+
+/* Cooldowns */
+#cooldowns{position:absolute;bottom:40px;right:40px;display:flex;gap:10px;}
+.cd-slot{width:56px;height:56px;background:rgba(0,0,0,0.7);border:2px solid rgba(255,255,255,0.25);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.cd-slot .key{font-size:14px;font-weight:800;color:#fff;z-index:2;}
+.cd-slot .label{font-size:9px;color:rgba(255,255,255,0.6);z-index:2;}
+.cd-overlay{position:absolute;bottom:0;left:0;width:100%;background:rgba(100,50,255,0.5);transition:height 0.1s;}
+.cd-slot.ready{border-color:#8844ff;box-shadow:0 0 12px rgba(136,68,255,0.5);}
+
+/* Combo counter */
+#combo{position:absolute;top:50%;right:60px;transform:translateY(-50%);font-size:48px;font-weight:900;color:#ff4466;text-shadow:0 0 20px rgba(255,68,102,0.6);opacity:0;transition:opacity 0.3s;}
+#combo.show{opacity:1;}
+
+/* Crosshair */
+#crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:24px;height:24px;pointer-events:none;}
+#crosshair::before,#crosshair::after{content:'';position:absolute;background:rgba(255,255,255,0.5);}
+#crosshair::before{width:2px;height:24px;left:11px;top:0;}
+#crosshair::after{width:24px;height:2px;top:11px;left:0;}
+
+/* Enemy HP */
+.enemy-hp{position:absolute;pointer-events:none;}
+.enemy-hp-bar{width:60px;height:5px;background:rgba(0,0,0,0.6);border-radius:3px;overflow:hidden;}
+.enemy-hp-fill{height:100%;background:linear-gradient(90deg,#ff2244,#ff6644);border-radius:3px;transition:width 0.2s;}
+
+/* Kill feed */
+#killfeed{position:absolute;top:40px;right:40px;display:flex;flex-direction:column;gap:6px;}
+.kill-msg{font-size:13px;color:#ff8866;text-shadow:0 0 8px rgba(255,136,102,0.5);opacity:0;animation:killIn 0.3s forwards,killOut 0.5s 2.5s forwards;}
+@keyframes killIn{to{opacity:1;}}
+@keyframes killOut{to{opacity:0;}}
+
+/* Damage numbers */
+.dmg-number{position:absolute;pointer-events:none;font-size:22px;font-weight:900;color:#ffdd44;text-shadow:0 0 10px rgba(255,221,68,0.6);animation:dmgFloat 1s forwards;}
+@keyframes dmgFloat{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-60px) scale(0.6);}}
+
+/* Title screen */
+#title-screen{position:fixed;inset:0;z-index:100;background:radial-gradient(ellipse at center,#0a0015 0%,#000 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.8s;}
+#title-screen h1{font-size:72px;font-weight:900;background:linear-gradient(135deg,#ff2244,#8844ff,#4400ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none;margin-bottom:8px;}
+#title-screen p{color:rgba(255,255,255,0.5);font-size:14px;margin-bottom:40px;letter-spacing:3px;}
+#start-btn{pointer-events:all;background:none;border:2px solid #8844ff;color:#cc88ff;padding:14px 48px;font-size:16px;font-weight:700;letter-spacing:4px;cursor:pointer;transition:0.3s;text-transform:uppercase;}
+#start-btn:hover{background:rgba(136,68,255,0.2);box-shadow:0 0 30px rgba(136,68,255,0.4);color:#fff;}
+#controls-hint{color:rgba(255,255,255,0.3);font-size:11px;margin-top:30px;text-align:center;line-height:1.8;letter-spacing:1px;}
+</style>
+</head>
+<body>
+
+<!-- Title Screen -->
+<div id="title-screen">
+  <h1>CURSED REALM</h1>
+  <p>Anime Combat RPG</p>
+  <button id="start-btn" onclick="startGame()">ENTER THE REALM</button>
+  <div id="controls-hint">
+    WASD - Move &nbsp;|&nbsp; Mouse - Look &nbsp;|&nbsp; Space - Jump &nbsp;|&nbsp; Shift - Dash<br>
+    Left Click - Light Attack &nbsp;|&nbsp; Right Click - Heavy Attack &nbsp;|&nbsp; Q - Cursed Technique<br>
+    Dash + Click - Dash Attack
+  </div>
+</div>
+
+<!-- Game UI -->
+<div id="ui">
+  <div id="crosshair"></div>
+  <div id="bars">
+    <div class="bar-container">
+      <div class="bar-fill" id="health-fill" style="width:100%"></div>
+      <span class="bar-label">HP</span>
+    </div>
+    <div class="bar-container">
+      <div class="bar-fill" id="energy-fill" style="width:100%"></div>
+      <span class="bar-label">CURSED ENERGY</span>
+    </div>
+  </div>
+  <div id="cooldowns">
+    <div class="cd-slot ready" id="cd-lmb">
+      <span class="key">LMB</span><span class="label">Light</span>
+      <div class="cd-overlay" style="height:0%"></div>
+    </div>
+    <div class="cd-slot ready" id="cd-rmb">
+      <span class="key">RMB</span><span class="label">Heavy</span>
+      <div class="cd-overlay" style="height:0%"></div>
+    </div>
+    <div class="cd-slot ready" id="cd-q">
+      <span class="key">Q</span><span class="label">Cursed</span>
+      <div class="cd-overlay" style="height:0%"></div>
+    </div>
+    <div class="cd-slot ready" id="cd-shift">
+      <span class="key">⇧</span><span class="label">Dash</span>
+      <div class="cd-overlay" style="height:0%"></div>
+    </div>
+  </div>
+  <div id="combo"></div>
+  <div id="killfeed"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// SECTION 1: ENGINE CORE
+// ═══════════════════════════════════════════════════════════════
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.9;
+renderer.outputEncoding = THREE.sRGBEncoding;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050510);
+scene.fog = new THREE.FogExp2(0x050510, 0.018);
+
+const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 500);
+camera.position.set(0, 5, 10);
+
+const clock = new THREE.Clock();
+let deltaTime = 0;
+let elapsedTime = 0;
+let gameStarted = false;
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION 2: SCENE SETUP
+// ═══════════════════════════════════════════════════════════════
+
+// Ambient light
+const ambientLight = new THREE.AmbientLight(0x222244, 0.5);
+scene.add(ambientLight);
+
+// Main directional light (moonlight)
+const dirLight = new THREE.DirectionalLight(0x6666ff, 0.8);
+dirLight.position.set(-30, 50, -20);
+dirLight.castShadow = true;
+dirLight.shadow.mapSize.set(2048, 2048);
+dirLight.shadow.camera.left = -50;
+dirLight.shadow.camera.right = 50;
+dirLight.shadow.camera.top = 50;
+dirLight.shadow.camera.bottom = -50;
+dirLight.shadow.camera.near = 0.5;
+dirLight.shadow.camera.far = 150;
+dirLight.shadow.bias = -0.001;
+scene.add(dirLight);
+
+// Accent lights
+const purpleLight = new THREE.PointLight(0x8844ff, 2, 60);
+purpleLight.position.set(15, 10, 15);
+scene.add(purpleLight);
+
+const redLight = new THREE.PointLight(0xff2244, 1.5, 50);
+redLight.position.set(-20, 8, -15);
+scene.add(redLight);
+
+const blueLight = new THREE.PointLight(0x4400ff, 2, 60);
+blueLight.position.set(0, 15, -25);
+scene.add(blueLight);
+
+// Ground
+const groundGeo = new THREE.PlaneGeometry(200, 200, 80, 80);
+const groundMat = new THREE.MeshStandardMaterial({
+    color: 0x0a0a15,
+    roughness: 0.85,
+    metalness: 0.15
+});
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Ground grid overlay
+const gridHelper = new THREE.GridHelper(200, 100, 0x1a1a3a, 0x0d0d25);
+gridHelper.position.y = 0.01;
+scene.add(gridHelper);
+
+// Arena pillars
+function createPillar(x, z, height, radius) {
+    const geo = new THREE.CylinderGeometry(radius * 0.8, radius, height, 8);
+    const mat = new THREE.MeshStandardMaterial({ color: 0x1a1028, roughness: 0.6, metalness: 0.3 });
+    const pillar = new THREE.Mesh(geo, mat);
+    pillar.position.set(x, height / 2, z);
+    pillar.castShadow = true;
+    pillar.receiveShadow = true;
+    scene.add(pillar);
+
+    // Glowing ring on top
+    const ringGeo = new THREE.TorusGeometry(radius * 1.2, 0.15, 8, 24);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x8844ff });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.set(x, height, z);
+    ring.rotation.x = Math.PI / 2;
+    scene.add(ring);
+
+    // Point light on pillar
+    const pLight = new THREE.PointLight(0x8844ff, 0.6, 15);
+    pLight.position.set(x, height + 1, z);
+    scene.add(pLight);
+}
+
+const pillarPositions = [
+    [-25, -25], [25, -25], [-25, 25], [25, 25],
+    [0, -35], [0, 35], [-35, 0], [35, 0],
+    [-15, 0], [15, 0], [0, -15], [0, 15]
+];
+pillarPositions.forEach(([x, z]) => {
+    const h = 4 + Math.random() * 6;
+    createPillar(x, z, h, 0.6 + Math.random() * 0.4);
+});
+
+// Floating rocks
+const floatingRocksList = [];
+for (let i = 0; i < 20; i++) {
+    const size = 0.5 + Math.random() * 2;
+    const geo = new THREE.DodecahedronGeometry(size, 0);
+    const mat = new THREE.MeshStandardMaterial({ color: 0x151525, roughness: 0.7, metalness: 0.2 });
+    const rock = new THREE.Mesh(geo, mat);
+    rock.position.set(
+        (Math.random() - 0.5) * 80,
+        5 + Math.random() * 20,
+        (Math.random() - 0.5) * 80
+    );
+    rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    rock.castShadow = true;
+    rock.userData.floatSpeed = 0.3 + Math.random() * 0.5;
+    rock.userData.floatOffset = Math.random() * Math.PI * 2;
+    rock.userData.baseY = rock.position.y;
+    scene.add(rock);
+    floatingRocksList.push(rock);
+}
+
+// Ambient particles (dust motes)
+const dustCount = 500;
+const dustGeo = new THREE.BufferGeometry();
+const dustPositions = new Float32Array(dustCount * 3);
+for (let i = 0; i < dustCount; i++) {
+    dustPositions[i * 3] = (Math.random() - 0.5) * 100;
+    dustPositions[i * 3 + 1] = Math.random() * 30;
+    dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+}
+dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+const dustMat = new THREE.PointsMaterial({ color: 0x6644aa, size: 0.15, transparent: true, opacity: 0.4 });
+const dustParticles = new THREE.Points(dustGeo, dustMat);
+scene.add(dustParticles);
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION 3: PLAYER SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+const player = {
+    mesh: null,
+    group: new THREE.Group(),
+    health: 100,
+    maxHealth: 100,
+    energy: 100,
+    maxEnergy: 100,
+    energyRegen: 8,
+    speed: 12,
+    dashSpeed: 40,
+    jumpForce: 14,
+    velocity: new THREE.Vector3(),
+    grounded: true,
+    isDashing: false,
+    dashTimer: 0,
+    dashDuration: 0.2,
+    dashCooldown: 0,
+    dashCooldownMax: 1.0,
+    dashDirection: new THREE.Vector3(),
+    isAttacking: false,
+    attackTimer: 0,
+    comboCount: 0,
+    comboTimer: 0,
+    comboWindow: 0.8,
+    lightAttackCD: 0,
+    heavyAttackCD: 0,
+    invincible: false,
+    invincibleTimer: 0,
+    hitFlashTimer: 0
+};
+
+// Build player character model
+function createPlayerModel() {
+    const group = player.group;
+
+    // Body (torso)
+    const bodyGeo = new THREE.BoxGeometry(0.9, 1.2, 0.5);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x111122, roughness: 0.5, metalness: 0.3 });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 1.8;
+    body.castShadow = true;
+    group.add(body);
+
+    // Head
+    const headGeo = new THREE.SphereGeometry(0.32, 12, 10);
+    const headMat = new THREE.MeshStandardMaterial({ color: 0xeebb99, roughness: 0.6 });
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.y = 2.7;
+    head.castShadow = true;
+    group.add(head);
+
+    // Hair (spiky anime style)
+    const hairMat = new THREE.MeshStandardMaterial({ color: 0x111133, roughness: 0.7 });
+    for (let i = 0; i < 7; i++) {
+        const spikeGeo = new THREE.ConeGeometry(0.12, 0.4 + Math.random() * 0.3, 4);
+        const spike = new THREE.Mesh(spikeGeo, hairMat);
+        const angle = (i / 7) * Math.PI * 2;
+        spike.position.set(Math.cos(angle) * 0.2, 2.95 + Math.random() * 0.1, Math.sin(angle) * 0.2);
+        spike.rotation.x = Math.sin(angle) * 0.4;
+        spike.rotation.z = -Math.cos(angle) * 0.4;
+        group.add(spike);
+    }
+
+    // Eyes (glowing)
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x8844ff });
+    const eyeGeo = new THREE.SphereGeometry(0.06, 6, 6);
+    const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+    leftEye.position.set(-0.1, 2.72, 0.28);
+    group.add(leftEye);
+    const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+    rightEye.position.set(0.1, 2.72, 0.28);
+    group.add(rightEye);
+
+    // Arms
+    const armGeo = new THREE.BoxGeometry(0.25, 0.9, 0.25);
+    const armMat = new THREE.MeshStandardMaterial({ color: 0x111122, roughness: 0.5 });
+    const leftArm = new THREE.Mesh(armGeo, armMat);
+    leftArm.position.set(-0.65, 1.75, 0);
+    leftArm.castShadow = true;
+    leftArm.name = 'leftArm';
+    group.add(leftArm);
+    const rightArm = new THREE.Mesh(armGeo, armMat);
+    rightArm.position.set(0.65, 1.75, 0);
+    rightArm.castShadow = true;
+    rightArm.name = 'rightArm';
+    group.add(rightArm);
+
+    // Hands (skin)
+    const handGeo = new THREE.SphereGeometry(0.12, 6, 6);
+    const handMat = new THREE.MeshStandardMaterial({ color: 0xeebb99, roughness: 0.6 });
+    const leftHand = new THREE.Mesh(handGeo, handMat);
+    leftHand.position.set(-0.65, 1.2, 0);
+    leftHand.name = 'leftHand';
+    group.add(leftHand);
+    const rightHand = new THREE.Mesh(handGeo, handMat);
+    rightHand.position.set(0.65, 1.2, 0);
+    rightHand.name = 'rightHand';
+    group.add(rightHand);
+
+    // Legs
+    const legGeo = new THREE.BoxGeometry(0.3, 0.9, 0.3);
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x0a0a1a, roughness: 0.6 });
+    const leftLeg = new THREE.Mesh(legGeo, legMat);
+    leftLeg.position.set(-0.22, 0.65, 0);
+    leftLeg.castShadow = true;
+    leftLeg.name = 'leftLeg';
+    group.add(leftLeg);
+    const rightLeg = new THREE.Mesh(legGeo, legMat);
+    rightLeg.position.set(0.22, 0.65, 0);
+    rightLeg.castShadow = true;
+    rightLeg.name = 'rightLeg';
+    group.add(rightLeg);
+
+    // Belt / sash
+    const beltGeo = new THREE.BoxGeometry(1.0, 0.12, 0.55);
+    const beltMat = new THREE.MeshStandardMaterial({ color: 0x4422aa, roughness: 0.4, metalness: 0.5 });
+    const belt = new THREE.Mesh(beltGeo, beltMat);
+    belt.position.y = 1.2;
+    group.add(belt);
+
+    // Energy aura (initially invisible)
+    const auraGeo = new THREE.SphereGeometry(1.5, 16, 16);
+    const auraMat = new THREE.MeshBasicMaterial({
+        color: 0x8844ff,
+        transparent: true,
+        opacity: 0,
+        side: THREE.BackSide
+    });
+    const aura = new THREE.Mesh(auraGeo, auraMat);
+    aura.position.y = 1.8;
+    aura.name = 'aura';
+    group.add(aura);
+
+    group.position.set(0, 0, 0);
+    scene.add(group);
+    player.mesh = group;
+}
+
+createPlayerModel();
+
+// Input state
+const keys = {};
+let mouseX = 0, mouseY = 0;
+let cameraYaw = 0, cameraPitch = 0.3;
+const cameraDistance = 8;
+const cameraSmooth = { pos: new THREE.Vector3(0, 5, 10), target: new THREE.Vector3() };
+let pointerLocked = false;
+
+document.addEventListener('keydown', e => { keys[e.code] = true; });
+document.addEventListener('keyup', e => { keys[e.code] = false; });
+document.addEventListener('mousemove', e => {
+    if (!pointerLocked) return;
+    cameraYaw -= e.movementX * 0.003;
+    cameraPitch -= e.movementY * 0.003;
+    cameraPitch = Math.max(-0.5, Math.min(1.2, cameraPitch));
+});
+document.addEventListener('mousedown', e => {
+    if (!gameStarted) return;
+    if (!pointerLocked) {
+        renderer.domElement.requestPointerLock();
+        return;
+    }
+    if (e.button === 0) performLightAttack();
+    if (e.button === 2) performHeavyAttack();
+});
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('pointerlockchange', () => {
+    pointerLocked = document.pointerLockElement === renderer.domElement;
+});
+
+function updatePlayer(dt) {
+    // Energy regeneration
+    player.energy = Math.min(player.maxEnergy, player.energy + player.energyRegen * dt);
+
+    // Cooldown timers
+    if (player.lightAttackCD > 0) player.lightAttackCD -= dt;
+    if (player.heavyAttackCD > 0) player.heavyAttackCD -= dt;
+    if (player.dashCooldown > 0) player.dashCooldown -= dt;
+    if (player.attackTimer > 0) player.attackTimer -= dt;
+    if (player.attackTimer <= 0) player.isAttacking = false;
+    if (player.invincibleTimer > 0) { player.invincibleTimer -= dt; if (player.invincibleTimer <= 0) player.invincible = false; }
+    if (player.hitFlashTimer > 0) player.hitFlashTimer -= dt;
+
+    // Combo timeout
+    if (player.comboTimer > 0) {
+        player.comboTimer -= dt;
+        if (player.comboTimer <= 0) {
+            player.comboCount = 0;
+            updateComboUI();
+        }
+    }
+
+    // Dash logic
+    if (player.isDashing) {
+        player.dashTimer -= dt;
+        if (player.dashTimer <= 0) {
+            player.isDashing = false;
+        } else {
+            player.group.position.addScaledVector(player.dashDirection, player.dashSpeed * dt);
+            return; // Skip normal movement during dash
+        }
+    }
+
+    // Movement
+    const moveDir = new THREE.Vector3();
+    const forward = new THREE.Vector3(-Math.sin(cameraYaw), 0, -Math.cos(cameraYaw));
+    const right = new THREE.Vector3(forward.z, 0, -forward.x);
+
+    if (keys['KeyW']) moveDir.add(forward);
+    if (keys['KeyS']) moveDir.sub(forward);
+    if (keys['KeyA']) moveDir.sub(right);
+    if (keys['KeyD']) moveDir.add(right);
+
+    if (moveDir.lengthSq() > 0) {
+        moveDir.normalize();
+        const speed = player.isAttacking ? player.speed * 0.3 : player.speed;
+        player.group.position.addScaledVector(moveDir, speed * dt);
+
+        // Rotate player to face movement direction
+        const targetAngle = Math.atan2(moveDir.x, moveDir.z);
+        let currentAngle = player.group.rotation.y;
+        let diff = targetAngle - currentAngle;
+        while (diff > Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        player.group.rotation.y += diff * 10 * dt;
+    }
+
+    // Jump
+    if (keys['Space'] && player.grounded) {
+        player.velocity.y = player.jumpForce;
+        player.grounded = false;
+    }
+
+    // Dash
+    if (keys['ShiftLeft'] && player.dashCooldown <= 0 && !player.isDashing) {
+        player.isDashing = true;
+        player.dashTimer = player.dashDuration;
+        player.dashCooldown = player.dashCooldownMax;
+        player.invincible = true;
+        player.invincibleTimer = player.dashDuration;
+
+        if (moveDir.lengthSq() > 0) {
+            player.dashDirection.copy(moveDir);
+        } else {
+            player.dashDirection.set(-Math.sin(player.group.rotation.y), 0, -Math.cos(player.group.rotation.y));
+        }
+        player.dashDirection.normalize();
+
+        // Dash effect
+        spawnDashTrail(player.group.position.clone());
+    }
+
+    // Gravity
+    if (!player.grounded) {
+        player.velocity.y -= 35 * dt;
+    }
+    player.group.position.y += player.velocity.y * dt;
+
+    // Ground collision
+    if (player.group.position.y <= 0) {
+        player.group.position.y = 0;
+        player.velocity.y = 0;
+        player.grounded = true;
+    }
+
+    // Boundary
+    const boundary = 90;
+    player.group.position.x = Math.max(-boundary, Math.min(boundary, player.group.position.x));
+    player.group.position.z = Math.max(-boundary, Math.min(boundary, player.group.position.z));
+
+    // Animate player model
+    animatePlayerModel(dt);
+
+    // Hit flash
+    if (player.hitFlashTimer > 0) {
+        player.group.traverse(child => {
+            if (child.isMesh && child.material && child.material.emissive) {
+                child.material.emissive.setHex(0xff2244);
+                child.material.emissiveIntensity = player.hitFlashTimer * 5;
+            }
+        });
+    } else {
+        player.group.traverse(child => {
+            if (child.isMesh && child.material && child.material.emissive) {
+                child.material.emissiveIntensity = 0;
+            }
+        });
+    }
+
+    // Aura pulse
+    const aura = player.group.getObjectByName('aura');
+    if (aura) {
+        const energyRatio = player.energy / player.maxEnergy;
+        aura.material.opacity = energyRatio * 0.08 + Math.sin(elapsedTime * 3) * 0.03;
+        aura.scale.setScalar(1 + Math.sin(elapsedTime * 2) * 0.1);
+    }
+}
+
+function animatePlayerModel(dt) {
+    const leftArm = player.group.getObjectByName('leftArm');
+    const rightArm = player.group.getObjectByName('rightArm');
+    const leftLeg = player.group.getObjectByName('leftLeg');
+    const rightLeg = player.group.getObjectByName('rightLeg');
+    const leftHand = player.group.getObjectByName('leftHand');
+    const rightHand = player.group.getObjectByName('rightHand');
+
+    const isMoving = keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'];
+
+    if (player.isAttacking) {
+        // Attack animation
+        const t = 1 - (player.attackTimer / 0.3);
+        const swing = Math.sin(t * Math.PI) * 1.2;
+        if (player.comboCount % 2 === 1) {
+            if (rightArm) { rightArm.rotation.x = -swing; rightArm.rotation.z = swing * 0.3; }
+            if (rightHand) { rightHand.position.set(0.65 + swing * 0.3, 1.2 - swing * 0.5, swing * 0.8); }
+        } else {
+            if (leftArm) { leftArm.rotation.x = -swing; leftArm.rotation.z = -swing * 0.3; }
+            if (leftHand) { leftHand.position.set(-0.65 - swing * 0.3, 1.2 - swing * 0.5, swing * 0.8); }
+        }
+    } else if (isMoving) {
+        // Walk animation
+        const walkCycle = Math.sin(elapsedTime * 8) * 0.4;
+        if (leftArm) leftArm.rotation.x = walkCycle;
+        if (rightArm) rightArm.rotation.x = -walkCycle;
+        if (leftLeg) leftLeg.rotation.x = -walkCycle;
+        if (rightLeg) rightLeg.rotation.x = walkCycle;
+        if (leftHand) leftHand.position.set(-0.65, 1.2 + Math.sin(elapsedTime * 8) * 0.15, Math.sin(elapsedTime * 8) * 0.2);
+        if (rightHand) rightHand.position.set(0.65, 1.2 - Math.sin(elapsedTime * 8) * 0.15, -Math.sin(elapsedTime * 8) * 0.2);
+    } else {
+        // Idle animation
+        const idle = Math.sin(elapsedTime * 2) * 0.05;
+        if (leftArm) { leftArm.rotation.x = idle; leftArm.rotation.z = 0; }
+        if (rightArm) { rightArm.rotation.x = -idle; rightArm.rotation.z = 0; }
+        if (leftLeg) leftLeg.rotation.x = 0;
+        if (rightLeg) rightLeg.rotation.x = 0;
+        if (leftHand) leftHand.position.set(-0.65, 1.2, 0);
+        if (rightHand) rightHand.position.set(0.65, 1.2, 0);
+    }
+}
+
+// Camera follow
+function updateCamera(dt) {
+    const playerPos = player.group.position;
+    const offsetX = Math.sin(cameraYaw) * Math.cos(cameraPitch) * cameraDistance;
+    const offsetY = Math.sin(cameraPitch) * cameraDistance + 3;
+    const offsetZ = Math.cos(cameraYaw) * Math.cos(cameraPitch) * cameraDistance;
+
+    const targetPos = new THREE.Vector3(
+        playerPos.x + offsetX,
+        playerPos.y + offsetY,
+        playerPos.z + offsetZ
+    );
+
+    cameraSmooth.pos.lerp(targetPos, 8 * dt);
+    cameraSmooth.target.lerp(new THREE.Vector3(playerPos.x, playerPos.y + 2, playerPos.z), 10 * dt);
+
+    camera.position.copy(cameraSmooth.pos);
+    camera.lookAt(cameraSmooth.target);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION 4: COMBAT SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+const ATTACK_RANGE = 3.5;
+const LIGHT_DAMAGE = 12;
+const HEAVY_DAMAGE = 30;
+const DASH_ATTACK_DAMAGE = 22;
+const KNOCKBACK_FORCE = 8;
+const HEAVY_KNOCKBACK = 15;
+
+function performLightAttack() {
+    if (player.lightAttackCD > 0 || player.isAttacking) return;
+
+    // Dash attack check
+    if (player.isDashing) {
+        performDashAttack();
+        return;
+    }
+
+    player.isAttacking = true;
+    player.attackTimer = 0.25;
+    player.lightAttackCD = 0.35;
+    player.comboCount++;
+    player.comboTimer = player.comboWindow;
+
+    updateComboUI();
+
+    // Hit detection
+    const dmg = LIGHT_DAMAGE + (player.comboCount >= 3 ? 8 : 0);
+    const kb = KNOCKBACK_FORCE + (player.comboCount >= 3 ? 5 : 0);
+    hitEnemiesInRange(ATTACK_RANGE, dmg, kb);
+
+    // Effects
+    spawnSlashTrail(player.group.position.clone(), player.group.rotation.y, '#ff4466', 0.6);
+
+    // Combo finisher at 4 hits
+    if (player.comboCount >= 4) {
+        player.comboCount = 0;
+        player.comboTimer = 0;
+        spawnSlashTrail(player.group.position.clone(), player.group.rotation.y, '#8844ff', 1.2);
+        hitEnemiesInRange(ATTACK_RANGE + 1, 20, HEAVY_KNOCKBACK);
+        updateComboUI();
+    }
+}
+
+function performHeavyAttack() {
+    if (player.heavyAttackCD > 0 || player.isAttacking) return;
+    if (player.energy < 15) return;
+
+    player.energy -= 15;
+    player.isAttacking = true;
+    player.attackTimer = 0.45;
+    player.heavyAttackCD = 0.8;
+
+    hitEnemiesInRange(ATTACK_RANGE + 1, HEAVY_DAMAGE, HEAVY_KNOCKBACK);
+    spawnSlashTrail(player.group.position.clone(), player.group.rotation.y, '#ff2244', 1.5);
+
+    // Ground slam visual
+    spawnHitFlash(player.group.position.clone().add(
+        new THREE.Vector3(-Math.sin(player.group.rotation.y) * 2, 0.5, -Math.cos(player.group.rotation.y) * 2)
+    ), '#ff2244', 2);
+}
+
+function performDashAttack() {
+    player.isDashing = false;
+    player.isAttacking = true;
+    player.attackTimer = 0.3;
+    player.lightAttackCD = 0.5;
+
+    hitEnemiesInRange(ATTACK_RANGE + 2, DASH_ATTACK_DAMAGE, HEAVY_KNOCKBACK * 1.2);
+    spawnSlashTrail(player.group.position.clone(), player.group.rotation.y, '#cc66ff', 1.8);
+}
+
+function hitEnemiesInRange(range, damage, knockback) {
+    const playerPos = player.group.position;
+    const playerForward = new THREE.Vector3(-Math.sin(player.group.rotation.y), 0, -Math.cos(player.group.rotation.y));
+
+    enemies.forEach(enemy => {
+        if (enemy.dead) return;
+        const toEnemy = new THREE.Vector3().subVectors(enemy.group.position, playerPos);
+        const dist = toEnemy.length();
+        if (dist > range) return;
+
+        // Check if enemy is roughly in front (180 degree cone)
+        toEnemy.normalize();
+        const dot = playerForward.dot(toEnemy);
+        if (dot < -0.3) return; // Behind player
+
+        // Apply damage
+        damageEnemy(enemy, damage, knockback, toEnemy);
+    });
+}
+
+function damageEnemy(enemy, damage, knockback, direction) {
+    enemy.health -= damage;
+    enemy.hitFlashTimer = 0.15;
+    enemy.knockbackVel = direction.clone().multiplyScalar(knockback);
+    enemy.knockbackVel.y = knockback * 0.3;
+    enemy.state = 'stunned';
+    enemy.stateTimer = 0.4;
+
+    // Visual feedback
+    spawnHitFlash(enemy.group.position.clone().add(new THREE.Vector3(0, 1.5, 0)), '#ffdd44', 1);
+    spawnDamageNumber(enemy.group.position.clone().add(new THREE.Vector3(0, 3, 0)), damage);
+
+    if (enemy.health <= 0) {
+        killEnemy(enemy);
+    }
+}
+
+function damagePlayer(amount) {
+    if (player.invincible) return;
+    player.health -= amount;
+    player.hitFlashTimer = 0.2;
+    player.invincible = true;
+    player.invincibleTimer = 0.5;
+
+    // Screen shake
+    cameraSmooth.pos.x += (Math.random() - 0.5) * 1.5;
+    cameraSmooth.pos.y += (Math.random() - 0.5) * 1.5;
+
+    if (player.health <= 0) {
+        player.health = 0;
+        respawnPlayer();
+    }
+    updateBarsUI();
+}
+
+function respawnPlayer() {
+    player.health = player.maxHealth;
+    player.energy = player.maxEnergy;
+    player.group.position.set(0, 0, 0);
+    player.velocity.set(0, 0, 0);
+    player.comboCount = 0;
+    updateBarsUI();
+    updateComboUI();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION 5: ENEMY AI
+// ═══════════════════════════════════════════════════════════════
+
+const enemies = [];
+const ENEMY_TYPES = {
+    grunt: { health: 60, damage: 8, speed: 5, attackRange: 2.5, attackCD: 1.5, color: 0xff4444, size: 1.0, xp: 10 },
+    brute: { health: 120, damage: 15, speed: 3.5, attackRange: 3.0, attackCD: 2.0, color: 0xff8800, size: 1.4, xp: 25 },
+    cursed: { health: 80, damage: 12, speed: 7, attackRange: 2.2, attackCD: 1.0, color: 0x8844ff, size: 0.9, xp: 20 }
+};
+
+function createEnemy(type, x, z) {
+    const config = ENEMY_TYPES[type];
+    const group = new THREE.Group();
+
+    // Body
+    const bodyGeo = new THREE.BoxGeometry(0.8 * config.size, 1.4 * config.size, 0.5 * config.size);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a0a0a, roughness: 0.5, metalness: 0.3 });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 1.5 * config.size;
+    body.castShadow = true;
+    group.add(body);
+
+    // Head
+    const headGeo = new THREE.SphereGeometry(0.3 * config.size, 10, 8);
+    const headMat = new THREE.MeshStandardMaterial({ color: 0x332222, roughness: 0.6 });
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.y = 2.5 * config.size;
+    head.castShadow = true;
+    group.add(head);
+
+    // Glowing eyes
+    const eyeMat = new THREE.MeshBasicMaterial({ color: config.color });
+    const eyeGeo = new THREE.SphereGeometry(0.07 * config.size, 6, 6);
+    const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+    leftEye.position.set(-0.1 * config.size, 2.52 * config.size, 0.25 * config.size);
+    group.add(leftEye);
+    const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+    rightEye.position.set(0.1 * config.size, 2.52 * config.size, 0.25 * config.size);
+    group.add(rightEye);
+
+    // Arms
+    const armGeo = new THREE.BoxGeometry(0.22 * config.size, 0.8 * config.size, 0.22 * config.size);
+    const armMat = new THREE.MeshStandardMaterial({ color: 0x1a0a0a, roughness: 0.5 });
+    const la = new THREE.Mesh(armGeo, armMat);
+    la.position.set(-0.6 * config.size, 1.5 * config.size, 0);
+    la.name = 'leftArm';
+    la.castShadow = true;
+    group.add(la);
+    const ra = new THREE.Mesh(armGeo, armMat);
+    ra.position.set(0.6 * config.size, 1.5 * config.size, 0);
+    ra.name = 'rightArm';
+    ra.castShadow = true;
+    group.add(ra);
+
+    // Legs
+    const legGeo = new THREE.BoxGeometry(0.25 * config.size, 0.8 * config.size, 0.25 * config.size);
+    const ll = new THREE.Mesh(legGeo, armMat);
+    ll.position.set(-0.2 * config.size, 0.6 * config.size, 0);
+    ll.name = 'leftLeg';
+    ll.castShadow = true;
+    group.add(ll);
+    const rl = new THREE.Mesh(legGeo, armMat);
+    rl.position.set(0.2 * config.size, 0.6 * config.size, 0);
+    rl.name = 'rightLeg';
+    rl.castShadow = true;
+    group.add(rl);
+
+    // Cursed markings glow
+    const markGeo = new THREE.RingGeometry(0.3 * config.size, 0.35 * config.size, 6);
+    const markMat = new THREE.MeshBasicMaterial({ color: config.color, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
+    const mark = new THREE.Mesh(markGeo, markMat);
+    mark.position.y = 1.5 * config.size;
+    mark.position.z = 0.26 * config.size;
+    group.add(mark);
+
+    group.position.set(x, 0, z);
+    scene.add(group);
+
+    const enemy = {
+        type: type,
+        config: config,
+        group: group,
+        health: config.health,
+        maxHealth: config.health,
+        dead: false,
+        state: 'patrol', // patrol, chase, attack, stunned
+        stateTimer: 0,
+        attackCD: 0,
+        patrolTarget: new THREE.Vector3(x + (Math.random() - 0.5) * 20, 0, z + (Math.random() - 0.5) * 20),
+        patrolWait: 0,
+        knockbackVel: new THREE.Vector3(),
+        hitFlashTimer: 0,
+        spawnPos: new THREE.Vector3(x, 0, z)
+    };
+
+    enemies.push(enemy);
+    return enemy;
+}
+
+function updateEnemies(dt) {
+    const playerPos = player.group.position;
+
+    enemies.forEach(enemy => {
+        if (enemy.dead) return;
+
+        const toPlayer = new THREE.Vector3().subVectors(playerPos, enemy.group.position);
+        const distToPlayer = toPlayer.length();
+        toPlayer.normalize();
+
+        // Cooldowns
+        if (enemy.attackCD > 0) enemy.attackCD -= dt;
+        if (enemy.hitFlashTimer > 0) enemy.hitFlashTimer -= dt;
+
+        // Apply knockback
+        if (enemy.knockbackVel.lengthSq() > 0.1) {
+            enemy.group.position.addScaledVector(enemy.knockbackVel, dt);
+            enemy.knockbackVel.multiplyScalar(0.9);
+            if (enemy.group.position.y > 0) {
+                enemy.knockbackVel.y -= 20 * dt;
+            } else {
+                enemy.group.position.y = 0;
+                enemy.knockbackVel.y = 0;
+            }
+        }
+
+        // Hit flash
+        if (enemy.hitFlashTimer > 0) {
+            enemy.group.traverse(child => {
+                if (child.isMesh && child.material.emissive) {
+                    child.material.emissive.setHex(0xff4444);
+                    child.material.emissiveIntensity = enemy.hitFlashTimer * 8;
+                }
+            });
+        } else {
+            enemy.group.traverse(child => {
+                if (child.isMesh && child.material.emissive) {
+                    child.material.emissiveIntensity = 0;
+                }
+            });
+        }
+
+        // State machine
+        if (enemy.state === 'stunned') {
+            enemy.stateTimer -= dt;
+            if (enemy.stateTimer <= 0) {
+                enemy.state = distToPlayer < 20 ? 'chase' : 'patrol';
+            }
+            return;
+        }
+
+        // Detection range
+        const detectRange = 25;
+        const attackRange = enemy.config.attackRange;
+
+        if (enemy.state === 'patrol') {
+            // Check if player in range
+            if (distToPlayer < detectRange) {
+                enemy.state = 'chase';
+                return;
+            }
+
+            // Patrol movement
+            const toTarget = new THREE.Vector3().subVectors(enemy.patrolTarget, enemy.group.position);
+            toTarget.y = 0;
+            if (toTarget.length() < 1) {
+                enemy.patrolWait += dt;
+                if (enemy.patrolWait > 2) {
+                    enemy.patrolWait = 0;
+                    enemy.patrolTarget.set(
+                        enemy.spawnPos.x + (Math.random() - 0.5) * 20,
+                        0,
+                        enemy.spawnPos.z + (Math.random() - 0.5) * 20
+                    );
+                }
+            } else {
+                toTarget.normalize();
+                enemy.group.position.addScaledVector(toTarget, enemy.config.speed * 0.4 * dt);
+                const angle = Math.atan2(toTarget.x, toTarget.z);
+                enemy.group.rotation.y = angle;
+            }
+
+            // Walk anim
+            animateEnemyWalk(enemy, dt, 0.4);
+
+        } else if (enemy.state === 'chase') {
+            // Lost player
+            if (distToPlayer > detectRange * 1.5) {
+                enemy.state = 'patrol';
+                return;
+            }
+
+            // In attack range
+            if (distToPlayer < attackRange) {
+                enemy.state = 'attack';
+                return;
+            }
+
+            // Move toward player
+            enemy.group.position.addScaledVector(toPlayer, enemy.config.speed * dt);
+            const angle = Math.atan2(toPlayer.x, toPlayer.z);
+            enemy.group.rotation.y = angle;
+
+            animateEnemyWalk(enemy, dt, 1.0);
+
+        } else if (enemy.state === 'attack') {
+            // Face player
+            const angle = Math.atan2(toPlayer.x, toPlayer.z);
+            enemy.group.rotation.y = angle;
+
+            // Out of range
+            if (distToPlayer > attackRange * 1.5) {
+                enemy.state = 'chase';
+                return;
+            }
+
+            // Attack
+            if (enemy.attackCD <= 0) {
+                enemy.attackCD = enemy.config.attackCD;
+                performEnemyAttack(enemy);
+            }
+
+            // Attack anim
+            const ra = enemy.group.getObjectByName('rightArm');
+            if (ra && enemy.attackCD > enemy.config.attackCD - 0.3) {
+                const t = 1 - ((enemy.attackCD - (enemy.config.attackCD - 0.3)) / 0.3);
+                ra.rotation.x = -Math.sin(t * Math.PI) * 1.5;
+            }
+        }
+
+        // Keep on ground
+        if (enemy.group.position.y < 0) enemy.group.position.y = 0;
+
+        // Boundary
+        enemy.group.position.x = Math.max(-90, Math.min(90, enemy.group.position.x));
+        enemy.group.position.z = Math.max(-90, Math.min(90, enemy.group.position.z));
+    });
+}
+
+function animateEnemyWalk(enemy, dt, speedMult) {
+    const la = enemy.group.getObjectByName('leftArm');
+    const ra = enemy.group.getObjectByName('rightArm');
+    const ll = enemy.group.getObjectByName('leftLeg');
+    const rl = enemy.group.getObjectByName('rightLeg');
+    const cycle = Math.sin(elapsedTime * 6 * speedMult) * 0.5;
+    if (la) la.rotation.x = cycle;
+    if (ra) ra.rotation.x = -cycle;
+    if (ll) ll.rotation.x = -cycle;
+    if (rl) rl.rotation.x = cycle;
+}
+
+function performEnemyAttack(enemy) {
+    const dist = player.group.position.distanceTo(enemy.group.position);
+    if (dist < enemy.config.attackRange + 1) {
+        damagePlayer(enemy.config.damage);
+        spawnHitFlash(player.group.position.clone().add(new THREE.Vector3(0, 1.5, 0)), '#ff4444', 0.8);
+    }
+}
+
+function killEnemy(enemy) {
+    enemy.dead = true;
+    enemy.group.visible = false;
+
+    // Death particles
+    for (let i = 0; i < 15; i++) {
+        spawnParticle(
+            enemy.group.position.clone().add(new THREE.Vector3(0, 1.5, 0)),
+            new THREE.Vector3((Math.random() - 0.5) * 8, Math.random() * 6, (Math.random() - 0.5) * 8),
+            enemy.config.color,
+            0.15 + Math.random() * 0.15,
+            0.8 + Math.random() * 0.4
+        );
+    }
+
+    // Kill feed
+    addKillFeedMessage(`Defeated ${enemy.type.toUpperCase()}!`);
+
+    // Respawn after delay
+    setTimeout(() => {
+        if (!enemy) return;
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 25 + Math.random() * 35;
+        enemy.group.position.set(Math.cos(angle) * dist, 0, Math.sin(angle) * dist);
+        enemy.health = enemy.maxHealth;
+        enemy.dead = false;
+        enemy.group.visible = true;
+        enemy.state = 'patrol';
+        enemy.knockbackVel.set(0, 0, 0);
+        enemy.spawnPos.copy(enemy.group.position);
+        enemy.patrolTarget.copy(enemy.group.position).add(new THREE.Vector3((Math.random() - 0.5) * 20, 0, (Math.random() - 0.5) * 20));
+    }, 5000 + Math.random() * 5000);
+}
+
+// Spawn initial enemies
+function spawnInitialEnemies() {
+    const typeNames = ['grunt', 'grunt', 'grunt', 'brute', 'cursed', 'grunt', 'cursed', 'brute', 'grunt', 'grunt', 'cursed', 'grunt'];
+    typeNames.forEach((type, i) => {
+        const angle = (i / typeNames.length) * Math.PI * 2 + Math.random() * 0.5;
+        const dist = 15 + Math.random() * 35;
+        createEnemy(type, Math.cos(angle) * dist, Math.sin(angle) * dist);
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION 6: ABILITY SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+const abilities = {
+    q: {
+        name: 'Cursed Strike',
+        energyCost: 35,
+        cooldown: 3.0,
+        currentCD: 0,
+        damage: 50,
+        range: 6,
+        knockback: 20
+    }
+};
+
+document.addEventListener('keydown', e => {
+    if (!gameStarted) return;
+    if (e.code === 'KeyQ') activateAbilityQ();
+});
+
+function activateAbilityQ() {
+    const ab = abilities.q;
+    if (ab.currentCD > 0) return;
+    if (player.energy < ab.energyCost) return;
+
+    player.energy -= ab.energyCost;
+    ab.currentCD = ab.cooldown;
+
+    player.isAttacking = true;
+    player.attackTimer = 0.5;
+
+    // Cursed energy burst - hits all enemies in range
+    const playerPos = player.group.position;
+    const forward = new THREE.Vector3(-Math.sin(player.group.rotation.y), 0, -Math.cos(player.group.rotation.y));
+
+    enemies.forEach(enemy => {
+        if (enemy.dead) return;
+        const toEnemy = new THREE.Vector3().subVectors(enemy.group.position, playerPos);
+        const dist = toEnemy.length();
+        if (dist > ab.range) return;
+
+        toEnemy.normalize();
+        const dot = forward.dot(toEnemy);
+        if (dot < -0.1) return;
+
+        damageEnemy(enemy, ab.damage, ab.knockback, toEnemy);
+    });
+
+    // Big energy effect
+    spawnCursedBurst(playerPos.clone(), player.group.rotation.y);
+
+    // Aura flash
+    const aura = player.group.getObjectByName('aura');
+    if (aura) {
+        aura.material.opacity = 0.5;
+        aura.scale.setScalar(2);
+    }
+
+    updateBarsUI();
+}
+
+function updateAbilities(dt) {
+    if (abilities.q.currentCD > 0) abilities.q.currentCD -= dt;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION 7: UI SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+function updateBarsUI() {
+    const hpPct = (player.health / player.maxHealth) * 100;
+    const enPct = (player.energy / player.maxEnergy) * 100;
+    document.getElementById('health-fill').style.width = hpPct + '%';
+    document.getElementById('energy-fill').style.width = enPct + '%';
+}
+
+function updateCooldownsUI() {
+    // LMB
+    updateCDSlot('cd-lmb', player.lightAttackCD, 0.35);
+    // RMB
+    updateCDSlot('cd-rmb', player.heavyAttackCD, 0.8);
+    // Q
+    updateCDSlot('cd-q', abilities.q.currentCD, abilities.q.cooldown);
+    // Shift (Dash)
+    updateCDSlot('cd-shift', player.dashCooldown, player.dashCooldownMax);
+}
+
+function updateCDSlot(id, current, max) {
+    const el = document.getElementById(id);
+    const overlay = el.querySelector('.cd-overlay');
+    if (current <= 0) {
+        el.classList.add('ready');
+        overlay.style.height = '0%';
+    } else {
+        el.classList.remove('ready');
+        overlay.style.height = ((current / max) * 100) + '%';
+    }
+}
+
+function updateComboUI() {
+    const el = document.getElementById('combo');
+    if (player.comboCount > 1) {
+        el.textContent = player.comboCount + 'x COMBO';
+        el.classList.add('show');
+        el.style.transform = `translateY(-50%) scale(${1 + player.comboCount * 0.1})`;
+    } else {
+        el.classList.remove('show');
+    }
+}
+
+function addKillFeedMessage(msg) {
+    const feed = document.getElementById('killfeed');
+    const el = document.createElement('div');
+    el.className = 'kill-msg';
+    el.textContent = msg;
+    feed.appendChild(el);
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 3500);
+}
+
+function spawnDamageNumber(pos, damage) {
+    const screenPos = pos.clone().project(camera);
+    if (screenPos.z > 1) return;
+    const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+    const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+
+    const el = document.createElement('div');
+    el.className = 'dmg-number';
+    el.textContent = Math.round(damage);
+    el.style.left = (x + (Math.random() - 0.5) * 30) + 'px';
+    el.style.top = y + 'px';
+    document.getElementById('ui').appendChild(el);
+    setTimeout(() => { if (el.parentNode) el.parentNode.removeChild(el); }, 1000);
+}
+
+// Enemy health bars (world-space to screen-space)
+const enemyHpElements = [];
+function updateEnemyHPBars() {
+    // Remove old
+    enemyHpElements.forEach(el => { if (el.parentNode) el.parentNode.removeChild(el); });
+    enemyHpElements.length = 0;
+
+    enemies.forEach(enemy => {
+        if (enemy.dead) return;
+        if (enemy.health >= enemy.maxHealth) return;
+
+        const worldPos = enemy.group.position.clone().add(new THREE.Vector3(0, 3.2 * enemy.config.size, 0));
+        const screenPos = worldPos.project(camera);
+        if (screenPos.z > 1) return;
+
+        const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+
+        const container = document.createElement('div');
+        container.className = 'enemy-hp';
+        container.style.left = (x - 30) + 'px';
+        container.style.top = y + 'px';
+
+        const bar = document.createElement('div');
+        bar.className = 'enemy-hp-bar';
+        const fill = document.createElement('div');
+        fill.className = 'enemy-hp-fill';
+        fill.style.width = ((enemy.health / enemy.maxHealth) * 100) + '%';
+        bar.appendChild(fill);
+        container.appendChild(bar);
+
+        document.getElementById('ui').appendChild(container);
+        enemyHpElements.push(container);
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION 8: EFFECTS
+// ═══════════════════════════════════════════════════════════════
+
+const particles = [];
+const slashTrails = [];
+const hitFlashes = [];
+const dashTrails = [];
+
+// Generic particle
+function spawnParticle(position, velocity, color, size, lifetime) {
+    const geo = new THREE.SphereGeometry(size, 4, 4);
+    const mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 1 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.copy(position);
+    scene.add(mesh);
+    particles.push({
+        mesh: mesh,
+        velocity: velocity.clone(),
+        lifetime: lifetime,
+        maxLifetime: lifetime,
+        gravity: -8
+    });
+}
+
+function updateParticles(dt) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.lifetime -= dt;
+        if (p.lifetime <= 0) {
+            scene.remove(p.mesh);
+            p.mesh.geometry.dispose();
+            p.mesh.material.dispose();
+            particles.splice(i, 1);
+            continue;
+        }
+        p.velocity.y += p.gravity * dt;
+        p.mesh.position.addScaledVector(p.velocity, dt);
+        p.mesh.material.opacity = p.lifetime / p.maxLifetime;
+        p.mesh.scale.setScalar(p.lifetime / p.maxLifetime);
+    }
+}
+
+// Slash trail effect
+function spawnSlashTrail(position, rotation, color, scale) {
+    const geo = new THREE.PlaneGeometry(2.5 * scale, 0.8 * scale, 1, 1);
+    const mat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(color),
+        transparent: true,
+        opacity: 0.8,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    const offset = new THREE.Vector3(-Math.sin(rotation) * 2, 1.5, -Math.cos(rotation) * 2);
+    mesh.position.copy(position).add(offset);
+    mesh.rotation.y = rotation;
+    mesh.rotation.z = (Math.random() - 0.5) * 0.5;
+    scene.add(mesh);
+
+    slashTrails.push({ mesh: mesh, lifetime: 0.3, maxLifetime: 0.3 });
+
+    // Slash sparks
+    for (let i = 0; i < 6; i++) {
+        spawnParticle(
+            mesh.position.clone(),
+            new THREE.Vector3((Math.random() - 0.5) * 6, Math.random() * 3, (Math.random() - 0.5) * 6),
+            new THREE.Color(color).getHex(),
+            0.08 + Math.random() * 0.08,
+            0.3 + Math.random() * 0.3
+        );
+    }
+}
+
+function updateSlashTrails(dt) {
+    for (let i = slashTrails.length - 1; i >= 0; i--) {
+        const s = slashTrails[i];
+        s.lifetime -= dt;
+        if (s.lifetime <= 0) {
+            scene.remove(s.mesh);
+            s.mesh.geometry.dispose();
+            s.mesh.material.dispose();
+            slashTrails.splice(i, 1);
+            continue;
+        }
+        const t = s.lifetime / s.maxLifetime;
+        s.mesh.material.opacity = t * 0.8;
+        s.mesh.scale.x = 1 + (1 - t) * 0.5;
+    }
+}
+
+// Hit flash
+function spawnHitFlash(position, color, scale) {
+    const geo = new THREE.SphereGeometry(0.5 * scale, 8, 8);
+    const mat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(color),
+        transparent: true,
+        opacity: 1,
+        depthWrite: false
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.copy(position);
+    scene.add(mesh);
+    hitFlashes.push({ mesh: mesh, lifetime: 0.2, maxLifetime: 0.2 });
+
+    // Point light flash
+    const flashLight = new THREE.PointLight(new THREE.Color(color).getHex(), 3, 8);
+    flashLight.position.copy(position);
+    scene.add(flashLight);
+    setTimeout(() => scene.remove(flashLight), 150);
+}
+
+function updateHitFlashes(dt) {
+    for (let i = hitFlashes.length - 1; i >= 0; i--) {
+        const h = hitFlashes[i];
+        h.lifetime -= dt;
+        if (h.lifetime <= 0) {
+            scene.remove(h.mesh);
+            h.mesh.geometry.dispose();
+            h.mesh.material.dispose();
+            hitFlashes.splice(i, 1);
+            continue;
+        }
+        const t = h.lifetime / h.maxLifetime;
+        h.mesh.material.opacity = t;
+        h.mesh.scale.setScalar(1 + (1 - t) * 3);
+    }
+}
+
+// Dash trail
+function spawnDashTrail(position) {
+    for (let i = 0; i < 8; i++) {
+        const geo = new THREE.BoxGeometry(0.15, 0.15, 0.15);
+        const mat = new THREE.MeshBasicMaterial({
+            color: 0xcc66ff,
+            transparent: true,
+            opacity: 0.7,
+            depthWrite: false
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.copy(position).add(new THREE.Vector3(
+            (Math.random() - 0.5) * 0.8,
+            0.5 + Math.random() * 2,
+            (Math.random() - 0.5) * 0.8
+        ));
+        scene.add(mesh);
+        dashTrails.push({
+            mesh: mesh,
+            lifetime: 0.4 + Math.random() * 0.2,
+            maxLifetime: 0.6,
+            velocity: new THREE.Vector3((Math.random() - 0.5) * 2, Math.random() * 2, (Math.random() - 0.5) * 2)
+        });
+    }
+}
+
+function updateDashTrails(dt) {
+    for (let i = dashTrails.length - 1; i >= 0; i--) {
+        const d = dashTrails[i];
+        d.lifetime -= dt;
+        if (d.lifetime <= 0) {
+            scene.remove(d.mesh);
+            d.mesh.geometry.dispose();
+            d.mesh.material.dispose();
+            dashTrails.splice(i, 1);
+            continue;
+        }
+        d.mesh.position.addScaledVector(d.velocity, dt);
+        d.mesh.material.opacity = (d.lifetime / d.maxLifetime) * 0.7;
+        d.mesh.scale.setScalar(d.lifetime / d.maxLifetime);
+    }
+}
+
+// Cursed energy burst (Q ability)
+function spawnCursedBurst(position, rotation) {
+    const forward = new THREE.Vector3(-Math.sin(rotation), 0, -Math.cos(rotation));
+
+    // Central ring
+    const ringGeo = new THREE.TorusGeometry(2, 0.2, 8, 24);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x8844ff, transparent: true, opacity: 0.8, depthWrite: false });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.copy(position).add(new THREE.Vector3(0, 1.5, 0)).addScaledVector(forward, 2);
+    ring.rotation.x = Math.PI / 2;
+    scene.add(ring);
+    hitFlashes.push({ mesh: ring, lifetime: 0.6, maxLifetime: 0.6 });
+
+    // Energy wave
+    const waveGeo = new THREE.PlaneGeometry(6, 6);
+    const waveMat = new THREE.MeshBasicMaterial({
+        color: 0x8844ff,
+        transparent: true,
+        opacity: 0.5,
+        side: THREE.DoubleSide,
+        depthWrite: false
+    });
+    const wave = new THREE.Mesh(waveGeo, waveMat);
+    wave.position.copy(position).add(new THREE.Vector3(0, 1.5, 0)).addScaledVector(forward, 3);
+    wave.rotation.y = rotation;
+    scene.add(wave);
+    hitFlashes.push({ mesh: wave, lifetime: 0.5, maxLifetime: 0.5 });
+
+    // Lots of particles
+    for (let i = 0; i < 30; i++) {
+        const dir = forward.clone().multiplyScalar(3 + Math.random() * 8);
+        dir.x += (Math.random() - 0.5) * 6;
+        dir.y += Math.random() * 5;
+        dir.z += (Math.random() - 0.5) * 6;
+        spawnParticle(
+            position.clone().add(new THREE.Vector3(0, 1.5, 0)),
+            dir,
+            Math.random() > 0.5 ? 0x8844ff : 0xcc66ff,
+            0.1 + Math.random() * 0.2,
+            0.5 + Math.random() * 0.5
+        );
+    }
+
+    // Flash light
+    const flashLight = new THREE.PointLight(0x8844ff, 8, 20);
+    flashLight.position.copy(position).add(new THREE.Vector3(0, 2, 0));
+    scene.add(flashLight);
+    setTimeout(() => scene.remove(flashLight), 300);
+}
+
+// Energy ambient particles around player
+function spawnEnergyParticles(dt) {
+    if (Math.random() > 0.3) return;
+    if (player.energy < 20) return;
+
+    const pos = player.group.position.clone().add(new THREE.Vector3(
+        (Math.random() - 0.5) * 2,
+        Math.random() * 3,
+        (Math.random() - 0.5) * 2
+    ));
+    spawnParticle(
+        pos,
+        new THREE.Vector3((Math.random() - 0.5) * 0.5, 1 + Math.random(), (Math.random() - 0.5) * 0.5),
+        0x6633cc,
+        0.05 + Math.random() * 0.05,
+        0.5 + Math.random() * 0.5
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION 9: GAME LOOP
+// ═══════════════════════════════════════════════════════════════
+
+function startGame() {
+    document.getElementById('title-screen').style.opacity = '0';
+    setTimeout(() => {
+        document.getElementById('title-screen').style.display = 'none';
+    }, 800);
+    gameStarted = true;
+    spawnInitialEnemies();
+    renderer.domElement.requestPointerLock();
+}
+
+function gameLoop() {
+    requestAnimationFrame(gameLoop);
+
+    deltaTime = Math.min(clock.getDelta(), 0.05); // Cap delta to prevent physics issues
+    elapsedTime = clock.getElapsedTime();
+
+    if (!gameStarted) {
+        // Rotate camera around origin for title screen
+        camera.position.set(
+            Math.sin(elapsedTime * 0.2) * 30,
+            15,
+            Math.cos(elapsedTime * 0.2) * 30
+        );
+        camera.lookAt(0, 3, 0);
+        renderer.render(scene, camera);
+        return;
+    }
+
+    // Update systems
+    updatePlayer(deltaTime);
+    updateCamera(deltaTime);
+    updateEnemies(deltaTime);
+    updateAbilities(deltaTime);
+
+    // Update effects
+    updateParticles(deltaTime);
+    updateSlashTrails(deltaTime);
+    updateHitFlashes(deltaTime);
+    updateDashTrails(deltaTime);
+    spawnEnergyParticles(deltaTime);
+
+    // Update UI
+    updateBarsUI();
+    updateCooldownsUI();
+    updateEnemyHPBars();
+
+    // Floating rocks animation
+    floatingRocksList.forEach(rock => {
+        rock.position.y = rock.userData.baseY + Math.sin(elapsedTime * rock.userData.floatSpeed + rock.userData.floatOffset) * 1.5;
+        rock.rotation.y += deltaTime * 0.2;
+    });
+
+    // Dust particle drift
+    const dustPos = dustParticles.geometry.attributes.position;
+    for (let i = 0; i < dustCount; i++) {
+        dustPos.array[i * 3 + 1] += deltaTime * 0.3;
+        if (dustPos.array[i * 3 + 1] > 30) dustPos.array[i * 3 + 1] = 0;
+    }
+    dustPos.needsUpdate = true;
+
+    // Accent light pulse
+    purpleLight.intensity = 2 + Math.sin(elapsedTime * 1.5) * 0.5;
+    redLight.intensity = 1.5 + Math.sin(elapsedTime * 2 + 1) * 0.4;
+
+    renderer.render(scene, camera);
+}
+
+gameLoop();
+</script>
+</body>
+</html>
