@@ -362,7 +362,7 @@ canvas{display:block;}
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
 // ═══════════════════ ENGINE ═══════════════════
 const renderer=new THREE.WebGLRenderer({antialias:true});
@@ -930,7 +930,7 @@ function mergeSkinnedGeos(parts){
   let totalV=0;
   parts.forEach(p=>totalV+=p.geo.attributes.position.count);
   const pos=new Float32Array(totalV*3),nrm=new Float32Array(totalV*3),col=new Float32Array(totalV*3);
-  const sIdx=new Uint16Array(totalV*4),sWgt=new Float32Array(totalV*4);
+  const sIdx=new Float32Array(totalV*4),sWgt=new Float32Array(totalV*4);
   const indices=[];
   let vOff=0;
   parts.forEach(p=>{
@@ -953,7 +953,7 @@ function mergeSkinnedGeos(parts){
   merged.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
   merged.setAttribute('normal',new THREE.Float32BufferAttribute(nrm,3));
   merged.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
-  merged.setAttribute('skinIndex',new THREE.Uint16BufferAttribute(sIdx,4));
+  merged.setAttribute('skinIndex',new THREE.Float32BufferAttribute(sIdx,4));
   merged.setAttribute('skinWeight',new THREE.Float32BufferAttribute(sWgt,4));
   if(indices.length)merged.setIndex(indices);
   return merged;
@@ -1065,13 +1065,13 @@ function createPlayerModel(){
   seg(0.16,0.14, 0.52,8, 9,10, -0.21,0.82,0, 0x080810);
   sph(0.14,6,5, 10, -0.21,0.56,0, 0x080810);
   seg(0.13,0.12, 0.50,8, 10,11, -0.21,0.31,0, 0x080810);
-  box(0.26,0.18,0.32, 11, -0.21,0.02,0.04, 0x1a1128);
+  box(0.26,0.18,0.32, 11, -0.21,0.02,-0.04, 0x1a1128);
 
   // ── RIGHT LEG: thigh(12→13) knee(13) shin(13→14) boot(14) ──
   seg(0.16,0.14, 0.52,8, 12,13, 0.21,0.82,0, 0x080810);
   sph(0.14,6,5, 13, 0.21,0.56,0, 0x080810);
   seg(0.13,0.12, 0.50,8, 13,14, 0.21,0.31,0, 0x080810);
-  box(0.26,0.18,0.32, 14, 0.21,0.02,0.04, 0x1a1128);
+  box(0.26,0.18,0.32, 14, 0.21,0.02,-0.04, 0x1a1128);
 
   // ── MERGE & CREATE SKINNED MESH ──
   const merged=mergeSkinnedGeos(parts);
@@ -1080,9 +1080,11 @@ function createPlayerModel(){
   bodyMesh.castShadow=true;bodyMesh.receiveShadow=true;bodyMesh.frustumCulled=false;
   bodyMesh.name='bodyMesh';
   bodyMesh.add(hipsBone);
-  const skeleton=new THREE.Skeleton(bones);
-  bodyMesh.bind(skeleton);
   g.add(bodyMesh);
+  // Force full world matrix computation before binding
+  bodyMesh.updateMatrixWorld(true);
+  const skeleton=new THREE.Skeleton(bones);
+  bodyMesh.bind(skeleton, bodyMesh.matrixWorld.clone());
 
   // ── HAIR (children of head bone — positioned relative to bone) ──
   const hairMat=new THREE.MeshStandardMaterial({color:AC.hairColor,roughness:0.65});
@@ -1096,7 +1098,7 @@ function createPlayerModel(){
       headBone.add(sp);
     }
   } else if(AC.hairStyle===1){
-    const lh=new THREE.Mesh(new THREE.BoxGeometry(0.64,0.82,0.13),hairMat);lh.position.set(0,0.02,-0.2);headBone.add(lh);
+    const lh=new THREE.Mesh(new THREE.BoxGeometry(0.64,0.82,0.13),hairMat);lh.position.set(0,0.02,0.2);headBone.add(lh);
     const tp=new THREE.Mesh(new THREE.SphereGeometry(0.35,12,7),hairMat);tp.scale.set(1,0.48,1);tp.position.y=0.12;headBone.add(tp);
   } else {
     const cp=new THREE.Mesh(new THREE.SphereGeometry(0.36,12,7),hairMat);cp.scale.set(1,0.44,1);cp.position.y=0.11;headBone.add(cp);
@@ -1106,9 +1108,9 @@ function createPlayerModel(){
   const eyeM=new THREE.MeshBasicMaterial({color:AC.eyeColor});
   [-0.1,0.1].forEach(ex=>{
     const e=new THREE.Mesh(new THREE.SphereGeometry(0.065,8,6),eyeM);
-    e.position.set(ex,0.02,0.28);headBone.add(e);
+    e.position.set(ex,0.02,-0.28);headBone.add(e);
     const eg=new THREE.Mesh(new THREE.SphereGeometry(0.09,8,6),new THREE.MeshBasicMaterial({color:AC.eyeColor,transparent:true,opacity:0.25,depthWrite:false}));
-    eg.position.set(ex,0.02,0.27);headBone.add(eg);
+    eg.position.set(ex,0.02,-0.27);headBone.add(eg);
   });
 
   // ── KNUCKLE GLOW (children of hand bones) ──
