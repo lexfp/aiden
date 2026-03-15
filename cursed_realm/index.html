@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cursed Realm - JJK RPG</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- TITLE -->
+  <div id="title-screen" class="screen">
+    <h1>CURSED REALM</h1>
+    <p>Jujutsu Kaisen · Combat RPG</p>
+    <div style="display:flex;gap:12px;margin-bottom:8px;">
+      <button class="btn" onclick="goToAvatar()">ENTER THE REALM</button>
+      <button class="btn" onclick="loadAndStart()" id="continue-btn" style="display:none;">CONTINUE</button>
+    </div>
+    <button class="btn danger" onclick="newGame()"
+      style="font-size:11px;padding:8px 20px;margin-top:4px;border-width:1px;" id="newgame-btn">NEW GAME</button>
+    <div id="ctrl-hint">
+      WASD Move &nbsp;|&nbsp; Mouse Look &nbsp;|&nbsp; Space Jump &nbsp;|&nbsp; Shift Dash<br>
+      LMB Light &nbsp;|&nbsp; RMB Heavy &nbsp;|&nbsp; Q Cursed Strike &nbsp;|&nbsp; E/R/T Technique &nbsp;|&nbsp; F
+      Domain Expansion<br>
+      <b style="color:rgba(68,255,170,0.6)">Tab</b> — Open Home Hub &nbsp;|&nbsp;
+      Return to <b style="color:rgba(68,255,170,0.6)">SHRINE ISLAND</b> to enter Safe Zone &amp; heal<br>
+      Fight PvP sorcerer bots on combat islands · Explore 5 unique zones
+    </div>
+  </div>
+
+  <!-- AVATAR -->
+  <div id="av-screen" class="screen">
+    <h2>CREATE SORCERER</h2>
+    <p>CUSTOMIZE YOUR AVATAR</p>
+    <div id="av-layout">
+      <div id="av-preview">
+        <div class="avp" id="avp-hair"></div>
+        <div class="avp" id="avp-head"></div>
+        <div id="avp-eyes">
+          <div class="avp-eye" id="avp-el"></div>
+          <div class="avp-eye" id="avp-er"></div>
+        </div>
+        <div class="avp" id="avp-body"></div>
+        <div class="avp" id="avp-la"></div>
+        <div class="avp" id="avp-ra"></div>
+        <div class="avp" id="avp-ll"></div>
+        <div class="avp" id="avp-rl"></div>
+      </div>
+      <div id="av-opts">
+        <div class="av-row"><label>Hair Color</label>
+          <div class="avs-row" id="av-hair-c"></div>
+        </div>
+        <div class="av-row"><label>Hair Style</label>
+          <div class="avs-row" id="av-hair-s"></div>
+        </div>
+        <div class="av-row"><label>Skin Tone</label>
+          <div class="avs-row" id="av-skin-c"></div>
+        </div>
+        <div class="av-row"><label>Outfit</label>
+          <div class="avs-row" id="av-outfit-c"></div>
+        </div>
+        <div class="av-row"><label>Eye Color</label>
+          <div class="avs-row" id="av-eye-c"></div>
+        </div>
+        <div class="av-row"><label>Name</label><input id="av-name" value="Sorcerer"
+            style="pointer-events:all;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:7px 12px;border-radius:4px;font-size:13px;width:200px;outline:none;">
+        </div>
+        <button class="btn" style="margin-top:6px;" onclick="goToRoll()">CHOOSE TECHNIQUE ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROLL -->
+  <div id="roll-screen" class="screen">
+    <h2>FATE'S SELECTION</h2>
+    <p>ROLL YOUR CURSED TECHNIQUE</p>
+    <div id="roll-wrap">
+      <div id="roll-sel"></div>
+      <div id="roll-strip"></div>
+    </div>
+    <button class="btn" id="roll-btn" onclick="doRoll()" style="margin-top:10px;">ROLL</button>
+    <div id="tech-result">
+      <div id="res-card">
+        <h3 id="res-name"></h3>
+        <div class="res-usr" id="res-user"></div>
+        <div class="res-desc" id="res-desc"></div>
+        <div id="res-moves"></div>
+      </div>
+      <button class="btn btn-ok" id="confirm-btn" onclick="confirmTech()" style="display:none;">BEGIN ▶</button>
+    </div>
+  </div>
+
+  <!-- GAME UI -->
+  <div id="screen-flash"></div>
+  <div id="vignette"></div>
+  <div id="speed-lines"></div>
+  <div id="slowmo-overlay"></div>
+  <div id="hit-overlay"></div>
+  <div id="ui">
+    <div id="xhair"></div>
+    <div id="zone-banner">CURSED VOID</div>
+    <div id="safe-indicator">✦ SAFE ZONE — SORCERER SHRINE ✦</div>
+    <div id="pvp-hud"></div>
+    <div id="bars">
+      <div class="bar-container">
+        <div class="bar-fill" id="health-fill" style="width:100%"></div><span class="bar-label">HP</span><span
+          class="bar-label-r" id="hp-txt">100/100</span>
+      </div>
+      <div class="bar-container">
+        <div class="bar-fill" id="energy-fill" style="width:100%"></div><span class="bar-label">CURSED ENERGY</span>
+      </div>
+      <div class="bar-container">
+        <div class="bar-fill" id="xp-fill" style="width:0%"></div><span class="bar-label">XP</span><span
+          class="bar-label-r" id="xp-txt">0/100</span>
+      </div>
+    </div>
+    <div id="level-display">
+      <div id="level-num">1</div>
+      <div>
+        <div id="level-lbl">LEVEL</div>
+        <div id="rank-title">Cursed Novice</div>
+      </div>
+    </div>
+    <div id="minimap"><canvas id="mm-canvas" width="140" height="140"></canvas>
+      <div id="minimap-label">MAP</div>
+    </div>
+    <div id="cooldowns">
+      <div class="cd-slot ready" id="cd-lmb"><span class="key">LMB</span><span class="lbl">Light</span>
+        <div class="cd-ov" style="height:0%"></div>
+      </div>
+      <div class="cd-slot ready" id="cd-rmb"><span class="key">RMB</span><span class="lbl">Heavy</span>
+        <div class="cd-ov" style="height:0%"></div>
+      </div>
+      <div class="cd-slot ready" id="cd-q"><span class="key">Q</span><span class="lbl">Strike</span>
+        <div class="cd-ov" style="height:0%"></div>
+      </div>
+      <div class="cd-slot ready" id="cd-sh"><span class="key">⇧</span><span class="lbl">Dash</span>
+        <div class="cd-ov" style="height:0%"></div>
+      </div>
+    </div>
+    <div id="tech-panel">
+      <div id="tech-name"></div>
+      <div id="mastery-wrap">
+        <div id="mastery-fill" style="width:0%"></div><span id="mastery-lbl">MASTERY 0/100</span>
+      </div>
+      <div id="move-slots"></div>
+    </div>
+    <div id="combo"></div>
+    <div id="killfeed"></div>
+    <div id="lvlup"></div>
+    <div id="mastery-notif"></div>
+    <div id="domain-ann"></div>
+    <div id="domain-bar" style="width:0%;background:#8844ff;"></div>
+    <div id="drag-hint">RMB + DRAG — Rotate Camera<br>LMB — Light Attack<br>RMB click — Heavy Attack</div>
+    <div id="coins-display"><span id="coins-icon">🪙</span><span id="coins-val">0</span></div>
+    <div id="save-indicator">✦ SAVED</div>
+    <div id="wave-ann"></div>
+  </div>
+
+  <!-- HOME HUB PANEL -->
+  <div id="home-panel">
+    <div class="hp-inner" style="position:relative;">
+      <span class="hp-close" onclick="closeHomePanel()">✕</span>
+      <div class="hp-col">
+        <div class="hp-title">✦ SORCERER DOSSIER</div>
+        <div class="hp-stat"><span class="hs-label">NAME</span><span class="hs-val" id="hp-name">—</span></div>
+        <div class="hp-stat"><span class="hs-label">LEVEL</span><span class="hs-val" id="hp-level">—</span></div>
+        <div class="hp-stat"><span class="hs-label">RANK</span><span class="hs-val" id="hp-rank">—</span></div>
+        <div class="hp-stat"><span class="hs-label">TECHNIQUE</span><span class="hs-val" id="hp-tech">—</span></div>
+        <div class="hp-stat"><span class="hs-label">MASTERY</span><span class="hs-val" id="hp-mastery">—</span></div>
+        <div class="hp-stat"><span class="hs-label">ENEMIES SLAIN</span><span class="hs-val" id="hp-kills">0</span>
+        </div>
+        <div class="hp-stat"><span class="hs-label">PVP WINS</span><span class="hs-val" id="hp-pvpw"
+            style="color:#44ffaa">0</span></div>
+        <div class="hp-stat"><span class="hs-label">PVP LOSSES</span><span class="hs-val" id="hp-pvpl"
+            style="color:#ff4466">0</span></div>
+        <div class="hp-stat"><span class="hs-label">DAMAGE BONUS</span><span class="hs-val" id="hp-dmgb">+0%</span>
+        </div>
+      </div>
+      <div class="hp-col">
+        <div class="hp-title">⚔ PVP SCOREBOARD</div>
+        <div id="hp-pvp-table"></div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px;">
+          <div class="hp-title" style="margin-top:12px;">⚙ OPTIONS</div>
+          <button class="hp-btn" onclick="rerollTech()">🎲 REROLL TECHNIQUE <span id="reroll-cost"
+              style="color:#ffaa00"></span></button>
+          <button class="hp-btn" onclick="closeHomePanel(); renderer.domElement.requestPointerLock();">▶ RETURN TO
+            BATTLE</button>
+          <button class="hp-btn danger" onclick="respawnPlayer(); closeHomePanel();">⚕ FULL HEAL (costs 500 XP)</button>
+          <button class="hp-btn" onclick="saveGame(); showSaveIndicator();">💾 SAVE GAME</button>
+        </div>
+        <div class="hp-title" style="margin-top:10px;">⬆ UPGRADES <span style="color:#ffdd44;font-size:9px;"
+            id="hp-coins">0 🪙</span></div>
+        <div class="skill-grid" id="skill-grid"></div>
+        <div class="hp-title" style="margin-top:10px;">🎮 CONTROLS</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.4);line-height:1.8;letter-spacing:1px;">
+          WASD Move · Mouse Look · Space Jump · Shift Dash<br>
+          LMB Light · RMB Heavy · Q Cursed Strike<br>
+          E/R/T Technique Moves · F Domain Expansion<br>
+          Tab Home Hub · Shrine Island = Safe Zone
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+  <!-- Game Scripts (order matters — globals are shared) -->
+  <script src="js/engine.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/techniques.js"></script>
+  <script src="js/roll.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/progression.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/domain.js"></script>
+  <script src="js/mesh.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/animation.js"></script>
+  <script src="js/combat.js"></script>
+  <script src="js/enemies.js"></script>
+  <script src="js/pvp.js"></script>
+  <script src="js/abilities.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/vfx.js"></script>
+  <script src="js/loot.js"></script>
+  <script src="js/waves.js"></script>
+  <script src="js/screens.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>
