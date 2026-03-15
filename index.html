@@ -1,309 +1,412 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aiden Portfolio</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aiden Portfolio</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Syne:wght@400;700;800&display=swap"
+    rel="stylesheet">
 
-<style>
-:root{
-  --void:#010108;
-  --deep:#05050f;
-  --pulse:#00f0ff;        /* neon cyan */
-  --glow:#00ffff;         /* bright glow */
-  --star:#80ffff;         /* light cyan for text */
-  --rim:rgba(0,255,255,0.35); /* rim glow */
-}
+  <style>
+    :root {
+      --void: #010108;
+      --deep: #05050f;
+      --pulse: #00f0ff;
+      /* neon cyan */
+      --glow: #00ffff;
+      /* bright glow */
+      --star: #80ffff;
+      /* light cyan for text */
+      --rim: rgba(0, 255, 255, 0.35);
+      /* rim glow */
+    }
 
-/* Reset */
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{
-  background:var(--void);
-  color:var(--star);
-  font-family:'Syne',sans-serif;
-  overflow-x:hidden;
-  cursor:none;
-}
+    /* Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-/* Cursor */
-#cursor{
-  position:fixed; top:0; left:0;
-  width:12px; height:12px;
-  background:var(--glow);
-  border-radius:50%;
-  pointer-events:none;
-  z-index:9999;
-  transform:translate(-50%,-50%);
-  transition: transform .08s, width .3s, height .3s, opacity .3s;
-  mix-blend-mode:screen;
-  box-shadow:0 0 10px var(--pulse),0 0 20px var(--glow);
-}
-#cursor-ring{
-  position:fixed; top:0; left:0;
-  width:40px; height:40px;
-  border:1px solid rgba(0,255,255,.7);
-  border-radius:50%;
-  pointer-events:none;
-  z-index:9998;
-  transform:translate(-50%,-50%);
-  transition: transform .18s ease-out,width .3s,height .3s,border-color .3s;
-}
-body:has(a:hover) #cursor{width:20px;height:20px;}
-body:has(a:hover) #cursor-ring{width:56px;height:56px;border-color:var(--pulse);}
+    html {
+      scroll-behavior: smooth;
+    }
 
-/* Starfield & Infinity */
-#starfield, #infinity-canvas{
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:0;
-}
-#infinity-canvas{opacity:.5;}
+    body {
+      background: var(--void);
+      color: var(--star);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
 
-/* Hero */
-.hero{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  position:relative;
-  z-index:2;
-}
-.hero-name{
-  font-size:clamp(4rem,10vw,8rem);
-  font-weight:800;
-  background:linear-gradient(135deg,#00f0ff,#00ffff,#80ffff);
-  background-size:200% 200%;
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  animation: neonPulse 3s ease-in-out infinite;
-}
-@keyframes neonPulse{
-  0%,100%{background-position:0% 50%;}
-  50%{background-position:100% 50%;}
-}
-.hero-sub{
-  font-family:'Cormorant Garamond',serif;
-  font-size:1.3rem;
-  opacity:.7;
-  margin-top:.5rem;
-  color:#80ffff;
-}
+    /* Cursor */
+    #cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 12px;
+      height: 12px;
+      background: var(--glow);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform .08s, width .3s, height .3s, opacity .3s;
+      mix-blend-mode: screen;
+      box-shadow: 0 0 10px var(--pulse), 0 0 20px var(--glow);
+    }
 
-/* Section */
-.section{
-  padding:6rem 2rem;
-  max-width:1300px;
-  margin:auto;
-}
-.section-label{
-  letter-spacing:.4em;
-  font-size:.7rem;
-  color:var(--glow);
-  text-transform:uppercase;
-  margin-bottom:2rem;
-}
+    #cursor-ring {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(0, 255, 255, .7);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform .18s ease-out, width .3s, height .3s, border-color .3s;
+    }
 
-/* Projects Grid */
-.projects-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-  gap:2px;
-}
+    body:has(a:hover) #cursor {
+      width: 20px;
+      height: 20px;
+    }
 
-/* Cards */
-.project-card{
-  background:var(--deep);
-  padding:2rem;
-  text-decoration:none;
-  color:inherit;
-  position:relative;
-  transition:.3s;
-  border:1px solid rgba(0,255,255,0.15);
-  box-shadow:0 0 15px rgba(0,255,255,0.2);
-}
-.project-card:hover{
-  transform:translateY(-5px);
-  box-shadow:0 0 20px rgba(0,255,255,0.4),0 0 40px rgba(0,255,255,0.25);
-}
-.card-number{font-size:.65rem;letter-spacing:.3em;opacity:.5;margin-bottom:1.5rem;}
-.card-title{
-  font-size:1.6rem;font-weight:700;margin-bottom:.7rem;
-  background:linear-gradient(135deg,#00ffff,#00f0ff,#80ffff);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-.card-desc{
-  font-family:'Cormorant Garamond',serif;
-  opacity:.65;
-  margin-bottom:1.5rem;
-  line-height:1.6;
-}
-.card-tags{
-  display:flex;flex-wrap:wrap;gap:.4rem;
-}
-.tag{
-  border:1px solid rgba(0,255,255,.3);
-  padding:.25rem .6rem;
-  font-size:.6rem;
-  border-radius:999px;
-  color:var(--pulse);
-}
+    body:has(a:hover) #cursor-ring {
+      width: 56px;
+      height: 56px;
+      border-color: var(--pulse);
+    }
 
-/* FEATURED PROJECT */
-.featured-project{
-  grid-column:span 2;
-  background:radial-gradient(circle at center, rgba(0,255,255,0.25), var(--deep));
-  border:1px solid rgba(0,255,255,0.4);
-  box-shadow:0 0 50px rgba(0,255,255,0.6),0 0 120px rgba(0,255,255,0.35);
-}
-.featured-project .card-title{font-size:2.2rem;}
-.featured-project .card-desc{font-size:1.15rem;}
+    /* Starfield & Infinity */
+    #starfield,
+    #infinity-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-/* Footer */
-footer{
-  margin-top:4rem;padding:2rem;border-top:1px solid var(--rim);
-  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
-}
-.footer-mark{font-size:1.4rem;font-weight:800;color:var(--pulse);}
-.footer-links{display:flex;gap:2rem;list-style:none;}
-.footer-links a{text-decoration:none;font-size:.75rem;letter-spacing:.2em;color:rgba(128,255,255,.5);}
-.footer-links a:hover{color:var(--pulse);}
-</style>
+    #infinity-canvas {
+      opacity: .5;
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-name {
+      font-size: clamp(4rem, 10vw, 8rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #00f0ff, #00ffff, #80ffff);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: neonPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes neonPulse {
+
+      0%,
+      100% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+
+    .hero-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      opacity: .7;
+      margin-top: .5rem;
+      color: #80ffff;
+    }
+
+    /* Section */
+    .section {
+      padding: 6rem 2rem;
+      max-width: 1300px;
+      margin: auto;
+    }
+
+    .section-label {
+      letter-spacing: .4em;
+      font-size: .7rem;
+      color: var(--glow);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    /* Projects Grid */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 2px;
+    }
+
+    /* Cards */
+    .project-card {
+      background: var(--deep);
+      padding: 2rem;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      transition: .3s;
+      border: 1px solid rgba(0, 255, 255, 0.15);
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+    }
+
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), 0 0 40px rgba(0, 255, 255, 0.25);
+    }
+
+    .card-number {
+      font-size: .65rem;
+      letter-spacing: .3em;
+      opacity: .5;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: .7rem;
+      background: linear-gradient(135deg, #00ffff, #00f0ff, #80ffff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .card-desc {
+      font-family: 'Cormorant Garamond', serif;
+      opacity: .65;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+    }
+
+    .tag {
+      border: 1px solid rgba(0, 255, 255, .3);
+      padding: .25rem .6rem;
+      font-size: .6rem;
+      border-radius: 999px;
+      color: var(--pulse);
+    }
+
+    /* FEATURED PROJECT */
+    .featured-project {
+      grid-column: span 2;
+      background: radial-gradient(circle at center, rgba(0, 255, 255, 0.25), var(--deep));
+      border: 1px solid rgba(0, 255, 255, 0.4);
+      box-shadow: 0 0 50px rgba(0, 255, 255, 0.6), 0 0 120px rgba(0, 255, 255, 0.35);
+    }
+
+    .featured-project .card-title {
+      font-size: 2.2rem;
+    }
+
+    .featured-project .card-desc {
+      font-size: 1.15rem;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 4rem;
+      padding: 2rem;
+      border-top: 1px solid var(--rim);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-mark {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--pulse);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .footer-links a {
+      text-decoration: none;
+      font-size: .75rem;
+      letter-spacing: .2em;
+      color: rgba(128, 255, 255, .5);
+    }
+
+    .footer-links a:hover {
+      color: var(--pulse);
+    }
+  </style>
 </head>
 
 <body>
 
-<div id="cursor"></div>
-<div id="cursor-ring"></div>
-<canvas id="starfield"></canvas>
-<canvas id="infinity-canvas"></canvas>
+  <div id="cursor"></div>
+  <div id="cursor-ring"></div>
+  <canvas id="starfield"></canvas>
+  <canvas id="infinity-canvas"></canvas>
 
-<section class="hero">
-<h1 class="hero-name">Aiden</h1>
-<p class="hero-sub">Designer · Developer · Creator</p>
-</section>
+  <section class="hero">
+    <h1 class="hero-name">Aiden</h1>
+    <p class="hero-sub">Designer · Developer · Creator</p>
+  </section>
 
-<section class="section">
-<p class="section-label">Projects</p>
-<div class="projects-grid">
+  <section class="section">
+    <p class="section-label">Projects</p>
+    <div class="projects-grid">
 
-<a href="https://furrycoder67.github.io/NEXUS-PLATFORM/" target="_blank" class="project-card featured-project">
-<p class="card-number">★ FEATURED</p>
-<h2 class="card-title">NEXUS Platform</h2>
-<p class="card-desc">
-A Roblox-style browser platform where players can build, publish, and play games created by the community. A hub for experimentation, creativity, and shared worlds.
-</p>
-<div class="card-tags">
-<span class="tag">Game Platform</span>
-<span class="tag">Browser Engine</span>
-<span class="tag">Community</span>
-</div>
-</a>
+      <a href="https://furrycoder67.github.io/NEXUS-PLATFORM/" target="_blank" class="project-card featured-project">
+        <p class="card-number">★ FEATURED</p>
+        <h2 class="card-title">NEXUS Platform</h2>
+        <p class="card-desc">
+          A Roblox-style browser platform where players can build, publish, and play games created by the community. A
+          hub for experimentation, creativity, and shared worlds.
+        </p>
+        <div class="card-tags">
+          <span class="tag">Game Platform</span>
+          <span class="tag">Browser Engine</span>
+          <span class="tag">Community</span>
+        </div>
+      </a>
 
-<a href="https://chromewebstore.google.com/detail/last-run/ddhphodlieccpiikndhfmggmdnbnlggh" target="_blank" class="project-card">
-<p class="card-number">001</p>
-<h2 class="card-title">Last Run</h2>
-<p class="card-desc">A Chrome extension platformer where you play as a dog.</p>
-<div class="card-tags"><span class="tag">Chrome Extension</span><span class="tag">Game</span></div>
-</a>
+      <a href="https://chromewebstore.google.com/detail/last-run/ddhphodlieccpiikndhfmggmdnbnlggh" target="_blank"
+        class="project-card">
+        <p class="card-number">001</p>
+        <h2 class="card-title">Last Run</h2>
+        <p class="card-desc">A Chrome extension platformer where you play as a dog.</p>
+        <div class="card-tags"><span class="tag">Chrome Extension</span><span class="tag">Game</span></div>
+      </a>
 
-<a href="https://furrycoder67.github.io/infinitycorp" target="_blank" class="project-card">
-<p class="card-number">002</p>
-<h2 class="card-title">Infinity Corp</h2>
-<p class="card-desc">Corporate empire idle game with prestige upgrades.</p>
-<div class="card-tags"><span class="tag">Idle Game</span><span class="tag">Clicker</span></div>
-</a>
+      <a href="https://furrycoder67.github.io/infinitycorp" target="_blank" class="project-card">
+        <p class="card-number">002</p>
+        <h2 class="card-title">Infinity Corp</h2>
+        <p class="card-desc">Corporate empire idle game with prestige upgrades.</p>
+        <div class="card-tags"><span class="tag">Idle Game</span><span class="tag">Clicker</span></div>
+      </a>
 
-<a href="https://furrycoder67.github.io/JJK-Arena/" target="_blank" class="project-card">
-<p class="card-number">003</p>
-<h2 class="card-title">JJK Arena</h2>
-<p class="card-desc">Jujutsu Kaisen browser fighting game.</p>
-<div class="card-tags"><span class="tag">Fighting Game</span><span class="tag">Browser</span></div>
-</a>
+      <a href="https://furrycoder67.github.io/JJK-Arena/" target="_blank" class="project-card">
+        <p class="card-number">003</p>
+        <h2 class="card-title">JJK Arena</h2>
+        <p class="card-desc">Jujutsu Kaisen browser fighting game.</p>
+        <div class="card-tags"><span class="tag">Fighting Game</span><span class="tag">Browser</span></div>
+      </a>
 
-<a href="https://furrycoder67.github.io/multiplicationgame" target="_blank" class="project-card">
-<p class="card-number">004</p>
-<h2 class="card-title">Multiplication Games</h2>
-<p class="card-desc">Interactive math game for learning multiplication.</p>
-<div class="card-tags"><span class="tag">Education</span><span class="tag">Math</span></div>
-</a>
+      <a href="https://furrycoder67.github.io/MultiplicationGame/" target="_blank" class="project-card">
+        <p class="card-number">004</p>
+        <h2 class="card-title">Multiplication Games</h2>
+        <p class="card-desc">Interactive math game for learning multiplication.</p>
+        <div class="card-tags"><span class="tag">Education</span><span class="tag">Math</span></div>
+      </a>
+      <a href="https://furrycoder67.github.io/JJK-grind/" target="_blank" class="project-card">
+        <p class="card-number">004</p>
+        <h2 class="card-title">Jujutsu Fight</h2>
+        <p class="card-desc">Fun game based off of Jujutsu Kaisen where you roll a cursed technique then level up with
+          it</p>
+        <div class="card-tags"><span class="tag">Fighting Game</span><span class="tag">Grind</span><span
+            class="tag">JJK</span></div>
+      </a>
 
-</div>
-</section>
+    </div>
+  </section>
 
-<footer>
-<span class="footer-mark">∞</span>
-<ul class="footer-links">
-<li><a href="https://github.com/FurryCoder67">GitHub</a></li>
-<li><a href="#">Twitter</a></li>
-<li><a href="#">Email</a></li>
-</ul>
-</footer>
+  <footer>
+    <span class="footer-mark">∞</span>
+    <ul class="footer-links">
+      <li><a href="https://github.com/FurryCoder67">GitHub</a></li>
+      <li><a href="#">Twitter</a></li>
+      <li><a href="#">Email</a></li>
+    </ul>
+  </footer>
 
-<script>
-/* Cursor */
-const cursor=document.getElementById('cursor');
-const ring=document.getElementById('cursor-ring');
-let mx=window.innerWidth/2,my=window.innerHeight/2;
-let rx=mx,ry=my;
-document.addEventListener('mousemove',e=>{
-  mx=e.clientX; my=e.clientY;
-  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
-});
-(function animRing(){
-  rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12;
-  ring.style.left=rx+'px'; ring.style.top=ry+'px';
-  requestAnimationFrame(animRing);
-})();
+  <script>
+    /* Cursor */
+    const cursor = document.getElementById('cursor');
+    const ring = document.getElementById('cursor-ring');
+    let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+    let rx = mx, ry = my;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    });
+    (function animRing() {
+      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(animRing);
+    })();
 
-/* Starfield */
-(function(){
-const c=document.getElementById('starfield'); const ct=c.getContext('2d');
-let W,H; const STAR_COUNT=260; const stars=[];
-function resize(){W=c.width=window.innerWidth; H=c.height=window.innerHeight;}
-resize(); window.addEventListener('resize',resize);
-for(let i=0;i<STAR_COUNT;i++){stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.2+0.2,a:Math.random(),speed:Math.random()*0.0004+0.0001,phase:Math.random()*Math.PI*2});}
-function draw(t){ct.clearRect(0,0,W,H); stars.forEach(s=>{const alpha=s.a*(0.5+0.5*Math.sin(t*s.speed*1000+s.phase)); ct.beginPath(); ct.arc(s.x*W,s.y*H,s.r,0,Math.PI*2); ct.fillStyle=`rgba(0,255,255,${alpha})`; ct.fill();}); requestAnimationFrame(draw);}
-requestAnimationFrame(draw);
-})();
+    /* Starfield */
+    (function () {
+      const c = document.getElementById('starfield'); const ct = c.getContext('2d');
+      let W, H; const STAR_COUNT = 260; const stars = [];
+      function resize() { W = c.width = window.innerWidth; H = c.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      for (let i = 0; i < STAR_COUNT; i++) { stars.push({ x: Math.random(), y: Math.random(), r: Math.random() * 1.2 + 0.2, a: Math.random(), speed: Math.random() * 0.0004 + 0.0001, phase: Math.random() * Math.PI * 2 }); }
+      function draw(t) { ct.clearRect(0, 0, W, H); stars.forEach(s => { const alpha = s.a * (0.5 + 0.5 * Math.sin(t * s.speed * 1000 + s.phase)); ct.beginPath(); ct.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2); ct.fillStyle = `rgba(0,255,255,${alpha})`; ct.fill(); }); requestAnimationFrame(draw); }
+      requestAnimationFrame(draw);
+    })();
 
-/* Infinity symbol */
-(function(){
-const c=document.getElementById('infinity-canvas'); const ct=c.getContext('2d');
-let W,H;
-function resize(){W=c.width=window.innerWidth; H=c.height=window.innerHeight;}
-resize(); window.addEventListener('resize',resize);
-let t=0;
-function lemniscate(theta,a){const denom=1+Math.sin(theta)**2; return{x:a*Math.cos(theta)/denom, y:a*Math.sin(theta)*Math.cos(theta)/denom};}
-function draw(){
-ct.clearRect(0,0,W,H); const cx=W/2,cy=H/2,a=Math.min(W,H)*0.28,pts=420;
-for(let pass=0;pass<3;pass++){
-const width=[12,5,1.5][pass],alpha=[0.06,0.12,0.55][pass]; ct.beginPath();
-for(let i=0;i<=pts;i++){const theta=(i/pts)*Math.PI*2; const p=lemniscate(theta,a); if(i===0) ct.moveTo(cx+p.x,cy+p.y); else ct.lineTo(cx+p.x,cy+p.y);}
-ct.closePath(); const grad=ct.createLinearGradient(cx-a,cy,cx+a,cy); const offset=((t*0.0004)%1);
-grad.addColorStop((offset+0)%1,`rgba(0,255,255,0)`); grad.addColorStop((offset+0.2)%1,`rgba(0,255,255,${alpha})`);
-grad.addColorStop((offset+0.5)%1,`rgba(0,255,255,${alpha*0.7})`);
-grad.addColorStop((offset+0.8)%1,`rgba(0,255,255,${alpha*0.4})`);
-grad.addColorStop((offset+1.0)%1,`rgba(0,255,255,0)`);
-ct.strokeStyle=grad; ct.lineWidth=width; ct.stroke();}
-const dotTheta=((t*0.0008)%1)*Math.PI*2; const dp=lemniscate(dotTheta,a);
-const grd=ct.createRadialGradient(cx+dp.x,cy+dp.y,0,cx+dp.x,cy+dp.y,14);
-grd.addColorStop(0,'rgba(128,255,255,0.9)');
-grd.addColorStop(0.3,'rgba(0,255,255,0.5)');
-grd.addColorStop(1,'rgba(0,255,255,0)');
-ct.beginPath(); ct.arc(cx+dp.x,cy+dp.y,14,0,Math.PI*2); ct.fillStyle=grd; ct.fill();
-ct.beginPath(); ct.arc(cx+dp.x,cy+dp.y,3,0,Math.PI*2); ct.fillStyle='rgba(255,255,255,0.95)'; ct.fill();
-t++; requestAnimationFrame(draw);
-}
-draw();
-})();
-</script>
+    /* Infinity symbol */
+    (function () {
+      const c = document.getElementById('infinity-canvas'); const ct = c.getContext('2d');
+      let W, H;
+      function resize() { W = c.width = window.innerWidth; H = c.height = window.innerHeight; }
+      resize(); window.addEventListener('resize', resize);
+      let t = 0;
+      function lemniscate(theta, a) { const denom = 1 + Math.sin(theta) ** 2; return { x: a * Math.cos(theta) / denom, y: a * Math.sin(theta) * Math.cos(theta) / denom }; }
+      function draw() {
+        ct.clearRect(0, 0, W, H); const cx = W / 2, cy = H / 2, a = Math.min(W, H) * 0.28, pts = 420;
+        for (let pass = 0; pass < 3; pass++) {
+          const width = [12, 5, 1.5][pass], alpha = [0.06, 0.12, 0.55][pass]; ct.beginPath();
+          for (let i = 0; i <= pts; i++) { const theta = (i / pts) * Math.PI * 2; const p = lemniscate(theta, a); if (i === 0) ct.moveTo(cx + p.x, cy + p.y); else ct.lineTo(cx + p.x, cy + p.y); }
+          ct.closePath(); const grad = ct.createLinearGradient(cx - a, cy, cx + a, cy); const offset = ((t * 0.0004) % 1);
+          grad.addColorStop((offset + 0) % 1, `rgba(0,255,255,0)`); grad.addColorStop((offset + 0.2) % 1, `rgba(0,255,255,${alpha})`);
+          grad.addColorStop((offset + 0.5) % 1, `rgba(0,255,255,${alpha * 0.7})`);
+          grad.addColorStop((offset + 0.8) % 1, `rgba(0,255,255,${alpha * 0.4})`);
+          grad.addColorStop((offset + 1.0) % 1, `rgba(0,255,255,0)`);
+          ct.strokeStyle = grad; ct.lineWidth = width; ct.stroke();
+        }
+        const dotTheta = ((t * 0.0008) % 1) * Math.PI * 2; const dp = lemniscate(dotTheta, a);
+        const grd = ct.createRadialGradient(cx + dp.x, cy + dp.y, 0, cx + dp.x, cy + dp.y, 14);
+        grd.addColorStop(0, 'rgba(128,255,255,0.9)');
+        grd.addColorStop(0.3, 'rgba(0,255,255,0.5)');
+        grd.addColorStop(1, 'rgba(0,255,255,0)');
+        ct.beginPath(); ct.arc(cx + dp.x, cy + dp.y, 14, 0, Math.PI * 2); ct.fillStyle = grd; ct.fill();
+        ct.beginPath(); ct.arc(cx + dp.x, cy + dp.y, 3, 0, Math.PI * 2); ct.fillStyle = 'rgba(255,255,255,0.95)'; ct.fill();
+        t++; requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+  </script>
 
 </body>
+
 </html>
