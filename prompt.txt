@@ -1,0 +1,222 @@
+You are a senior JavaScript game developer and animation engineer specializing in Three.js browser games.
+
+I will give you a large single-file HTML game that uses Three.js and canvas rendering. Your job is to significantly improve the game while keeping the same core structure.
+
+PRIMARY GOAL
+Make the game feel MUCH more alive, animated, and fun.
+
+Do not remove the existing mechanics unless you replace them with something clearly better.
+
+Keep the project mostly inside one HTML file if possible.
+
+Comment all new systems clearly.
+
+---
+
+## PART 1 — UNIQUE ANIMATIONS FOR EVERY MOVE
+
+Currently many attacks look similar. I want every move to have a completely different animation and visual identity.
+
+For each attack (Light, Heavy, Q, E, R, T, F):
+
+Create unique animation behaviors such as:
+
+LIGHT ATTACK
+• fast punch combo animation
+• quick arm swing
+• short slash trail
+• quick hit spark particles
+
+HEAVY ATTACK
+• wind-up animation
+• body twist
+• large impact effect
+• stronger camera shake
+
+Q — CURSED STRIKE
+• energy charge animation
+• glowing hands
+• burst wave effect
+• energy shockwave particles
+
+E / R / T — TECHNIQUE MOVES
+Each technique should look visually unique.
+
+Examples:
+Limitless
+• swirling blue energy
+• distortion effect
+• pull / push particles
+
+Blood Manipulation
+• red fluid particle streams
+• spikes forming from ground
+
+Ten Shadows
+• shadow creatures emerging
+• dark smoke effects
+
+Disaster Flames
+• flame jets
+• fire particles and heat glow
+
+Every move should have:
+• different animation timing
+• different particle effect
+• different screen feedback
+• different camera behavior
+
+---
+
+## PART 2 — IMPROVE ALL CHARACTER ANIMATIONS
+
+Create a proper animation system for the player model.
+
+Add:
+
+Idle animation
+• breathing motion
+• slight body sway
+
+Running animation
+• arms swinging
+• torso leaning forward
+• slight camera bob
+
+Jump animation
+• squash before jump
+• stretch in air
+• landing impact
+
+Dash animation
+• motion blur
+• speed lines
+• quick body tilt
+
+Hit reaction animation
+• recoil
+• short stagger
+
+Landing animation
+• quick crouch then stand
+
+Use smooth interpolation (lerp / easing) for transitions.
+
+---
+
+## PART 3 — BETTER CHARACTER MODEL IN CANVAS
+
+Currently the character is very simple.
+
+Upgrade the canvas/mesh character system so the player looks more like a real character.
+
+Improve body parts:
+
+Head
+• different head shapes
+
+Hair
+• multiple styles
+• spiky / long / tied / messy
+
+Body
+• torso shape options
+• wider shoulders
+• slimmer builds
+
+Arms
+• segmented arm pieces for better animation
+
+Legs
+• more defined legs
+
+Add accessories such as:
+
+• scarves
+• cloaks
+• belts
+• shoulder armor
+• cursed aura effects
+• glowing eyes
+• masks
+• capes
+
+Allow color variations and random generation.
+
+Make the character visually match their technique if possible (example: flame aura for fire users).
+
+---
+
+## PART 4 — ADD MORE VISUAL EFFECTS
+
+Add more satisfying combat feedback:
+
+• hit sparks
+• attack trails
+• particle bursts
+• energy waves
+• debris when hitting ground
+• screen flash on strong attacks
+• slow motion on big hits
+
+Add subtle camera effects:
+
+• camera shake on impact
+• slight zoom during heavy attacks
+• slow motion for critical hits
+
+---
+
+## PART 5 — MAKE GAMEPLAY MORE FUN
+
+Add systems that make combat feel exciting:
+
+Combo System
+• track combo chains
+• combo counter
+• combo damage multiplier
+
+Enemy Reactions
+• knockback physics
+• stagger when hit
+• ragdoll-like fall on defeat
+
+Random Combat Events
+• enemy ambush
+• mini bosses
+• elite enemies with special powers
+
+Rewards
+• XP bursts
+• particle celebrations
+• level up effects
+• loot drops
+
+---
+
+## PART 6 — PERFORMANCE
+
+Optimize where possible:
+
+• reuse particle objects
+• avoid creating objects every frame
+• reduce heavy DOM updates
+• group updates into systems
+
+---
+
+## OUTPUT INSTRUCTIONS
+
+When returning the improved code:
+
+1. Show only the parts that must be changed or added.
+2. Label each section clearly:
+
+   * Animation System
+   * Character Model Upgrade
+   * Particle Effects
+   * Combat Improvements
+3. Explain briefly what each new system does.
+4. Keep the structure compatible with the original code.
+
+Wait for me to paste the full game file.
