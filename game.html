@@ -1212,28 +1212,50 @@ function animPlayerModel(dt){
   anim.breathPhase += dt * 1.2;
 
   const wc  = anim.walkCycle;
-  const sinW= Math.sin(wc);
-  const cosW= Math.cos(wc);
   const spd = anim.walkSpeed;
   const breath = Math.sin(anim.breathPhase)*0.012;
 
-  // ── Hips bob & sway ──
-  const hipBob   = spd * sinW * 0.07;
-  const hipSway  = spd * cosW * 0.055;
-  anim.tHipSway  = hipSway;
-  anim.hipSway   = lerpA(anim.hipSway, anim.tHipSway, 10*dt);
-  hips.position.y= 1.1 + hipBob - (inAir?0.05:0) + breath;
-  hips.rotation.z= anim.hipSway * 0.5;
-  hips.rotation.y= anim.hipSway * 0.3;
+  // ── Gait phase helpers (dual-sine for natural foot timing) ──
+  const sinW  = Math.sin(wc);
+  const cosW  = Math.cos(wc);
+  const sin2W = Math.sin(wc*2);           // double-frequency for bob (2 bobs per stride)
+  const cosHW = Math.cos(wc*0.5);         // half-frequency for subtle sway
+  // Asymmetric leg curves: sharper lift, slower plant
+  const lLegSwing = Math.sin(wc);         // left leg: forward when positive
+  const rLegSwing = Math.sin(wc+Math.PI); // right leg: opposite phase
+  const lLegLift  = Math.max(0, Math.sin(wc));          // left foot off ground
+  const rLegLift  = Math.max(0, Math.sin(wc+Math.PI));  // right foot off ground
+  // Push-off emphasis (foot pushes back harder)
+  const lPush = Math.max(0,-Math.sin(wc));
+  const rPush = Math.max(0, Math.sin(wc));
 
-  // ── Torso lean & counter-sway ──
-  anim.tTorsoPitch = dashing?0.28 : (moving?0.12:0);
-  anim.tTorsoRoll  = -hipSway * 0.8;
-  anim.torsoPitch  = lerpA(anim.torsoPitch, anim.tTorsoPitch, 9*dt);
-  anim.torsoRoll   = lerpA(anim.torsoRoll, anim.tTorsoRoll, 9*dt);
-  torso.rotation.x = anim.torsoPitch;
-  torso.rotation.z = anim.torsoRoll;
-  // Breathing expansion on torso
+  // ── Running vs walking multipliers ──
+  const isRunning = spd > 1.2;
+  const walkLerp  = Math.min(spd, 1.0);         // 0..1 for walk blend
+  const runLerp   = Math.max(0, spd - 1.0)*1.25; // 0..1 for run blend
+  const gaitMult  = walkLerp + runLerp * 0.6;    // overall motion intensity
+
+  // ── Hips: double-frequency bob + lateral weight shift ──
+  const hipBob    = -Math.abs(sin2W) * 0.06 * gaitMult;   // dip at each foot strike
+  const hipLateral= cosW * 0.04 * gaitMult;                // shift over planted foot
+  const hipDrop   = sinW * 0.025 * gaitMult;               // pelvis drop on swing side
+  hips.position.y = 1.1 + hipBob - (inAir?0.05:0) + breath;
+  hips.position.x = lerpA(hips.position.x||0, hipLateral, 12*dt);
+  hips.rotation.z = lerpA(hips.rotation.z, hipDrop + cosW*0.04*gaitMult, 10*dt);
+  hips.rotation.y = lerpA(hips.rotation.y, sinW * 0.08 * gaitMult, 10*dt); // counter-rotation
+
+  // ── Torso: counter-rotate against hips, forward lean ──
+  const torsoYaw    = -sinW * 0.12 * gaitMult;  // upper body counters hip rotation
+  const fwdLean     = dashing ? 0.32 : (moving ? (0.06 + runLerp*0.1) : 0);
+  const torsoSideRoll = -cosW * 0.06 * gaitMult; // counter the hip drop
+  anim.tTorsoPitch  = fwdLean;
+  anim.tTorsoRoll   = torsoSideRoll;
+  anim.torsoPitch   = lerpA(anim.torsoPitch, anim.tTorsoPitch, 9*dt);
+  anim.torsoRoll    = lerpA(anim.torsoRoll, anim.tTorsoRoll, 9*dt);
+  torso.rotation.x  = anim.torsoPitch;
+  torso.rotation.z  = anim.torsoRoll;
+  torso.rotation.y  = lerpA(torso.rotation.y, torsoYaw, 10*dt);
+  // Breathing expansion
   torso.scale.x = 1+breath*0.5;
   torso.scale.z = 1+breath*0.8;
 
@@ -1257,18 +1279,16 @@ function animPlayerModel(dt){
     const comboIsRight = player.comboCount%2===1;
 
     if(comboIsRight){
-      // Right hook: shoulder swings forward, elbow extends
       if(rAP){rAP.rotation.x=-sw*1.6;rAP.rotation.z=-sw*0.35;}
       if(rEP){rEP.rotation.x=-sw*0.5;}
-      if(lAP){lAP.rotation.x= sw*0.4;lAP.rotation.z= sw*0.15;}// counter-arm
-      torso.rotation.y = sw*0.22; // torso twist
+      if(lAP){lAP.rotation.x= sw*0.4;lAP.rotation.z= sw*0.15;}
+      torso.rotation.y = sw*0.22;
     } else {
       if(lAP){lAP.rotation.x=-sw*1.6;lAP.rotation.z= sw*0.35;}
       if(lEP){lEP.rotation.x=-sw*0.5;}
       if(rAP){rAP.rotation.x= sw*0.4;rAP.rotation.z=-sw*0.15;}
       torso.rotation.y =-sw*0.22;
     }
-    // Knuckle glow on swing peak
     const knuckleMat= g.getObjectByName((comboIsRight?'right':'left')+'Knuckle');
     if(knuckleMat){knuckleMat.material.opacity=sw*0.55;}
     return;
@@ -1276,38 +1296,84 @@ function animPlayerModel(dt){
 
   // Reset knuckle glow
   ['leftKnuckle','rightKnuckle'].forEach(n=>{const k=g.getObjectByName(n);if(k)k.material.opacity=0;});
-  torso.rotation.y=lerpA(torso.rotation.y,0,8*dt);
 
   if(moving){
-    // ── WALK / RUN ──
-    const runMult = spd;
-    // Arms swing (shoulder pivots)
-    if(lAP){lAP.rotation.x= sinW*0.65*runMult;lAP.rotation.z= 0.08*runMult;lAP.rotation.y= cosW*0.06*runMult;}
-    if(rAP){rAP.rotation.x=-sinW*0.65*runMult;rAP.rotation.z=-0.08*runMult;rAP.rotation.y=-cosW*0.06*runMult;}
-    // Elbow subtle bend while running
-    if(lEP){lEP.rotation.x=-0.2-Math.max(0,sinW)*0.3*runMult;}
-    if(rEP){rEP.rotation.x=-0.2+Math.max(0,-sinW)*0.3*runMult;}
-    // Legs (hip joint pivots)
-    if(lLP){lLP.rotation.x=-sinW*0.8*runMult;lLP.rotation.z= 0;}
-    if(rLP){rLP.rotation.x= sinW*0.8*runMult;rLP.rotation.z= 0;}
-    // Knee bend (shin follows thigh)
-    if(lKP){lKP.rotation.x= Math.max(0,-sinW)*0.55*runMult;}
-    if(rKP){rKP.rotation.x= Math.max(0, sinW)*0.55*runMult;}
-    // Head bob + tilt
-    if(head){head.rotation.x= sinW*0.06*runMult;head.rotation.z=-anim.hipSway*0.4;}
+    // ── WALK / RUN — realistic gait ──
+
+    // --- LEGS: thigh swing + IK-style knee bend ---
+    // Thigh swings forward/back; when leg swings forward, knee bends more (passing phase)
+    const thighAmplitude = 0.55 + runLerp*0.35;  // bigger stride when running
+    const kneeBase       = 0.08;                   // slight resting bend
+    const kneeLiftMult   = 0.6 + runLerp*0.5;     // more knee lift when running
+
+    if(lLP){
+      lLP.rotation.x = -lLegSwing * thighAmplitude * gaitMult;
+      lLP.rotation.z = 0;
+    }
+    if(rLP){
+      rLP.rotation.x = -rLegSwing * thighAmplitude * gaitMult;
+      rLP.rotation.z = 0;
+    }
+    // Knee: bends when foot lifts (swing phase), extends on plant
+    if(lKP) lKP.rotation.x = kneeBase + lLegLift * kneeLiftMult * gaitMult + lPush*0.12*gaitMult;
+    if(rKP) rKP.rotation.x = kneeBase + rLegLift * kneeLiftMult * gaitMult + rPush*0.12*gaitMult;
+
+    // --- ARMS: counter-swing with natural elbow flex ---
+    const armSwingAmp = 0.5 + runLerp*0.4;
+    const elbowFlex   = 0.35 + runLerp*0.45; // arms bend more when running
+
+    if(lAP){
+      lAP.rotation.x = sinW * armSwingAmp * gaitMult;          // opposite to right leg
+      lAP.rotation.z = 0.06 + runLerp*0.04;                    // slight outward splay
+      lAP.rotation.y = cosW * 0.04 * gaitMult;                 // subtle cross-body
+    }
+    if(rAP){
+      rAP.rotation.x = -sinW * armSwingAmp * gaitMult;
+      rAP.rotation.z = -0.06 - runLerp*0.04;
+      rAP.rotation.y = -cosW * 0.04 * gaitMult;
+    }
+    // Elbow: flexes when arm swings back (like a runner pulling back)
+    if(lEP) lEP.rotation.x = -elbowFlex * (0.3 + Math.max(0, -sinW)*0.7) * gaitMult;
+    if(rEP) rEP.rotation.x = -elbowFlex * (0.3 + Math.max(0,  sinW)*0.7) * gaitMult;
+
+    // --- HEAD: stabilizes, slight counter-bob ---
+    if(head){
+      head.rotation.x = lerpA(head.rotation.x||0, -anim.torsoPitch*0.4 + Math.abs(sin2W)*0.03*gaitMult, 10*dt);
+      head.rotation.z = lerpA(head.rotation.z||0, -torsoSideRoll*0.5, 8*dt);
+      head.rotation.y = lerpA(head.rotation.y||0, -torsoYaw*0.3, 8*dt); // eyes stay forward
+    }
   } else {
-    // ── IDLE ──
-    const id=Math.sin(elapsed*1.8)*0.06;
-    const id2=Math.sin(elapsed*1.8+1.2)*0.04;
-    if(lAP){lAP.rotation.x=id*0.5;lAP.rotation.z= 0.06;lAP.rotation.y=0;}
-    if(rAP){rAP.rotation.x=-id*0.5;rAP.rotation.z=-0.06;rAP.rotation.y=0;}
-    if(lEP){lEP.rotation.x=-0.12+id2;}
-    if(rEP){rEP.rotation.x=-0.12-id2;}
-    if(lLP){lLP.rotation.x=id*0.2;lLP.rotation.z= 0;}
-    if(rLP){rLP.rotation.x=-id*0.2;rLP.rotation.z= 0;}
-    if(lKP)lKP.rotation.x=0;
-    if(rKP)rKP.rotation.x=0;
-    if(head){head.rotation.x=id*0.3;head.rotation.z=id2*0.4;}
+    // ── IDLE: subtle weight shift + breathing ──
+    const idleT   = elapsed * 0.8;  // slow, relaxed cycle
+    const idleSin = Math.sin(idleT);
+    const idleCos = Math.cos(idleT);
+    const idleSin2= Math.sin(idleT*1.7+0.8); // secondary rhythm for variety
+
+    // Subtle weight shift side to side
+    hips.rotation.z = lerpA(hips.rotation.z, idleSin*0.015, 5*dt);
+    hips.position.x = lerpA(hips.position.x||0, idleSin*0.012, 5*dt);
+
+    // Arms hang naturally with slight sway
+    if(lAP){lAP.rotation.x=idleSin*0.03;  lAP.rotation.z= 0.08+idleCos*0.01; lAP.rotation.y=0;}
+    if(rAP){rAP.rotation.x=-idleSin*0.03; rAP.rotation.z=-0.08-idleCos*0.01; rAP.rotation.y=0;}
+    if(lEP) lEP.rotation.x = -0.1 + idleSin2*0.03;
+    if(rEP) rEP.rotation.x = -0.1 - idleSin2*0.03;
+
+    // Legs relaxed, one slightly bent
+    if(lLP){lLP.rotation.x= idleSin*0.01; lLP.rotation.z=0;}
+    if(rLP){rLP.rotation.x=-idleSin*0.01; rLP.rotation.z=0;}
+    if(lKP) lKP.rotation.x = 0.02 + Math.max(0,idleSin)*0.02;
+    if(rKP) rKP.rotation.x = 0.02 + Math.max(0,-idleSin)*0.02;
+
+    // Head: subtle look-around
+    if(head){
+      head.rotation.x = lerpA(head.rotation.x||0, idleSin*0.02+breath*1.5, 4*dt);
+      head.rotation.z = lerpA(head.rotation.z||0, idleSin2*0.025, 4*dt);
+      head.rotation.y = lerpA(head.rotation.y||0, Math.sin(idleT*0.4)*0.06, 3*dt);
+    }
+
+    // Smooth torso back to neutral
+    torso.rotation.y = lerpA(torso.rotation.y, 0, 6*dt);
   }
 
   // ── Dash lean ──
