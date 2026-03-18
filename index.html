@@ -31,6 +31,7 @@
       background: var(--bg);
       color: var(--text);
       overflow-x: hidden;
+      cursor: none;
     }
 
     /* GRID BACKGROUND */
@@ -43,6 +44,22 @@
         linear-gradient(90deg, rgba(0, 240, 255, 0.06) 1px, transparent 1px);
       background-size: 40px 40px;
       z-index: 0;
+    }
+
+    /* CURSOR */
+    #cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px #00f0ff77, 0 0 20px #00f0ff33;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s ease, height 0.2s ease;
     }
 
     /* HERO */
@@ -62,7 +79,10 @@
       font-size: clamp(3rem, 8vw, 6rem);
       letter-spacing: .1em;
       color: var(--cyan);
-      text-shadow: 0 0 15px var(--cyan);
+      text-shadow: 0 0 10px var(--cyan), 0 0 25px var(--cyan33);
+      background: linear-gradient(90deg, #00f0ff, #00cfff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .hero-sub {
@@ -93,13 +113,15 @@
 
     /* CARD */
     .project-card {
-      background: var(--panel);
+      background: linear-gradient(145deg, #0b101f, #0f1428);
       padding: 2rem;
       border: 1px solid var(--cyan-soft);
       position: relative;
       text-decoration: none;
       color: inherit;
-      transition: .25s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      transform-style: preserve-3d;
+      box-shadow: 0 0 15px #00f0ff33, inset 0 0 10px #00f0ff22;
     }
 
     /* subtle top line */
@@ -114,11 +136,11 @@
       opacity: .4;
     }
 
-    /* hover */
+    /* hover effect */
     .project-card:hover {
-      transform: translateY(-6px);
+      transform: translateY(-6px) rotateX(2deg) rotateY(2deg);
       border-color: var(--cyan);
-      box-shadow: 0 0 20px var(--cyan-soft);
+      box-shadow: 0 0 25px #00f0ff66, inset 0 0 15px #00f0ff44;
     }
 
     /* TEXT */
@@ -193,6 +215,8 @@
 
 <body>
 
+  <div id="cursor"></div>
+
   <section class="hero">
     <h1 class="hero-name">MonkeyManJr.</h1>
     <p class="hero-sub">Monkey • Furry • Purpleton</p>
@@ -207,7 +231,7 @@
         <p class="card-number">FEATURED</p>
         <h2 class="card-title">JJK Fighter</h2>
         <p class="card-desc">A fun JJK inspired game where you choose your cursed technique and then grind with it
-          killing sorcerers</p>
+          killing sorcerers.</p>
         <div class="card-tags">
           <span class="tag">Grind</span>
           <span class="tag">Fighting</span>
@@ -253,6 +277,15 @@
       <li><a href="https://github.com/FurryCoder67">GitHub</a></li>
     </ul>
   </footer>
+
+  <script>
+    // Cursor
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top = e.clientY + 'px';
+    });
+  </script>
 
 </body>
 
