@@ -7,121 +7,45 @@
   <title>Aiden Portfolio</title>
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Syne:wght@400;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Inter:wght@300;400;600&display=swap"
     rel="stylesheet">
 
   <style>
     :root {
-      --void: #010108;
-      --deep: #05050f;
-      --pulse: #00f0ff;
-      --glow: #00ffff;
-      --star: #80ffff;
-      --rim: rgba(0, 255, 255, 0.35);
+      --bg: #02030a;
+      --panel: #0a0f1c;
+      --cyan: #00f0ff;
+      --cyan-soft: #00f0ff33;
+      --text: #d6faff;
     }
 
-    /* Reset */
+    /* RESET */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
     body {
-      background: var(--void);
-      color: var(--star);
-      font-family: 'Syne', sans-serif;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       overflow-x: hidden;
-      cursor: none;
     }
 
-    /* ================= BACKGROUND FX ================= */
+    /* GRID BACKGROUND */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(circle at 30% 20%, rgba(0, 255, 255, 0.08), transparent 60%),
-        radial-gradient(circle at 70% 80%, rgba(0, 255, 255, 0.06), transparent 60%);
-      animation: bgMove 12s ease-in-out infinite alternate;
-      z-index: 0;
-    }
-
-    @keyframes bgMove {
-      from {
-        transform: translateY(-20px);
-      }
-
-      to {
-        transform: translateY(20px);
-      }
-    }
-
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background:
-        linear-gradient(rgba(0, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(0, 240, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.06) 1px, transparent 1px);
       background-size: 40px 40px;
       z-index: 0;
-      pointer-events: none;
     }
 
-    /* ================= CURSOR ================= */
-    #cursor {
-      position: fixed;
-      width: 12px;
-      height: 12px;
-      background: var(--glow);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 0 10px var(--pulse), 0 0 20px var(--glow);
-    }
-
-    #cursor-ring {
-      position: fixed;
-      width: 40px;
-      height: 40px;
-      border: 1px solid rgba(0, 255, 255, .7);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9998;
-      transform: translate(-50%, -50%);
-    }
-
-    body:has(a:hover) #cursor {
-      width: 20px;
-      height: 20px;
-    }
-
-    body:has(a:hover) #cursor-ring {
-      width: 56px;
-      height: 56px;
-      border-color: var(--pulse);
-    }
-
-    /* ================= CANVAS ================= */
-    #starfield,
-    #infinity-canvas {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    #infinity-canvas {
-      opacity: .5;
-    }
-
-    /* ================= HERO ================= */
+    /* HERO */
     .hero {
       min-height: 100vh;
       display: flex;
@@ -129,237 +53,163 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      position: relative;
       z-index: 2;
+      position: relative;
     }
 
     .hero-name {
-      font-size: clamp(4rem, 10vw, 8rem);
-      font-weight: 800;
-      background: linear-gradient(135deg, #00f0ff, #00ffff, #80ffff);
-      background-size: 200% 200%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: neonPulse 3s ease-in-out infinite;
-      text-shadow:
-        0 0 10px rgba(0, 255, 255, 0.7),
-        0 0 40px rgba(0, 255, 255, 0.4),
-        0 0 80px rgba(0, 255, 255, 0.2);
-    }
-
-    @keyframes neonPulse {
-
-      0%,
-      100% {
-        background-position: 0% 50%;
-      }
-
-      50% {
-        background-position: 100% 50%;
-      }
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      letter-spacing: .1em;
+      color: var(--cyan);
+      text-shadow: 0 0 15px var(--cyan);
     }
 
     .hero-sub {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.3rem;
+      margin-top: 1rem;
       opacity: .7;
-      margin-top: .5rem;
     }
 
-    /* ================= SECTION ================= */
+    /* SECTION */
     .section {
-      padding: 6rem 2rem;
-      max-width: 1300px;
+      padding: 5rem 2rem;
+      max-width: 1200px;
       margin: auto;
-      border-top: 1px solid rgba(0, 255, 255, 0.1);
     }
 
     .section-label {
-      letter-spacing: .4em;
       font-size: .7rem;
-      color: var(--glow);
-      text-transform: uppercase;
+      letter-spacing: .3em;
+      color: var(--cyan);
       margin-bottom: 2rem;
-      text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
     }
 
-    /* ================= GRID ================= */
+    /* GRID */
     .projects-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 2px;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
     }
 
-    /* ================= CARDS ================= */
+    /* CARD */
     .project-card {
-      position: relative;
-      background: rgba(5, 5, 15, 0.6);
-      backdrop-filter: blur(12px);
+      background: var(--panel);
       padding: 2rem;
+      border: 1px solid var(--cyan-soft);
+      position: relative;
       text-decoration: none;
       color: inherit;
-
-      border: 1px solid rgba(0, 255, 255, 0.25);
-
-      opacity: 0.75;
-      filter: brightness(0.85);
-
-      transition: .3s;
-
-      box-shadow:
-        0 0 10px rgba(0, 255, 255, 0.15),
-        inset 0 0 10px rgba(0, 255, 255, 0.05);
+      transition: .25s ease;
     }
 
-    .project-card:hover {
-      transform: translateY(-6px);
-      opacity: 1;
-      filter: brightness(1.1);
-
-      box-shadow:
-        0 0 20px rgba(0, 255, 255, 0.4),
-        0 0 60px rgba(0, 255, 255, 0.25),
-        inset 0 0 20px rgba(0, 255, 255, 0.1);
-    }
-
-    /* scan line */
-    .project-card::after {
+    /* subtle top line */
+    .project-card::before {
       content: "";
       position: absolute;
       top: 0;
-      left: -100%;
+      left: 0;
       width: 100%;
-      height: 100%;
-      background: linear-gradient(120deg, transparent, rgba(0, 255, 255, 0.25), transparent);
-      transition: .7s;
+      height: 2px;
+      background: var(--cyan);
+      opacity: .4;
     }
 
-    .project-card:hover::after {
-      left: 100%;
+    /* hover */
+    .project-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--cyan);
+      box-shadow: 0 0 20px var(--cyan-soft);
     }
 
+    /* TEXT */
     .card-number {
-      font-size: .65rem;
-      letter-spacing: .3em;
-      opacity: .5;
-      margin-bottom: 1.5rem;
+      font-size: .7rem;
+      opacity: .4;
+      margin-bottom: 1rem;
     }
 
     .card-title {
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin-bottom: .7rem;
-      background: linear-gradient(135deg, #00ffff, #00f0ff, #80ffff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-family: 'Orbitron';
+      font-size: 1.4rem;
+      color: var(--cyan);
+      margin-bottom: .6rem;
     }
 
     .card-desc {
-      font-family: 'Cormorant Garamond', serif;
+      font-size: .95rem;
       opacity: .75;
-      margin-bottom: 1.5rem;
-      line-height: 1.6;
+      margin-bottom: 1.2rem;
     }
 
-    /* tags */
+    /* TAGS */
     .card-tags {
       display: flex;
+      gap: .5rem;
       flex-wrap: wrap;
-      gap: .4rem;
     }
 
     .tag {
-      border: 1px solid rgba(0, 255, 255, .35);
-      padding: .25rem .6rem;
-      font-size: .6rem;
-      border-radius: 999px;
-      color: var(--pulse);
-      box-shadow: 0 0 8px rgba(0, 255, 255, 0.2);
+      font-size: .65rem;
+      border: 1px solid var(--cyan-soft);
+      padding: .3rem .6rem;
+      border-radius: 4px;
     }
 
-    /* ================= FEATURED ================= */
-    .featured-project {
+    /* FEATURED */
+    .featured {
       grid-column: span 2;
-      opacity: 1;
-      filter: brightness(1.3);
-
-      background: radial-gradient(circle at center, rgba(0, 255, 255, 0.25), var(--deep));
-
-      box-shadow:
-        0 0 50px rgba(0, 255, 255, 0.6),
-        0 0 120px rgba(0, 255, 255, 0.35),
-        inset 0 0 30px rgba(0, 255, 255, 0.15);
+      border: 1px solid var(--cyan);
+      box-shadow: 0 0 30px var(--cyan-soft);
     }
 
-    .featured-project .card-title {
-      font-size: 2.2rem;
-    }
-
-    .featured-project .card-desc {
-      font-size: 1.15rem;
-    }
-
-    /* ================= FOOTER ================= */
+    /* FOOTER */
     footer {
       margin-top: 4rem;
       padding: 2rem;
-      border-top: 1px solid var(--rim);
+      border-top: 1px solid var(--cyan-soft);
       display: flex;
       justify-content: space-between;
-      align-items: center;
       flex-wrap: wrap;
-    }
-
-    .footer-mark {
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--pulse);
     }
 
     .footer-links {
       display: flex;
-      gap: 2rem;
+      gap: 1.5rem;
       list-style: none;
     }
 
     .footer-links a {
       text-decoration: none;
-      font-size: .75rem;
-      letter-spacing: .2em;
-      color: rgba(128, 255, 255, .5);
+      color: var(--text);
+      opacity: .6;
     }
 
     .footer-links a:hover {
-      color: var(--pulse);
+      color: var(--cyan);
+      opacity: 1;
     }
   </style>
 </head>
 
 <body>
 
-  <div id="cursor"></div>
-  <div id="cursor-ring"></div>
-  <canvas id="starfield"></canvas>
-  <canvas id="infinity-canvas"></canvas>
-
   <section class="hero">
-    <h1 class="hero-name">Aiden</h1>
-    <p class="hero-sub">MONKEY · MONKEY · MONKEY</p>
+    <h1 class="hero-name">MonkeyManJr.</h1>
+    <p class="hero-sub">Monkey • Furry • Purpleton</p>
   </section>
 
   <section class="section">
-    <p class="section-label">Projects</p>
+    <p class="section-label">PROJECTS</p>
+
     <div class="projects-grid">
 
-      <a href="https://furrycoder67.github.io/JJK-grind/" target="_blank" class="project-card featured-project">
-        <p class="card-number">★ FEATURED</p>
-        <h2 class="card-title">Jujutsu Fight</h2>
-        <p class="card-desc">
-          Fun game based off of Jujutsu Kaisen where you roll a cursed technique then level up with
-          it
-        </p>
-        <div class="card-tags"><span class="tag">Fighting Game</span><span class="tag">Grind</span><span
-            class="tag">JJK</span>
+      <a href="https://furrycoder67.github.io/NEXUS-PLATFORM/" target="_blank" class="project-card featured">
+        <p class="card-number">FEATURED</p>
+        <h2 class="card-title">NEXUS Platform</h2>
+        <p class="card-desc">A browser-based game platform where users build and share interactive worlds.</p>
+        <div class="card-tags">
+          <span class="tag">Platform</span>
+          <span class="tag">Engine</span>
         </div>
       </a>
 
@@ -367,100 +217,40 @@
         class="project-card">
         <p class="card-number">001</p>
         <h2 class="card-title">Last Run</h2>
-        <p class="card-desc">A Chrome extension platformer where you play as a dog.</p>
-        <div class="card-tags"><span class="tag">Chrome Extension</span><span class="tag">Game</span></div>
+        <p class="card-desc">A Chrome extension platformer starring a dog.</p>
+        <div class="card-tags"><span class="tag">Game</span></div>
       </a>
 
       <a href="https://furrycoder67.github.io/infinitycorp" target="_blank" class="project-card">
         <p class="card-number">002</p>
         <h2 class="card-title">Infinity Corp</h2>
-        <p class="card-desc">Corporate empire idle game with prestige upgrades.</p>
-        <div class="card-tags"><span class="tag">Idle Game</span><span class="tag">Clicker</span></div>
+        <p class="card-desc">Idle empire builder with upgrades and scaling systems.</p>
+        <div class="card-tags"><span class="tag">Idle</span></div>
       </a>
 
       <a href="https://furrycoder67.github.io/JJK-Arena/" target="_blank" class="project-card">
         <p class="card-number">003</p>
         <h2 class="card-title">JJK Arena</h2>
-        <p class="card-desc">Jujutsu Kaisen browser fighting game.</p>
-        <div class="card-tags"><span class="tag">Fighting Game</span><span class="tag">Browser</span></div>
+        <p class="card-desc">Anime-style browser fighting game.</p>
+        <div class="card-tags"><span class="tag">Fighting</span></div>
       </a>
 
-      <a href="https://furrycoder67.github.io/MultiplicationGame/" target="_blank" class="project-card">
+      <a href="https://furrycoder67.github.io/multiplicationgame" target="_blank" class="project-card">
         <p class="card-number">004</p>
-        <h2 class="card-title">Multiplication Games</h2>
-        <p class="card-desc">Interactive math game for learning multiplication.</p>
-        <div class="card-tags"><span class="tag">Education</span><span class="tag">Math</span></div>
+        <h2 class="card-title">Multiplication Game</h2>
+        <p class="card-desc">Interactive math learning experience.</p>
+        <div class="card-tags"><span class="tag">Education</span></div>
       </a>
 
     </div>
   </section>
 
   <footer>
-    <span class="footer-mark">∞</span>
+    <span>© Aiden</span>
     <ul class="footer-links">
       <li><a href="https://github.com/FurryCoder67">GitHub</a></li>
     </ul>
   </footer>
-
-  <script>
-    /* Cursor */
-    const cursor = document.getElementById('cursor');
-    const ring = document.getElementById('cursor-ring');
-    let mx = window.innerWidth / 2, my = window.innerHeight / 2;
-    let rx = mx, ry = my;
-    document.addEventListener('mousemove', e => {
-      mx = e.clientX; my = e.clientY;
-      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
-    });
-    (function animRing() {
-      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
-      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
-      requestAnimationFrame(animRing);
-    })();
-
-    /* Starfield */
-    (function () {
-      const c = document.getElementById('starfield'); const ct = c.getContext('2d');
-      let W, H; const STAR_COUNT = 260; const stars = [];
-      function resize() { W = c.width = window.innerWidth; H = c.height = window.innerHeight; }
-      resize(); window.addEventListener('resize', resize);
-      for (let i = 0; i < STAR_COUNT; i++) { stars.push({ x: Math.random(), y: Math.random(), r: Math.random() * 1.2 + 0.2, a: Math.random(), speed: Math.random() * 0.0004 + 0.0001, phase: Math.random() * Math.PI * 2 }); }
-      function draw(t) { ct.clearRect(0, 0, W, H); stars.forEach(s => { const alpha = s.a * (0.5 + 0.5 * Math.sin(t * s.speed * 1000 + s.phase)); ct.beginPath(); ct.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2); ct.fillStyle = `rgba(0,255,255,${alpha})`; ct.fill(); }); requestAnimationFrame(draw); }
-      requestAnimationFrame(draw);
-    })();
-
-    /* Infinity symbol */
-    (function () {
-      const c = document.getElementById('infinity-canvas'); const ct = c.getContext('2d');
-      let W, H;
-      function resize() { W = c.width = window.innerWidth; H = c.height = window.innerHeight; }
-      resize(); window.addEventListener('resize', resize);
-      let t = 0;
-      function lemniscate(theta, a) { const denom = 1 + Math.sin(theta) ** 2; return { x: a * Math.cos(theta) / denom, y: a * Math.sin(theta) * Math.cos(theta) / denom }; }
-      function draw() {
-        ct.clearRect(0, 0, W, H); const cx = W / 2, cy = H / 2, a = Math.min(W, H) * 0.28, pts = 420;
-        for (let pass = 0; pass < 3; pass++) {
-          const width = [12, 5, 1.5][pass], alpha = [0.06, 0.12, 0.55][pass]; ct.beginPath();
-          for (let i = 0; i <= pts; i++) { const theta = (i / pts) * Math.PI * 2; const p = lemniscate(theta, a); if (i === 0) ct.moveTo(cx + p.x, cy + p.y); else ct.lineTo(cx + p.x, cy + p.y); }
-          ct.closePath(); const grad = ct.createLinearGradient(cx - a, cy, cx + a, cy); const offset = ((t * 0.0004) % 1);
-          grad.addColorStop((offset + 0) % 1, `rgba(0,255,255,0)`); grad.addColorStop((offset + 0.2) % 1, `rgba(0,255,255,${alpha})`);
-          grad.addColorStop((offset + 0.5) % 1, `rgba(0,255,255,${alpha * 0.7})`);
-          grad.addColorStop((offset + 0.8) % 1, `rgba(0,255,255,${alpha * 0.4})`);
-          grad.addColorStop((offset + 1.0) % 1, `rgba(0,255,255,0)`);
-          ct.strokeStyle = grad; ct.lineWidth = width; ct.stroke();
-        }
-        const dotTheta = ((t * 0.0008) % 1) * Math.PI * 2; const dp = lemniscate(dotTheta, a);
-        const grd = ct.createRadialGradient(cx + dp.x, cy + dp.y, 0, cx + dp.x, cy + dp.y, 14);
-        grd.addColorStop(0, 'rgba(128,255,255,0.9)');
-        grd.addColorStop(0.3, 'rgba(0,255,255,0.5)');
-        grd.addColorStop(1, 'rgba(0,255,255,0)');
-        ct.beginPath(); ct.arc(cx + dp.x, cy + dp.y, 14, 0, Math.PI * 2); ct.fillStyle = grd; ct.fill();
-        ct.beginPath(); ct.arc(cx + dp.x, cy + dp.y, 3, 0, Math.PI * 2); ct.fillStyle = 'rgba(255,255,255,0.95)'; ct.fill();
-        t++; requestAnimationFrame(draw);
-      }
-      draw();
-    })();
-  </script>
 
 </body>
 
