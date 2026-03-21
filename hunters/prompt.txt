@@ -129,3 +129,32 @@ FINAL REQUIREMENTS:
 - Include all files in one response if possible (HTML, CSS, JS)
 - Make the game fun, satisfying, and replayable
 - Prioritize good visuals, smooth gameplay, and polished feel
+
+-----------------
+
+
+  Core Systems:
+  - First-person 3D with Three.js r128, pointer lock mouse look, WASD movement, jumping, head bobbing               - Full collision detection against all map obstacles and bounds
+                                                                                                                  
+  21 Weapons across 6 categories:
+  - Pistols (Glock, Desert Eagle, Revolver)
+  - Rifles (AR-15, AK-47, M4A1, FAMAS, MP5)
+  - Snipers (AWP, Barrett, Dragunov) — with scope mode (right-click)
+  - Shotguns (Pump, Auto, Sawed-Off) — multi-pellet
+  - Melee (Knife, Katana, Sledgehammer)
+  - Special (Plasma Rifle, Grenade Launcher, Rail Gun, Minigun)
+
+  5 Maps: Combat Arena, Warehouse, Rooftop, Desert Ruins, Neon City — each with unique lighting, fog, obstacle    
+  layouts, and color themes
+
+  Bot AI: State machine (patrol → chase → attack), obstacle avoidance with angle-steering, difficulty-scaled      
+  accuracy/speed/HP, shooting with line-of-sight checks, health bars above heads
+
+  4 Difficulty levels: Easy/Medium/Hard/Extreme with scaling coin rewards
+
+  Progression: Coins, shop to unlock weapons, loadout editor (primary/secondary/melee), localStorage persistence  
+
+  Controls: WASD move, mouse aim, left-click shoot, right-click scope (snipers), R reload, 1/2/3 or scroll wheel  
+  to switch weapons, Space jump, Esc pause
+
+✻ Sautéed for 8m 16s     
