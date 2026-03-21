@@ -1,0 +1,131 @@
+You are an expert AAA game developer and system designer. Build a complete, polished, highly engaging browser-based 3D game inspired by Roblox Rivals, but fully original. The game must be visually impressive, smooth, and replayable, with strong progression systems and satisfying combat.
+
+CORE GAME CONCEPT:
+Create a fast-paced 1v1 or small arena combat game against AI bots where the player fights increasingly difficult enemies across multiple maps using different weapons and loadouts.
+
+- Perspective: First-person or over-the-shoulder third-person
+- Style: Clean, modern, stylized 3D (similar to Roblox but more refined and dynamic)
+- Engine: HTML5 + JavaScript using Three.js (or similar)
+- Performance: Smooth animations, optimized rendering, responsive controls
+
+GAMEPLAY SYSTEMS:
+
+Combat:
+- Responsive shooting/melee system
+- Hit detection
+- Damage system
+- Health + elimination system
+
+Bots:
+- Pathfinding
+- Aim logic with adjustable accuracy
+- Difficulty levels
+- Unique behaviors (aggressive, defensive, tactical)
+
+AI SYSTEM:
+- Beginner bots (slow reaction, poor aim)
+- Intermediate bots (balanced)
+- Advanced bots (dodging, flanking, using cover)
+- Bots scale in difficulty as the player progresses
+
+MAP SYSTEM:
+Include 3–5 maps:
+- Small arena (close combat)
+- Medium tactical map (cover-based gameplay)
+- Large map (movement and strategy)
+
+Each map must include:
+- Unique layout
+- Obstacles and cover
+- Distinct visual theme (lighting, colors, style)
+
+WEAPON SYSTEM:
+Include 20+ unique weapons with:
+- Damage
+- Fire rate
+- Range
+- Accuracy
+
+Weapon categories:
+- Pistols
+- Rifles
+- Snipers
+- Shotguns
+- Melee weapons
+- Special weapons (energy, explosive, etc.)
+
+ECONOMY:
+- Weapons cost coins based on usefulness
+- Balanced progression (cheap = weaker, expensive = stronger)
+- No overpowered weapons
+
+LOADOUT SYSTEM:
+- Player starts with a free default loadout
+- Equip:
+  - Primary weapon
+  - Secondary weapon
+  - Optional melee
+- Loadout menu system
+
+COIN & PROGRESSION SYSTEM:
+- Earn coins from:
+  - Winning matches
+  - Eliminations
+  - Performance bonuses
+
+- Include:
+  - Persistent currency
+  - Weapon unlocking
+  - Scaling rewards
+
+SAVE SYSTEM (IMPORTANT):
+Use localStorage to save:
+- Coins
+- Owned weapons
+- Selected loadout
+- Player progression
+
+- Auto-save after matches
+- Auto-load on startup
+
+GRAPHICS & VISUAL QUALITY:
+- Smooth animations (movement, shooting, reloading)
+- Lighting effects (shadows, glow)
+- Particle effects:
+  - Muzzle flash
+  - Bullet impacts
+  - Hit effects
+
+- Clean, modern UI
+
+USER EXPERIENCE:
+- Main menu:
+  - Play
+  - Loadout
+  - Shop
+
+- Smooth transitions
+- HUD showing:
+  - Health
+  - Ammo
+  - Coins
+
+- Sound effects:
+  - Gunshots
+  - Hits
+  - UI interactions
+
+GAME LOOP:
+1. Start match
+2. Fight bot(s)
+3. Win or lose
+4. Earn coins
+5. Upgrade weapons/loadout
+6. Repeat
+
+FINAL REQUIREMENTS:
+- Write clean, organized, well-commented code
+- Everything should run in the browser
+- Include all files in one response if possible (HTML, CSS, JS)
+- Make the game fun, satisfying, and replayable
+- Prioritize good visuals, smooth gameplay, and polished feel
