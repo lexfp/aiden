@@ -1,125 +1,16 @@
-You are upgrading an existing browser-based 3D combat game. Your task is to significantly expand and improve the weapon system to feel more like Roblox Rivals: fast-paced, varied, arcade-like, and highly satisfying.
+Implement the following in steps so that if it disconnects I can continue where we left off.
 
-WEAPON EXPANSION GOAL:
-Add a large set of new weapons (at least +15 more) that feel unique, fun, and distinct from each other. Every weapon must have a clear role and playstyle.
-
-WEAPON DESIGN PRINCIPLES:
-- Every weapon should feel different (not just stat changes)
-- Focus on fun and responsiveness over realism
-- Slightly exaggerated/arcade-style behavior is encouraged
-- Weapons should be satisfying to use (visual + sound feedback)
-
-NEW WEAPON TYPES TO ADD:
-Include creative and Rivals-style weapons such as:
-- Burst rifles (3-shot burst)
-- Auto pistols (fast, low damage)
-- Heavy machine guns (slow movement, high fire rate)
-- Charge weapons (hold to increase damage)
-- Explosive weapons (rocket launcher, grenade launcher)
-- Energy weapons (laser beam, plasma shots)
-- Spread weapons (wide shotgun variants)
-- Melee variants (fast knife, heavy hammer, energy blade)
-- Trick weapons (ricochet bullets, bouncing projectiles)
-- Status weapons (slow effect, burn damage, knockback)
-
-WEAPON MECHANICS:
-Each weapon must define:
-- Damage
-- Fire rate
-- Reload time
-- Ammo capacity
-- Accuracy/spread
-- Recoil or kickback
-- Special behavior (if applicable)
-
-SPECIAL EFFECTS (IMPORTANT):
-Make weapons feel powerful using:
-- Muzzle flash effects
-- Unique bullet/projectile visuals
-- Impact particles
-- Screen feedback (small shake, hit markers)
-- Distinct sound effects per weapon
-
-BALANCING:
-- No weapon should dominate all situations
-- High power weapons should have tradeoffs (slow reload, recoil, etc.)
-- Cheap weapons = simple but effective
-- Expensive weapons = more complex and powerful
-
-RARITY / TIERS:
-(Optional but recommended)
-- Common
-- Rare
-- Epic
-- Legendary
-
-Higher tiers:
-- Better stats OR unique mechanics (not just stronger)
-
-SHOP INTEGRATION:
-- Add all new weapons to the shop
-- Price them based on effectiveness and uniqueness
-- Ensure progression feels rewarding
-
-LOADOUT COMPATIBILITY:
-- Allow new weapons to be equipped in existing loadout system
-- Ensure no UI breaks
-
-AI UPDATE:
-- Bots should be able to use some of the new weapons
-- Advanced bots can use more complex weapons effectively
-
-CODE REQUIREMENTS:
-- Keep code modular and organized
-- Use reusable weapon classes or objects
-- Avoid duplicating logic
-- Make it easy to add more weapons later
-
-FINAL GOAL:
-The weapon system should feel:
-- Fast
-- Fun
-- Varied
-- Visually satisfying
-- Closer to Roblox Rivals gameplay
-
-Do not remove existing features—only expand and improve the weapon system.
-------------------
-
-
-  17 new weapons:
-  - Auto Pistol (common) — fast auto pistol
-  - Ricochet Pistol (rare) — bouncing bullets (2 bounces)
-  - Burst Rifle (rare) — 3-shot burst
-  - HMG (epic) — 1100 RPM, slows movement
-  - LMG (common) — large 80-round mag
-  - DMR Rifle (rare) — 2-shot burst sniper
-  - Widowmaker (rare) — 14-pellet wide shotgun
-  - Slug Cannon (rare) — single-slug long-range shotgun
-  - Energy Blade (epic) — extended melee with energy trail
-  - Rapid Knife (rare) — 600 RPM melee
-  - Rocket Launcher (epic) — explosive AOE
-  - Laser Beam (epic) — 1800 RPM continuous laser
-  - Freeze Ray (rare) — slows enemies for 2.5s
-  - Flamethrower (epic) — burn DoT over 3 seconds
-  - Shockwave Gun (epic) — knockback on hit
-  - Bouncer (legendary) — 4-bounce projectiles
-  - Charge Rifle (legendary) — hold to charge up to 5× damage
-
-  New systems:
-  - Tier system (common/rare/epic/legendary) with color-coded shop badges
-  - Burst fire — queued shots with 80ms spacing
-  - Charge weapon — hold LMB to charge, release to fire
-  - Explosive splash — AOE on impact with particle effects
-  - Status effects — burn DoT, slow movement, knockback
-  - Screen shake — on explosions and knockback
-  - Bouncing projectiles — reflect off walls using face normals
-  - Colored tracers — per weapon type (blue for freeze, red for laser, orange for flame, etc.)
-  - Hit markers — pulsing circle on crosshair when connecting shots
-  - Heavy weapon penalty — HMG/Minigun reduce movement speed to 55%
-  - New weapon models — rocket launcher, flamethrower, charge rifle, laser, freeze ray, energy blade, bouncer     
-
-✻ Brewed for 10m 35s
-
-❯ /usage
-  ⎿  Status dialog dismissed
+1. Add the new weapons to the shop
+2. Add the new weapons to the game
+3. Add the new weapons to the AI
+4. make the graphics of the weapons better
+5. make the game more fun
+6. make the game more competitive
+7. make the game more balanced
+8. make the game more replayable
+9. add more maps  
+10. add more game modes
+11. add more characters
+12. add more skins
+13. add more powerups
+14. Make sure everything works
