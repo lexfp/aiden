@@ -1,160 +1,86 @@
-You are an expert AAA game developer and system designer. Build a complete, polished, highly engaging browser-based 3D game inspired by Roblox Rivals, but fully original. The game must be visually impressive, smooth, and replayable, with strong progression systems and satisfying combat.
+You are upgrading an existing browser-based 3D combat game. Your task is to significantly expand and improve the weapon system to feel more like Roblox Rivals: fast-paced, varied, arcade-like, and highly satisfying.
 
-CORE GAME CONCEPT:
-Create a fast-paced 1v1 or small arena combat game against AI bots where the player fights increasingly difficult enemies across multiple maps using different weapons and loadouts.
+WEAPON EXPANSION GOAL:
+Add a large set of new weapons (at least +15 more) that feel unique, fun, and distinct from each other. Every weapon must have a clear role and playstyle.
 
-- Perspective: First-person or over-the-shoulder third-person
-- Style: Clean, modern, stylized 3D (similar to Roblox but more refined and dynamic)
-- Engine: HTML5 + JavaScript using Three.js (or similar)
-- Performance: Smooth animations, optimized rendering, responsive controls
+WEAPON DESIGN PRINCIPLES:
+- Every weapon should feel different (not just stat changes)
+- Focus on fun and responsiveness over realism
+- Slightly exaggerated/arcade-style behavior is encouraged
+- Weapons should be satisfying to use (visual + sound feedback)
 
-GAMEPLAY SYSTEMS:
+NEW WEAPON TYPES TO ADD:
+Include creative and Rivals-style weapons such as:
+- Burst rifles (3-shot burst)
+- Auto pistols (fast, low damage)
+- Heavy machine guns (slow movement, high fire rate)
+- Charge weapons (hold to increase damage)
+- Explosive weapons (rocket launcher, grenade launcher)
+- Energy weapons (laser beam, plasma shots)
+- Spread weapons (wide shotgun variants)
+- Melee variants (fast knife, heavy hammer, energy blade)
+- Trick weapons (ricochet bullets, bouncing projectiles)
+- Status weapons (slow effect, burn damage, knockback)
 
-Combat:
-- Responsive shooting/melee system
-- Hit detection
-- Damage system
-- Health + elimination system
-
-Bots:
-- Pathfinding
-- Aim logic with adjustable accuracy
-- Difficulty levels
-- Unique behaviors (aggressive, defensive, tactical)
-
-AI SYSTEM:
-- Beginner bots (slow reaction, poor aim)
-- Intermediate bots (balanced)
-- Advanced bots (dodging, flanking, using cover)
-- Bots scale in difficulty as the player progresses
-
-MAP SYSTEM:
-Include 3–5 maps:
-- Small arena (close combat)
-- Medium tactical map (cover-based gameplay)
-- Large map (movement and strategy)
-
-Each map must include:
-- Unique layout
-- Obstacles and cover
-- Distinct visual theme (lighting, colors, style)
-
-WEAPON SYSTEM:
-Include 20+ unique weapons with:
+WEAPON MECHANICS:
+Each weapon must define:
 - Damage
 - Fire rate
-- Range
-- Accuracy
+- Reload time
+- Ammo capacity
+- Accuracy/spread
+- Recoil or kickback
+- Special behavior (if applicable)
 
-Weapon categories:
-- Pistols
-- Rifles
-- Snipers
-- Shotguns
-- Melee weapons
-- Special weapons (energy, explosive, etc.)
+SPECIAL EFFECTS (IMPORTANT):
+Make weapons feel powerful using:
+- Muzzle flash effects
+- Unique bullet/projectile visuals
+- Impact particles
+- Screen feedback (small shake, hit markers)
+- Distinct sound effects per weapon
 
-ECONOMY:
-- Weapons cost coins based on usefulness
-- Balanced progression (cheap = weaker, expensive = stronger)
-- No overpowered weapons
+BALANCING:
+- No weapon should dominate all situations
+- High power weapons should have tradeoffs (slow reload, recoil, etc.)
+- Cheap weapons = simple but effective
+- Expensive weapons = more complex and powerful
 
-LOADOUT SYSTEM:
-- Player starts with a free default loadout
-- Equip:
-  - Primary weapon
-  - Secondary weapon
-  - Optional melee
-- Loadout menu system
+RARITY / TIERS:
+(Optional but recommended)
+- Common
+- Rare
+- Epic
+- Legendary
 
-COIN & PROGRESSION SYSTEM:
-- Earn coins from:
-  - Winning matches
-  - Eliminations
-  - Performance bonuses
+Higher tiers:
+- Better stats OR unique mechanics (not just stronger)
 
-- Include:
-  - Persistent currency
-  - Weapon unlocking
-  - Scaling rewards
+SHOP INTEGRATION:
+- Add all new weapons to the shop
+- Price them based on effectiveness and uniqueness
+- Ensure progression feels rewarding
 
-SAVE SYSTEM (IMPORTANT):
-Use localStorage to save:
-- Coins
-- Owned weapons
-- Selected loadout
-- Player progression
+LOADOUT COMPATIBILITY:
+- Allow new weapons to be equipped in existing loadout system
+- Ensure no UI breaks
 
-- Auto-save after matches
-- Auto-load on startup
+AI UPDATE:
+- Bots should be able to use some of the new weapons
+- Advanced bots can use more complex weapons effectively
 
-GRAPHICS & VISUAL QUALITY:
-- Smooth animations (movement, shooting, reloading)
-- Lighting effects (shadows, glow)
-- Particle effects:
-  - Muzzle flash
-  - Bullet impacts
-  - Hit effects
+CODE REQUIREMENTS:
+- Keep code modular and organized
+- Use reusable weapon classes or objects
+- Avoid duplicating logic
+- Make it easy to add more weapons later
 
-- Clean, modern UI
+FINAL GOAL:
+The weapon system should feel:
+- Fast
+- Fun
+- Varied
+- Visually satisfying
+- Closer to Roblox Rivals gameplay
 
-USER EXPERIENCE:
-- Main menu:
-  - Play
-  - Loadout
-  - Shop
-
-- Smooth transitions
-- HUD showing:
-  - Health
-  - Ammo
-  - Coins
-
-- Sound effects:
-  - Gunshots
-  - Hits
-  - UI interactions
-
-GAME LOOP:
-1. Start match
-2. Fight bot(s)
-3. Win or lose
-4. Earn coins
-5. Upgrade weapons/loadout
-6. Repeat
-
-FINAL REQUIREMENTS:
-- Write clean, organized, well-commented code
-- Everything should run in the browser
-- Include all files in one response if possible (HTML, CSS, JS)
-- Make the game fun, satisfying, and replayable
-- Prioritize good visuals, smooth gameplay, and polished feel
-
------------------
-
-
-  Core Systems:
-  - First-person 3D with Three.js r128, pointer lock mouse look, WASD movement, jumping, head bobbing               - Full collision detection against all map obstacles and bounds
-                                                                                                                  
-  21 Weapons across 6 categories:
-  - Pistols (Glock, Desert Eagle, Revolver)
-  - Rifles (AR-15, AK-47, M4A1, FAMAS, MP5)
-  - Snipers (AWP, Barrett, Dragunov) — with scope mode (right-click)
-  - Shotguns (Pump, Auto, Sawed-Off) — multi-pellet
-  - Melee (Knife, Katana, Sledgehammer)
-  - Special (Plasma Rifle, Grenade Launcher, Rail Gun, Minigun)
-
-  5 Maps: Combat Arena, Warehouse, Rooftop, Desert Ruins, Neon City — each with unique lighting, fog, obstacle    
-  layouts, and color themes
-
-  Bot AI: State machine (patrol → chase → attack), obstacle avoidance with angle-steering, difficulty-scaled      
-  accuracy/speed/HP, shooting with line-of-sight checks, health bars above heads
-
-  4 Difficulty levels: Easy/Medium/Hard/Extreme with scaling coin rewards
-
-  Progression: Coins, shop to unlock weapons, loadout editor (primary/secondary/melee), localStorage persistence  
-
-  Controls: WASD move, mouse aim, left-click shoot, right-click scope (snipers), R reload, 1/2/3 or scroll wheel  
-  to switch weapons, Space jump, Esc pause
-
-✻ Sautéed for 8m 16s     
+Do not remove existing features—only expand and improve the weapon system.

@@ -1778,7 +1778,6 @@
                 this.updateWeaponModel();
 
                 // Show HUD
-                this.showScreen('s-dummy');
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 document.getElementById('hud').classList.add('active');
                 this.state = 'playing';
