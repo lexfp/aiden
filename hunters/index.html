@@ -696,7 +696,24 @@
             background: rgba(255, 255, 255, .15)
         }
 
-        /* kill indicator */
+        /* Rarity tiers */
+        .badge-tier { display: inline-block; font-size: 8px; letter-spacing: 2px; padding: 1px 5px; border-radius: 2px; margin-bottom: 6px; font-weight: 700; text-transform: uppercase; }
+        .badge-common { background: rgba(150,150,150,.15); color: #aaa; }
+        .badge-rare { background: rgba(68,153,255,.15); color: #4499ff; }
+        .badge-epic { background: rgba(170,68,255,.15); color: #aa44ff; }
+        .badge-legendary { background: rgba(255,153,0,.2); color: #ff9900; }
+        .wcard.tier-rare { border-color: rgba(68,153,255,.35); }
+        .wcard.tier-epic { border-color: rgba(170,68,255,.4); }
+        .wcard.tier-legendary { border-color: rgba(255,153,0,.5); }
+
+        /* Charge indicator */
+        #charge-ind { position: absolute; bottom: 140px; right: 40px; font-size: 11px; letter-spacing: 3px; color: #ffaa00; display: none; font-weight: 700; }
+
+        /* Hit marker */
+        .hitmark { position: fixed; top: 50%; left: 50%; width: 16px; height: 16px; transform: translate(-50%,-50%); pointer-events: none; border: 2px solid #ff3333; border-radius: 50%; opacity: 0; animation: hitpop .25s ease-out forwards; z-index: 8; }
+        @keyframes hitpop { 0% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(2.8); } }
+
+        /* Kill indicator */
         #kill-ind {
             position: absolute;
             top: 50%;
@@ -823,6 +840,7 @@
         <div id="kfeed"></div>
         <div id="kill-ind">ELIMINATED</div>
         <div id="reload-ind">RELOADING...</div>
+        <div id="charge-ind">CHARGING 0%</div>
     </div>
 
     <div id="dmg-ov"></div>
@@ -839,33 +857,50 @@
         // WEAPON DEFINITIONS
         // ============================================================
         const WDEFS = [
-            // Pistols
-            { id: 'glock', name: 'Glock 17', cat: 'pistol', dmg: 24, rpm: 480, range: 55, acc: .85, mag: 17, price: 0, auto: false, color: 0x333344 },
-            { id: 'deagle', name: 'Desert Eagle', cat: 'pistol', dmg: 62, rpm: 180, range: 62, acc: .82, mag: 7, price: 350, auto: false, color: 0x888866 },
-            { id: 'revolver', name: 'Revolver .357', cat: 'pistol', dmg: 68, rpm: 120, range: 58, acc: .90, mag: 6, price: 450, auto: false, color: 0x556677 },
-            // Rifles
-            { id: 'ar15', name: 'AR-15', cat: 'rifle', dmg: 28, rpm: 720, range: 85, acc: .88, mag: 30, price: 800, auto: true, color: 0x223322 },
-            { id: 'ak47', name: 'AK-47', cat: 'rifle', dmg: 34, rpm: 600, range: 78, acc: .80, mag: 30, price: 900, auto: true, color: 0x443322 },
-            { id: 'm4a1', name: 'M4A1', cat: 'rifle', dmg: 27, rpm: 800, range: 88, acc: .91, mag: 30, price: 1100, auto: true, color: 0x334433 },
-            { id: 'famas', name: 'FAMAS', cat: 'rifle', dmg: 23, rpm: 900, range: 72, acc: .84, mag: 25, price: 750, auto: true, color: 0x445544 },
-            { id: 'smg', name: 'MP5', cat: 'rifle', dmg: 19, rpm: 800, range: 44, acc: .78, mag: 35, price: 600, auto: true, color: 0x444444 },
-            // Snipers
-            { id: 'awp', name: 'AWP', cat: 'sniper', dmg: 130, rpm: 45, range: 250, acc: .98, mag: 5, price: 2200, auto: false, scope: true, color: 0x224422 },
-            { id: 'barrett', name: 'Barrett M82', cat: 'sniper', dmg: 160, rpm: 35, range: 300, acc: .97, mag: 10, price: 2800, auto: false, scope: true, color: 0x333333 },
-            { id: 'dragunov', name: 'Dragunov', cat: 'sniper', dmg: 95, rpm: 120, range: 200, acc: .95, mag: 10, price: 1600, auto: false, scope: true, color: 0x443322 },
-            // Shotguns
-            { id: 'pump', name: 'Pump Shotgun', cat: 'shotgun', dmg: 88, rpm: 90, range: 20, acc: .70, mag: 8, price: 700, auto: false, pellets: 8, color: 0x665544 },
-            { id: 'auto_sg', name: 'Auto Shotgun', cat: 'shotgun', dmg: 65, rpm: 240, range: 18, acc: .65, mag: 12, price: 1200, auto: true, pellets: 6, color: 0x554433 },
-            { id: 'sawed', name: 'Sawed-Off', cat: 'shotgun', dmg: 110, rpm: 60, range: 12, acc: .72, mag: 4, price: 500, auto: false, pellets: 10, color: 0x776655 },
-            // Melee
-            { id: 'knife', name: 'Combat Knife', cat: 'melee', dmg: 48, rpm: 300, range: 2.8, acc: 1.0, mag: Infinity, price: 0, auto: false, color: 0x999999 },
-            { id: 'sword', name: 'Katana', cat: 'melee', dmg: 75, rpm: 180, range: 3.5, acc: 1.0, mag: Infinity, price: 600, auto: false, color: 0xaaaacc },
-            { id: 'hammer', name: 'Sledgehammer', cat: 'melee', dmg: 110, rpm: 90, range: 3.2, acc: 1.0, mag: Infinity, price: 850, auto: false, color: 0x886644 },
-            // Special
-            { id: 'plasma', name: 'Plasma Rifle', cat: 'special', dmg: 38, rpm: 900, range: 95, acc: .92, mag: 40, price: 2000, auto: true, color: 0x002255 },
-            { id: 'grenade_l', name: 'Grenade Launcher', cat: 'special', dmg: 160, rpm: 60, range: 55, acc: .80, mag: 6, price: 2500, auto: false, splash: true, color: 0x445566 },
-            { id: 'railgun', name: 'Rail Gun', cat: 'special', dmg: 220, rpm: 30, range: 400, acc: .99, mag: 3, price: 3200, auto: false, color: 0x002244 },
-            { id: 'minigun', name: 'Minigun', cat: 'special', dmg: 14, rpm: 1200, range: 62, acc: .74, mag: 200, price: 4500, auto: true, color: 0x554422 },
+            // === PISTOLS ===
+            { id: 'glock', name: 'Glock 17', cat: 'pistol', tier: 'common', dmg: 24, rpm: 480, range: 55, acc: .85, mag: 17, price: 0, auto: false, color: 0x333344 },
+            { id: 'deagle', name: 'Desert Eagle', cat: 'pistol', tier: 'rare', dmg: 62, rpm: 180, range: 62, acc: .82, mag: 7, price: 350, auto: false, color: 0x888866 },
+            { id: 'revolver', name: 'Revolver .357', cat: 'pistol', tier: 'rare', dmg: 68, rpm: 120, range: 58, acc: .90, mag: 6, price: 450, auto: false, color: 0x556677 },
+            { id: 'auto_pistol', name: 'Auto Pistol', cat: 'pistol', tier: 'common', dmg: 12, rpm: 1000, range: 40, acc: .78, mag: 20, price: 200, auto: true, color: 0x445566 },
+            { id: 'ricochet', name: 'Ricochet Pistol', cat: 'pistol', tier: 'rare', dmg: 22, rpm: 240, range: 50, acc: .88, mag: 10, price: 900, auto: false, bounce: 2, color: 0x557799 },
+            // === RIFLES ===
+            { id: 'ar15', name: 'AR-15', cat: 'rifle', tier: 'common', dmg: 28, rpm: 720, range: 85, acc: .88, mag: 30, price: 800, auto: true, color: 0x223322 },
+            { id: 'ak47', name: 'AK-47', cat: 'rifle', tier: 'common', dmg: 34, rpm: 600, range: 78, acc: .80, mag: 30, price: 900, auto: true, color: 0x443322 },
+            { id: 'm4a1', name: 'M4A1', cat: 'rifle', tier: 'rare', dmg: 27, rpm: 800, range: 88, acc: .91, mag: 30, price: 1100, auto: true, color: 0x334433 },
+            { id: 'famas', name: 'FAMAS', cat: 'rifle', tier: 'common', dmg: 23, rpm: 900, range: 72, acc: .84, mag: 25, price: 750, auto: true, color: 0x445544 },
+            { id: 'smg', name: 'MP5', cat: 'rifle', tier: 'common', dmg: 19, rpm: 800, range: 44, acc: .78, mag: 35, price: 600, auto: true, color: 0x444444 },
+            { id: 'burst_rifle', name: 'Burst Rifle', cat: 'rifle', tier: 'rare', dmg: 32, rpm: 450, range: 80, acc: .87, mag: 24, price: 1000, auto: false, burst: 3, color: 0x334444 },
+            { id: 'hmg', name: 'HMG', cat: 'rifle', tier: 'epic', dmg: 22, rpm: 1100, range: 65, acc: .72, mag: 100, price: 2200, auto: true, heavy: true, color: 0x554433 },
+            { id: 'lmg', name: 'LMG', cat: 'rifle', tier: 'common', dmg: 20, rpm: 700, range: 70, acc: .76, mag: 80, price: 1300, auto: true, color: 0x445533 },
+            // === SNIPERS ===
+            { id: 'awp', name: 'AWP', cat: 'sniper', tier: 'epic', dmg: 130, rpm: 45, range: 250, acc: .98, mag: 5, price: 2200, auto: false, scope: true, color: 0x224422 },
+            { id: 'barrett', name: 'Barrett M82', cat: 'sniper', tier: 'epic', dmg: 160, rpm: 35, range: 300, acc: .97, mag: 10, price: 2800, auto: false, scope: true, color: 0x333333 },
+            { id: 'dragunov', name: 'Dragunov', cat: 'sniper', tier: 'rare', dmg: 95, rpm: 120, range: 200, acc: .95, mag: 10, price: 1600, auto: false, scope: true, color: 0x443322 },
+            { id: 'burst_sniper', name: 'DMR Rifle', cat: 'sniper', tier: 'rare', dmg: 65, rpm: 200, range: 180, acc: .94, mag: 15, price: 1800, auto: false, burst: 2, scope: true, color: 0x334422 },
+            // === SHOTGUNS ===
+            { id: 'pump', name: 'Pump Shotgun', cat: 'shotgun', tier: 'common', dmg: 88, rpm: 90, range: 20, acc: .70, mag: 8, price: 700, auto: false, pellets: 8, color: 0x665544 },
+            { id: 'auto_sg', name: 'Auto Shotgun', cat: 'shotgun', tier: 'rare', dmg: 65, rpm: 240, range: 18, acc: .65, mag: 12, price: 1200, auto: true, pellets: 6, color: 0x554433 },
+            { id: 'sawed', name: 'Sawed-Off', cat: 'shotgun', tier: 'common', dmg: 110, rpm: 60, range: 12, acc: .72, mag: 4, price: 500, auto: false, pellets: 10, color: 0x776655 },
+            { id: 'wide_sg', name: 'Widowmaker', cat: 'shotgun', tier: 'rare', dmg: 50, rpm: 70, range: 14, acc: .50, mag: 6, price: 1100, auto: false, pellets: 14, color: 0x776644 },
+            { id: 'slug_sg', name: 'Slug Cannon', cat: 'shotgun', tier: 'rare', dmg: 100, rpm: 80, range: 45, acc: .88, mag: 4, price: 1000, auto: false, pellets: 1, color: 0x665533 },
+            // === MELEE ===
+            { id: 'knife', name: 'Combat Knife', cat: 'melee', tier: 'common', dmg: 48, rpm: 300, range: 2.8, acc: 1.0, mag: Infinity, price: 0, auto: false, color: 0x999999 },
+            { id: 'sword', name: 'Katana', cat: 'melee', tier: 'rare', dmg: 75, rpm: 180, range: 3.5, acc: 1.0, mag: Infinity, price: 600, auto: false, color: 0xaaaacc },
+            { id: 'hammer', name: 'Sledgehammer', cat: 'melee', tier: 'rare', dmg: 110, rpm: 90, range: 3.2, acc: 1.0, mag: Infinity, price: 850, auto: false, color: 0x886644 },
+            { id: 'energy_blade', name: 'Energy Blade', cat: 'melee', tier: 'epic', dmg: 95, rpm: 250, range: 4.2, acc: 1.0, mag: Infinity, price: 1500, auto: false, color: 0x0044aa, energyTrail: true, laserColor: 0x0099ff },
+            { id: 'rapid_knife', name: 'Rapid Knife', cat: 'melee', tier: 'rare', dmg: 30, rpm: 600, range: 2.5, acc: 1.0, mag: Infinity, price: 800, auto: false, color: 0xbbbbcc },
+            // === SPECIAL ===
+            { id: 'plasma', name: 'Plasma Rifle', cat: 'special', tier: 'epic', dmg: 38, rpm: 900, range: 95, acc: .92, mag: 40, price: 2000, auto: true, laserColor: 0x0066ff, color: 0x002255 },
+            { id: 'grenade_l', name: 'Grenade Launcher', cat: 'special', tier: 'epic', dmg: 160, rpm: 60, range: 55, acc: .80, mag: 6, price: 2500, auto: false, explosive: true, splashRadius: 4, color: 0x445566 },
+            { id: 'railgun', name: 'Rail Gun', cat: 'special', tier: 'legendary', dmg: 220, rpm: 30, range: 400, acc: .99, mag: 3, price: 3200, auto: false, laserColor: 0x00aaff, color: 0x002244 },
+            { id: 'minigun', name: 'Minigun', cat: 'special', tier: 'epic', dmg: 14, rpm: 1200, range: 62, acc: .74, mag: 200, price: 4500, auto: true, heavy: true, color: 0x554422 },
+            { id: 'rocket', name: 'Rocket Launcher', cat: 'special', tier: 'epic', dmg: 180, rpm: 30, range: 120, acc: .90, mag: 4, price: 3000, auto: false, explosive: true, splashRadius: 5, color: 0x664422 },
+            { id: 'laser_beam', name: 'Laser Beam', cat: 'special', tier: 'epic', dmg: 10, rpm: 1800, range: 150, acc: 1.0, mag: 200, price: 2800, auto: true, laserColor: 0xff0044, color: 0x440022 },
+            { id: 'freeze_ray', name: 'Freeze Ray', cat: 'special', tier: 'rare', dmg: 15, rpm: 360, range: 60, acc: .90, mag: 30, price: 1800, auto: true, status: 'slow', laserColor: 0x44aaff, color: 0x002244 },
+            { id: 'flamethrower', name: 'Flamethrower', cat: 'special', tier: 'epic', dmg: 8, rpm: 600, range: 18, acc: .82, mag: 60, price: 2000, auto: true, status: 'burn', color: 0x883300 },
+            { id: 'shockwave_gun', name: 'Shockwave Gun', cat: 'special', tier: 'epic', dmg: 55, rpm: 60, range: 25, acc: .85, mag: 8, price: 2200, auto: false, status: 'knockback', laserColor: 0x6688ff, color: 0x334455 },
+            { id: 'bouncer', name: 'Bouncer', cat: 'special', tier: 'legendary', dmg: 45, rpm: 120, range: 80, acc: .85, mag: 12, price: 4000, auto: false, bounce: 4, color: 0x552200 },
+            { id: 'charge_rifle', name: 'Charge Rifle', cat: 'special', tier: 'legendary', dmg: 60, rpm: 40, range: 200, acc: .98, mag: 8, price: 5000, auto: false, charge: true, maxChargeMult: 5, laserColor: 0xffaa00, color: 0x001133 },
         ];
 
         // ============================================================
@@ -1071,6 +1106,51 @@
                 osc.connect(gain); gain.connect(ctx.destination); osc.start(ctx.currentTime + i * .18); osc.stop(ctx.currentTime + i * .18 + .4);
             });
         }
+        function playExplosion() {
+            const ctx = getAudio();
+            const buf = ctx.createBuffer(1, ctx.sampleRate * .4, ctx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < data.length; i++) { const t = i / data.length; data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, .4) * (1 - t * .7); }
+            const src = ctx.createBufferSource(); src.buffer = buf;
+            const gain = ctx.createGain(); gain.gain.value = 1.0;
+            const filter = ctx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 700;
+            src.connect(filter); filter.connect(gain); gain.connect(ctx.destination); src.start();
+        }
+        function playLaserShot(laserColor) {
+            const ctx = getAudio();
+            const osc = ctx.createOscillator(); const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            const baseFreq = laserColor === 0xff0044 ? 900 : laserColor === 0xffaa00 ? 700 : 600;
+            osc.frequency.setValueAtTime(baseFreq, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + .1);
+            gain.gain.setValueAtTime(.18, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .1);
+            osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + .12);
+        }
+        function playFreezeShot() {
+            const ctx = getAudio();
+            const osc = ctx.createOscillator(); const gain = ctx.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(1600, ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(700, ctx.currentTime + .12);
+            gain.gain.setValueAtTime(.12, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .12);
+            osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + .15);
+        }
+        function playChargeFire(mult) {
+            const ctx = getAudio();
+            const buf = ctx.createBuffer(1, ctx.sampleRate * .25, ctx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < data.length; i++) { const t = i / data.length; data[i] = (Math.random() * 2 - 1) * Math.exp(-t * 4) * (1 + (mult - 1) * .4); }
+            const src = ctx.createBufferSource(); src.buffer = buf;
+            const gain = ctx.createGain(); gain.gain.value = Math.min(1.5, .5 + (mult - 1) * .25);
+            src.connect(gain); gain.connect(ctx.destination); src.start();
+        }
+        function playBounceHit() {
+            const ctx = getAudio();
+            const osc = ctx.createOscillator(); const gain = ctx.createGain();
+            osc.type = 'square'; osc.frequency.setValueAtTime(500, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(250, ctx.currentTime + .06);
+            gain.gain.setValueAtTime(.1, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + .06);
+            osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + .08);
+        }
 
         // ============================================================
         // THREE.JS SETUP
@@ -1186,6 +1266,18 @@
                     const handle = new THREE.Mesh(new THREE.BoxGeometry(.03, .03, .16), matDark);
                     handle.position.set(0, 0, -.3);
                     g.add(blade, guard, handle);
+                } else if (wdef.id === 'energy_blade') {
+                    const blade = new THREE.Mesh(new THREE.BoxGeometry(.03, .015, .6), new THREE.MeshLambertMaterial({ color: 0x0099ff, emissive: new THREE.Color(0x0099ff), emissiveIntensity: 1.0 }));
+                    const guard = new THREE.Mesh(new THREE.BoxGeometry(.14, .04, .04), mat);
+                    guard.position.set(0, 0, -.18);
+                    const handle = new THREE.Mesh(new THREE.BoxGeometry(.03, .03, .18), matDark);
+                    handle.position.set(0, 0, -.3);
+                    g.add(blade, guard, handle);
+                } else if (wdef.id === 'rapid_knife') {
+                    const blade = new THREE.Mesh(new THREE.BoxGeometry(.02, .008, .22), new THREE.MeshLambertMaterial({ color: 0xddddee }));
+                    const handle = new THREE.Mesh(new THREE.BoxGeometry(.025, .025, .1), mat);
+                    handle.position.set(0, 0, -.15);
+                    g.add(blade, handle);
                 } else {
                     const head = new THREE.Mesh(new THREE.BoxGeometry(.18, .18, .12), mat);
                     head.position.set(0, 0, .2);
@@ -1193,12 +1285,57 @@
                     g.add(head, shaft);
                 }
             } else { // special
-                const body = new THREE.Mesh(new THREE.BoxGeometry(.09, .1, .55), mat);
-                const barrel = new THREE.Mesh(new THREE.CylinderGeometry(.025, .025, .35, 8), matDark);
-                barrel.rotation.x = Math.PI / 2; barrel.position.set(0, .04, .45);
-                const detail = new THREE.Mesh(new THREE.BoxGeometry(.07, .07, .15), new THREE.MeshLambertMaterial({ color: new THREE.Color(c).multiplyScalar(2) }));
-                detail.position.set(0, 0, .1);
-                g.add(body, barrel, detail);
+                if (wdef.id === 'rocket' || wdef.id === 'grenade_l') {
+                    // Rocket / grenade launcher — wide tube
+                    const tube = new THREE.Mesh(new THREE.CylinderGeometry(.055, .055, .7, 10), mat);
+                    tube.rotation.x = Math.PI / 2;
+                    const grip = new THREE.Mesh(new THREE.BoxGeometry(.05, .14, .08), matDark);
+                    grip.position.set(0, -.08, -.05);
+                    const fin1 = new THREE.Mesh(new THREE.BoxGeometry(.14, .03, .12), matDark);
+                    fin1.position.set(0, -.07, .2);
+                    g.add(tube, grip, fin1);
+                } else if (wdef.id === 'flamethrower') {
+                    // Flamethrower — wide nozzle
+                    const body = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .55), mat);
+                    const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(.06, .03, .25, 8), new THREE.MeshLambertMaterial({ color: 0xcc4400 }));
+                    nozzle.rotation.x = Math.PI / 2; nozzle.position.set(0, .02, .4);
+                    const tank = new THREE.Mesh(new THREE.CylinderGeometry(.05, .05, .3, 8), matDark);
+                    tank.position.set(0, -.08, -.1);
+                    g.add(body, nozzle, tank);
+                } else if (wdef.id === 'charge_rifle') {
+                    // Charge rifle — sleek with glowing coil
+                    const body = new THREE.Mesh(new THREE.BoxGeometry(.07, .09, .6), mat);
+                    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(.02, .02, .4, 8), new THREE.MeshLambertMaterial({ color: 0x002244 }));
+                    barrel.rotation.x = Math.PI / 2; barrel.position.set(0, .03, .5);
+                    const coil = new THREE.Mesh(new THREE.TorusGeometry(.05, .012, 6, 12), new THREE.MeshLambertMaterial({ color: 0xffaa00, emissive: new THREE.Color(0xffaa00), emissiveIntensity: .5 }));
+                    coil.rotation.y = Math.PI / 2; coil.position.set(0, .02, .1);
+                    g.add(body, barrel, coil);
+                } else if (wdef.id === 'laser_beam') {
+                    // Laser — thin sleek body
+                    const body = new THREE.Mesh(new THREE.BoxGeometry(.06, .08, .5), mat);
+                    const emitter = new THREE.Mesh(new THREE.CylinderGeometry(.018, .03, .2, 8), new THREE.MeshLambertMaterial({ color: 0xff0044, emissive: new THREE.Color(0xff0044), emissiveIntensity: .8 }));
+                    emitter.rotation.x = Math.PI / 2; emitter.position.set(0, .02, .38);
+                    g.add(body, emitter);
+                } else if (wdef.id === 'freeze_ray') {
+                    const body = new THREE.Mesh(new THREE.BoxGeometry(.07, .09, .48), mat);
+                    const emitter = new THREE.Mesh(new THREE.CylinderGeometry(.022, .032, .18, 8), new THREE.MeshLambertMaterial({ color: 0x44aaff, emissive: new THREE.Color(0x44aaff), emissiveIntensity: .6 }));
+                    emitter.rotation.x = Math.PI / 2; emitter.position.set(0, .02, .35);
+                    g.add(body, emitter);
+                } else if (wdef.id === 'bouncer') {
+                    const body = new THREE.Mesh(new THREE.BoxGeometry(.09, .1, .5), mat);
+                    const barrel = new THREE.Mesh(new THREE.BoxGeometry(.06, .06, .25), matDark);
+                    barrel.position.set(0, .03, .38);
+                    const sphere = new THREE.Mesh(new THREE.SphereGeometry(.04, 8, 8), new THREE.MeshLambertMaterial({ color: 0xff8800 }));
+                    sphere.position.set(0, .03, .55);
+                    g.add(body, barrel, sphere);
+                } else {
+                    const body = new THREE.Mesh(new THREE.BoxGeometry(.09, .1, .55), mat);
+                    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(.025, .025, .35, 8), matDark);
+                    barrel.rotation.x = Math.PI / 2; barrel.position.set(0, .04, .45);
+                    const detail = new THREE.Mesh(new THREE.BoxGeometry(.07, .07, .15), new THREE.MeshLambertMaterial({ color: new THREE.Color(c).multiplyScalar(2) }));
+                    detail.position.set(0, 0, .1);
+                    g.add(body, barrel, detail);
+                }
             }
             return g;
         }
@@ -1340,6 +1477,7 @@
                 this.index = index;
                 this.colors = [0xff4444, 0x44aaff, 0x44ff44, 0xffaa00, 0xff44ff, 0x44ffff];
                 this.color = this.colors[index % this.colors.length];
+                this.statusEffects = {}; // burn: {timer, dmg, tick}, slow: {timer}
                 this.buildMesh();
             }
 
@@ -1439,8 +1577,9 @@
                         moveDir = toPlayer.clone().normalize();
                     }
 
-                    // Obstacle avoidance
-                    const spd = this.state === 'patrol' ? this.speed * .5 : this.speed;
+                    // Obstacle avoidance (slow penalty from status effects)
+                    const slowMult = this.statusEffects.slow ? .35 : 1;
+                    const spd = (this.state === 'patrol' ? this.speed * .5 : this.speed) * slowMult;
                     const step = spd * dt;
                     this.steerTimer -= dt;
 
@@ -1467,6 +1606,24 @@
                         this.steerAngle = (Math.random() - .5) * Math.PI;
                         this.steerTimer = 1;
                     }
+                }
+
+                // Status effect processing
+                if (this.statusEffects.burn) {
+                    const b = this.statusEffects.burn;
+                    b.timer -= dt; b.tick -= dt;
+                    if (b.tick <= 0) {
+                        b.tick = .5;
+                        this.hp -= b.dmg;
+                        this.updateHBar();
+                        spawnImpact(this.group.position.clone().add(new THREE.Vector3(0, .8, 0)), 0xff5500);
+                        if (this.hp <= 0) { this.die(); return; }
+                    }
+                    if (b.timer <= 0) delete this.statusEffects.burn;
+                }
+                if (this.statusEffects.slow) {
+                    this.statusEffects.slow.timer -= dt;
+                    if (this.statusEffects.slow.timer <= 0) delete this.statusEffects.slow;
                 }
 
                 // Shooting
@@ -1552,6 +1709,119 @@
         function lerp(a, b, t) { return a + (b - a) * t; }
 
         // ============================================================
+        // SPECIAL WEAPON MECHANICS
+        // ============================================================
+
+        // Explosion AOE: damages all bots and player within radius, spawns particles
+        function explosiveSplash(pos, radius, damage) {
+            G.bots.forEach(bot => {
+                if (!bot.alive) return;
+                const d = pos.distanceTo(bot.group.position);
+                if (d < radius) {
+                    const falloff = 1 - (d / radius);
+                    bot.takeDamage(Math.round(damage * falloff), false);
+                    spawnImpact(bot.group.position.clone().add(new THREE.Vector3(0, .5, 0)), 0xff6600);
+                }
+            });
+            // Player self-damage (reduced)
+            const ppos = new THREE.Vector3(G.playerPos.x, G.EYE_HEIGHT, G.playerPos.z);
+            const pd = pos.distanceTo(ppos);
+            if (pd < radius) G.playerTakeDamage(Math.round(damage * .35 * (1 - pd / radius)));
+            // Explosion particles
+            for (let i = 0; i < 28; i++) {
+                const v = new THREE.Vector3((Math.random() - .5) * 10, Math.random() * 8 + 1, (Math.random() - .5) * 10);
+                particles.push(new Particle(pos.clone(), v, i < 14 ? 0xff6600 : 0xffcc00, .6 + Math.random() * .3, .08 + Math.random() * .05));
+            }
+            // Light flash
+            const fl = new THREE.PointLight(0xff6600, 8, radius * 4);
+            fl.position.copy(pos);
+            scene.add(fl);
+            setTimeout(() => scene.remove(fl), 220);
+            G._shakeAmt = Math.max(G._shakeAmt || 0, .14);
+            playExplosion();
+        }
+
+        // Apply status effect to a bot
+        function applyStatus(bot, status, w) {
+            if (!bot.alive) return;
+            if (status === 'burn') {
+                bot.statusEffects.burn = { timer: 3.0, dmg: Math.max(3, w.dmg * .35), tick: .5 };
+            } else if (status === 'slow') {
+                bot.statusEffects.slow = { timer: 2.5 };
+                for (let i = 0; i < 5; i++) {
+                    const v = new THREE.Vector3((Math.random() - .5) * 2.5, Math.random() * 2.5, (Math.random() - .5) * 2.5);
+                    particles.push(new Particle(bot.group.position.clone(), v, 0x44aaff, .5, .06));
+                }
+            } else if (status === 'knockback') {
+                const away = new THREE.Vector3().subVectors(bot.pos, G.playerPos);
+                away.y = 0; away.normalize();
+                bot.pos.addScaledVector(away, 5);
+                const c = clampToBounds(bot.pos.x, bot.pos.z, BOT_RADIUS);
+                bot.pos.x = c.x; bot.pos.z = c.z;
+                for (let i = 0; i < 10; i++) {
+                    const v = new THREE.Vector3((Math.random() - .5) * 6, Math.random() * 4, (Math.random() - .5) * 6);
+                    particles.push(new Particle(bot.group.position.clone(), v, 0x6688ff, .4, .07));
+                }
+                G._shakeAmt = Math.max(G._shakeAmt || 0, .07);
+            }
+        }
+
+        // Bouncing raycast projectile (reflects off walls up to w.bounce times)
+        function fireBouncingRay(w, spread) {
+            let pos = camera.position.clone();
+            let dir = new THREE.Vector3((Math.random() - .5) * spread * 2, (Math.random() - .5) * spread * 2, -1);
+            dir.normalize(); dir.applyQuaternion(camera.quaternion);
+            const maxBounces = w.bounce || 2;
+            const tracerPath = [pos.clone()];
+            const col = w.laserColor || w.color || 0xffdd44;
+            for (let b = 0; b <= maxBounces; b++) {
+                const ray = new THREE.Raycaster(pos.clone(), dir.clone(), 0, w.range || 100);
+                let closestBot = null, botDist = Infinity;
+                G.bots.forEach(bot => {
+                    if (!bot.alive) return;
+                    const toBot = new THREE.Vector3().subVectors(bot.group.position, pos);
+                    const proj = toBot.dot(dir);
+                    if (proj < 0) return;
+                    const closest = pos.clone().addScaledVector(dir, proj);
+                    const bd = closest.distanceTo(new THREE.Vector3(bot.group.position.x, BOT_HEIGHT / 2, bot.group.position.z));
+                    if (bd < BOT_RADIUS * 2 && proj < botDist) { botDist = proj; closestBot = bot; }
+                });
+                const wallHits = ray.intersectObjects(mapObstacleMeshes);
+                const wallDist = wallHits.length > 0 ? wallHits[0].distance : Infinity;
+                if (closestBot && botDist < wallDist) {
+                    const hp = pos.clone().addScaledVector(dir, botDist);
+                    tracerPath.push(hp);
+                    G.hitBot(closestBot, w.dmg, false);
+                    spawnImpact(hp, col);
+                    break;
+                } else if (wallHits.length > 0) {
+                    const wp = wallHits[0].point.clone();
+                    tracerPath.push(wp);
+                    if (b < maxBounces) {
+                        const nm = new THREE.Matrix3().getNormalMatrix(wallHits[0].object.matrixWorld);
+                        const normal = wallHits[0].face.normal.clone().applyMatrix3(nm).normalize();
+                        dir.reflect(normal).normalize();
+                        pos = wp.clone().addScaledVector(dir, .05);
+                        spawnImpact(wp, 0xffdd88);
+                        playBounceHit();
+                    } else { spawnImpact(wp, 0xaaaaaa); break; }
+                } else {
+                    tracerPath.push(pos.clone().addScaledVector(dir, w.range || 100));
+                    break;
+                }
+            }
+            for (let i = 0; i < tracerPath.length - 1; i++) spawnTracer(tracerPath[i], tracerPath[i + 1], col);
+        }
+
+        // Show hit marker on crosshair
+        function showHitMarker() {
+            const hm = document.createElement('div');
+            hm.className = 'hitmark';
+            document.body.appendChild(hm);
+            setTimeout(() => hm.remove(), 300);
+        }
+
+        // ============================================================
         // GAME STATE
         // ============================================================
         const G = {
@@ -1590,6 +1860,11 @@
             // Timing
             lastTime: 0,
             animId: null,
+            // Special weapon state
+            _shakeAmt: 0,
+            _isCharging: false,
+            _chargeStart: 0,
+            _chargeVfx: null,
             // Physics
             GRAVITY: 20,
             JUMP_VEL: 7,
@@ -1676,20 +1951,33 @@
                 const grid = document.getElementById('shop-grid');
                 grid.innerHTML = '';
                 document.getElementById('shop-coins-val').textContent = save.coins;
+                const tierColors = { common: '#aaa', rare: '#4499ff', epic: '#aa44ff', legendary: '#ff9900' };
                 WDEFS.filter(w => this._shopCat === 'all' || w.cat === this._shopCat).forEach(w => {
                     const owned = save.owned.includes(w.id);
                     const equipped = Object.values(save.loadout).includes(w.id);
+                    const tier = w.tier || 'common';
+                    const tc = tierColors[tier] || '#aaa';
                     const c = document.createElement('div');
-                    c.className = 'wcard' + (equipped ? ' equipped' : owned ? ' owned' : '');
-                    const pct = v => Math.round(Math.min(100, v / 10 * 4));
+                    c.className = 'wcard' + (equipped ? ' equipped' : owned ? ' owned' : '') + ' tier-' + tier;
+                    // Special properties badge
+                    const specials = [];
+                    if (w.burst) specials.push('BURST');
+                    if (w.bounce) specials.push('BOUNCE');
+                    if (w.explosive) specials.push('EXPLOSIVE');
+                    if (w.charge) specials.push('CHARGE');
+                    if (w.status) specials.push(w.status.toUpperCase());
+                    if (w.heavy) specials.push('HEAVY');
+                    const specialTags = specials.map(s => `<span style="font-size:8px;color:#888;letter-spacing:1px">${s}</span>`).join(' ');
                     c.innerHTML = `
-        <div class="wcard-name">${w.name}</div>
+        <div class="badge-tier badge-${tier}">${tier.toUpperCase()}</div>
+        <div class="wcard-name" style="color:${tc}">${w.name}</div>
         <div class="wcard-cat">${w.cat}</div>
+        ${specials.length ? `<div style="margin-bottom:4px">${specialTags}</div>` : ''}
         <div class="wcard-stat">DMG <b>${w.dmg}</b></div>
-        <div class="stat-bar"><div class="stat-fill" style="width:${pct(w.dmg)}%"></div></div>
+        <div class="stat-bar"><div class="stat-fill" style="width:${Math.round(Math.min(100, w.dmg / 2.5))}%"></div></div>
         <div class="wcard-stat">RPM <b>${w.rpm}</b></div>
         <div class="stat-bar"><div class="stat-fill" style="width:${Math.round(Math.min(100, w.rpm / 15))}%"></div></div>
-        <div class="wcard-stat">RANGE <b>${w.cat === 'melee' ? w.range + 'm' : w.range + 'm'}</b></div>
+        <div class="wcard-stat">RANGE <b>${w.range}m</b></div>
         <div class="wcard-price ${w.price === 0 ? 'free' : ''}">${w.price === 0 ? 'FREE' : '💰 ' + w.price}</div>
         <div class="wcard-tag" style="color:${equipped ? '#ff9944' : owned ? '#66ff66' : '#888'}">${equipped ? 'EQUIPPED' : owned ? 'OWNED' : 'BUY'}</div>
       `;
@@ -1705,7 +1993,7 @@
 
             buildLoadoutUI() {
                 const slots = [
-                    { key: 'primary', filter: w => w.cat !== 'melee', nameEl: 'lo-p-name', statsEl: 'lo-p-stats', listEl: 'lo-p-list' },
+                    { key: 'primary', filter: w => ['rifle', 'sniper', 'special'].includes(w.cat), nameEl: 'lo-p-name', statsEl: 'lo-p-stats', listEl: 'lo-p-list' },
                     { key: 'secondary', filter: w => ['pistol', 'shotgun'].includes(w.cat), nameEl: 'lo-s-name', statsEl: 'lo-s-stats', listEl: 'lo-s-list' },
                     { key: 'melee', filter: w => w.cat === 'melee', nameEl: 'lo-m-name', statsEl: 'lo-m-stats', listEl: 'lo-m-list' },
                 ];
@@ -1844,60 +2132,96 @@
             },
 
             // ---- COMBAT ----
-            shoot() {
+            shoot(chargeMult) {
                 const w = this.weapons[this.wepIndex];
                 if (!w || this.isReloading) return;
+                // Charge weapons only fire on release (handled in mouseup)
+                if (w.charge && !chargeMult) return;
                 if (w.curMag <= 0) { this.startReload(); return; }
                 const now = performance.now();
                 const minInterval = 60000 / w.rpm;
                 if ((now - this._lastShot) < minInterval) return;
                 this._lastShot = now;
 
+                const mult = chargeMult || 1;
+
+                // --- BURST FIRE: queue shots with small delay ---
+                if (w.burst) {
+                    const shots = Math.min(w.burst, w.curMag);
+                    for (let i = 0; i < shots; i++) {
+                        setTimeout(() => {
+                            if (w.curMag <= 0) return;
+                            w.curMag--;
+                            playShot(w);
+                            if (this.wepModel) { const wp = new THREE.Vector3(); this.wepModel.getWorldPosition(wp); spawnMuzzleFlash(wp); }
+                            const spread = this.scopeMode ? 0 : (1 - w.acc) * .05;
+                            this.fireRay(w, spread, 1);
+                            this._kick = Math.max(this._kick, .03);
+                            this.updateHUD();
+                            if (w.curMag === 0) this.startReload();
+                        }, i * 80);
+                    }
+                    return;
+                }
+
                 w.curMag--;
-                playShot(w);
+
+                // Play appropriate sound
+                if (w.laserColor) playLaserShot(w.laserColor);
+                else if (w.status === 'slow') playFreezeShot();
+                else if (chargeMult && chargeMult > 1) playChargeFire(chargeMult);
+                else playShot(w);
+
                 this.updateHUD();
 
-                // Muzzle flash position
+                // Muzzle flash
                 if (this.wepModel) {
                     const wpos = new THREE.Vector3();
                     this.wepModel.getWorldPosition(wpos);
                     spawnMuzzleFlash(wpos);
+                    if (w.laserColor) {
+                        const fl = new THREE.PointLight(w.laserColor, 4, 4);
+                        fl.position.copy(wpos); scene.add(fl);
+                        setTimeout(() => scene.remove(fl), 70);
+                    }
                 }
 
-                // Weapon kick
-                this._kick = .04;
+                // Weapon kick (charge weapons kick harder)
+                this._kick = .04 * mult;
 
                 const isMelee = w.cat === 'melee';
                 const isShotgun = w.cat === 'shotgun';
 
                 if (isMelee) {
-                    // Melee: short range raycast
-                    const ray = new THREE.Raycaster();
-                    ray.setFromCamera(new THREE.Vector2(0, 0), camera);
                     this.bots.forEach(bot => {
                         if (!bot.alive) return;
                         const dist = camera.position.distanceTo(bot.group.position);
                         if (dist < w.range) {
-                            this.hitBot(bot, w.dmg, false);
+                            this.hitBot(bot, Math.round(w.dmg * mult), false);
+                            if (w.energyTrail) spawnImpact(bot.group.position.clone().add(new THREE.Vector3(0, .8, 0)), 0x0099ff);
                         }
                     });
-                    // Swing animation
                     this._swingAnim = .2;
                 } else if (isShotgun) {
                     const pellets = w.pellets || 8;
                     for (let i = 0; i < pellets; i++) {
                         const spread = (1 - w.acc) * .12;
-                        this.fireRay(w, spread);
+                        if (w.bounce) fireBouncingRay(w, spread);
+                        else this.fireRay(w, spread, mult);
                     }
+                } else if (w.bounce) {
+                    const spread = this.scopeMode ? 0 : (1 - w.acc) * .05;
+                    fireBouncingRay(w, spread);
                 } else {
                     const spread = this.scopeMode ? 0 : (1 - w.acc) * .05;
-                    this.fireRay(w, spread);
+                    this.fireRay(w, spread, mult);
                 }
 
                 if (w.curMag === 0 && w.cat !== 'melee') this.startReload();
             },
 
-            fireRay(w, spread) {
+            fireRay(w, spread, dmgMult) {
+                dmgMult = dmgMult || 1;
                 const dir = new THREE.Vector3(
                     (Math.random() - .5) * spread * 2,
                     (Math.random() - .5) * spread * 2,
@@ -1907,31 +2231,40 @@
                 dir.applyQuaternion(camera.quaternion);
 
                 const ray = new THREE.Raycaster(camera.position.clone(), dir, 0, w.range || 200);
-                // Check bots
                 let hitBot = null, hitDist = Infinity;
                 this.bots.forEach(bot => {
                     if (!bot.alive) return;
-                    // Simple sphere intersection
                     const toBot = new THREE.Vector3().subVectors(bot.group.position, camera.position);
                     toBot.y = BOT_HEIGHT / 2;
                     const proj = toBot.dot(dir);
                     if (proj < 0) return;
                     const closest = new THREE.Vector3().copy(camera.position).addScaledVector(dir, proj);
                     const dist = closest.distanceTo(new THREE.Vector3(bot.group.position.x, BOT_HEIGHT / 2 + bot.group.position.y, bot.group.position.z));
-                    if (dist < BOT_RADIUS * 2 && proj < hitDist) {
-                        hitDist = proj; hitBot = bot;
-                    }
+                    if (dist < BOT_RADIUS * 2 && proj < hitDist) { hitDist = proj; hitBot = bot; }
                 });
+
+                // Tracer color based on weapon type
+                const tracerCol = w.laserColor || (w.status === 'burn' ? 0xff4400 : w.status === 'slow' ? 0x44aaff : w.status === 'knockback' ? 0x6688ff : 0xffcc88);
 
                 if (hitBot) {
                     const isHead = hitDist < camera.position.distanceTo(hitBot.group.position) && Math.random() < .15;
-                    this.hitBot(hitBot, w.dmg, isHead);
-                    spawnImpact(new THREE.Vector3().copy(camera.position).addScaledVector(dir, hitDist), isHead ? 0xffcccc : 0xff9944);
+                    const dmg = Math.round(w.dmg * dmgMult);
+                    this.hitBot(hitBot, dmg, isHead);
+                    const hp = new THREE.Vector3().copy(camera.position).addScaledVector(dir, hitDist);
+                    spawnImpact(hp, isHead ? 0xffcccc : tracerCol);
+                    spawnTracer(camera.position.clone(), hp, tracerCol);
+                    showHitMarker();
+                    if (w.status) applyStatus(hitBot, w.status, w);
+                    if (w.explosive) explosiveSplash(hp, w.splashRadius || 4, w.dmg * .5);
                 } else {
-                    // Impact on world
                     const hits = ray.intersectObjects(mapObstacleMeshes);
                     if (hits.length > 0) {
-                        spawnImpact(hits[0].point, 0xaaaaaa);
+                        spawnImpact(hits[0].point, w.status === 'burn' ? 0xff5500 : 0xaaaaaa);
+                        spawnTracer(camera.position.clone(), hits[0].point, tracerCol);
+                        if (w.explosive) explosiveSplash(hits[0].point, w.splashRadius || 4, w.dmg);
+                    } else {
+                        const endPt = camera.position.clone().addScaledVector(dir, w.range || 200);
+                        spawnTracer(camera.position.clone(), endPt, tracerCol);
                     }
                 }
             },
@@ -1988,7 +2321,9 @@
 
             // ---- MOVEMENT ----
             updatePlayer(dt) {
-                const speed = this.PLAYER_SPEED * (this.scopeMode ? .5 : 1);
+                const w_cur = this.weapons[this.wepIndex];
+                const heavyPenalty = (w_cur && w_cur.heavy) ? .55 : 1;
+                const speed = this.PLAYER_SPEED * (this.scopeMode ? .5 : 1) * heavyPenalty;
                 const fwd = new THREE.Vector3(-Math.sin(this.playerYaw), 0, -Math.cos(this.playerYaw));
                 const right = new THREE.Vector3(Math.cos(this.playerYaw), 0, -Math.sin(this.playerYaw));
                 const moveVel = new THREE.Vector3();
@@ -2050,6 +2385,32 @@
                 if (this._swingAnim > 0) {
                     this._swingAnim -= dt;
                     camera.rotation.x -= Math.sin(this._swingAnim * Math.PI / .2) * .3;
+                }
+
+                // Screen shake
+                if (this._shakeAmt > 0) {
+                    camera.position.x += (Math.random() - .5) * this._shakeAmt;
+                    camera.position.y += (Math.random() - .5) * this._shakeAmt * .5;
+                    this._shakeAmt = Math.max(0, this._shakeAmt - dt * 3);
+                }
+
+                // Charge weapon VFX
+                if (this._isCharging) {
+                    const cw = this.weapons[this.wepIndex];
+                    if (cw && cw.charge) {
+                        const elapsed = (performance.now() - this._chargeStart) / 1000;
+                        const pct = Math.min(1, elapsed / 1.5);
+                        if (!this._chargeVfx) {
+                            this._chargeVfx = new THREE.PointLight(cw.laserColor || 0xffaa00, 0, 3);
+                            scene.add(this._chargeVfx);
+                        }
+                        this._chargeVfx.intensity = pct * 5;
+                        this._chargeVfx.position.copy(camera.position).addScaledVector(
+                            new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion), .6
+                        );
+                        const ci = document.getElementById('charge-ind');
+                        if (ci) { ci.style.display = 'block'; ci.textContent = 'CHARGING ' + Math.round(pct * 100) + '%'; }
+                    }
                 }
 
                 // Update weapon model (attached to camera)
@@ -2142,7 +2503,13 @@
                         if (e.button === 0) {
                             this.mouseDown = true;
                             const w = this.weapons[this.wepIndex];
-                            if (!w || !w.auto) this.shoot();
+                            if (w && w.charge) {
+                                // Start charging
+                                this._isCharging = true;
+                                this._chargeStart = performance.now();
+                            } else if (!w || !w.auto) {
+                                this.shoot();
+                            }
                         }
                         if (e.button === 2) {
                             const w = this.weapons[this.wepIndex];
@@ -2155,7 +2522,23 @@
                         }
                     }
                 });
-                document.addEventListener('mouseup', e => { if (e.button === 0) this.mouseDown = false; });
+                document.addEventListener('mouseup', e => {
+                    if (e.button === 0) {
+                        this.mouseDown = false;
+                        if (this.state === 'playing' && this._isCharging) {
+                            const w = this.weapons[this.wepIndex];
+                            if (w && w.charge) {
+                                const elapsed = (performance.now() - this._chargeStart) / 1000;
+                                const mult = Math.max(1, Math.min(w.maxChargeMult || 5, 1 + elapsed * 2.5));
+                                this._isCharging = false;
+                                if (this._chargeVfx) { scene.remove(this._chargeVfx); this._chargeVfx = null; }
+                                const ci = document.getElementById('charge-ind');
+                                if (ci) ci.style.display = 'none';
+                                this.shoot(mult);
+                            }
+                        }
+                    }
+                });
                 document.addEventListener('contextmenu', e => e.preventDefault());
 
                 document.addEventListener('mousemove', e => {

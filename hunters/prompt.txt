@@ -84,3 +84,42 @@ The weapon system should feel:
 - Closer to Roblox Rivals gameplay
 
 Do not remove existing features—only expand and improve the weapon system.
+------------------
+
+
+  17 new weapons:
+  - Auto Pistol (common) — fast auto pistol
+  - Ricochet Pistol (rare) — bouncing bullets (2 bounces)
+  - Burst Rifle (rare) — 3-shot burst
+  - HMG (epic) — 1100 RPM, slows movement
+  - LMG (common) — large 80-round mag
+  - DMR Rifle (rare) — 2-shot burst sniper
+  - Widowmaker (rare) — 14-pellet wide shotgun
+  - Slug Cannon (rare) — single-slug long-range shotgun
+  - Energy Blade (epic) — extended melee with energy trail
+  - Rapid Knife (rare) — 600 RPM melee
+  - Rocket Launcher (epic) — explosive AOE
+  - Laser Beam (epic) — 1800 RPM continuous laser
+  - Freeze Ray (rare) — slows enemies for 2.5s
+  - Flamethrower (epic) — burn DoT over 3 seconds
+  - Shockwave Gun (epic) — knockback on hit
+  - Bouncer (legendary) — 4-bounce projectiles
+  - Charge Rifle (legendary) — hold to charge up to 5× damage
+
+  New systems:
+  - Tier system (common/rare/epic/legendary) with color-coded shop badges
+  - Burst fire — queued shots with 80ms spacing
+  - Charge weapon — hold LMB to charge, release to fire
+  - Explosive splash — AOE on impact with particle effects
+  - Status effects — burn DoT, slow movement, knockback
+  - Screen shake — on explosions and knockback
+  - Bouncing projectiles — reflect off walls using face normals
+  - Colored tracers — per weapon type (blue for freeze, red for laser, orange for flame, etc.)
+  - Hit markers — pulsing circle on crosshair when connecting shots
+  - Heavy weapon penalty — HMG/Minigun reduce movement speed to 55%
+  - New weapon models — rocket launcher, flamethrower, charge rifle, laser, freeze ray, energy blade, bouncer     
+
+✻ Brewed for 10m 35s
+
+❯ /usage
+  ⎿  Status dialog dismissed
