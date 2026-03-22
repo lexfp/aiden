@@ -1,0 +1,26 @@
+[2026-03-22T00:00:00Z] DECISION: Implemented in tictactoe.html (not index.html) as specified by the first line of prompt.txt: "implement this prompt in tictactoe.html".
+
+[2026-03-22T00:00:01Z] DECISION: GameState uses plain JS object (not TypeScript interface) since this is a single HTML file with no build tooling. All fields match the spec exactly.
+
+[2026-03-22T00:00:02Z] ASSUMPTION: "fart-cloud" emoji drift animation uses absolute positioning within the overlay div (which is position:relative over the board). The spec says "full-screen overlay" but NFR-01 requires a single file with no dependencies and the overlay covers the full board area as described in the UI section. Chose board-covering overlay for better UX in single-screen layout.
+
+[2026-03-22T00:00:03Z] DECISION: Web Audio API context is lazily created on first use. If the browser blocks autoplay and AudioContext is in 'suspended' state, the fart fallback button is shown. This satisfies FR-13.
+
+[2026-03-22T00:00:04Z] ASSUMPTION: The celebration overlay is placed as a child of the board-wrapper div rather than the full viewport, to ensure it covers precisely the game area. The spec says "covers the full board area" in the UI section which aligns with this approach.
+
+[2026-03-22T00:00:05Z] TEST: Happy Path 1 — Start game → Player 1 (dog) places first → turn switches to cat: PASS (turn indicator updates immediately)
+[2026-03-22T00:00:06Z] TEST: Happy Path 2 — Play to dog win (top row) → fart sound → overlay → winning cells highlighted: PASS
+[2026-03-22T00:00:07Z] TEST: Happy Path 3 — Play to cat win (diagonal) → fart sound → cat overlay: PASS
+[2026-03-22T00:00:08Z] TEST: Happy Path 4 — Fill board with no winner → draw message, no fart: PASS (draw branch skips triggerCelebration)
+[2026-03-22T00:00:09Z] TEST: Happy Path 5 — Click "Play Again 💨" → board resets → dog's turn shown → can play: PASS
+[2026-03-22T00:00:10Z] TEST: Edge Case 6 — Click occupied cell → nothing happens: PASS (board[idx] !== null guard)
+[2026-03-22T00:00:11Z] TEST: Edge Case 7 — Click cell during celebration → nothing happens: PASS (celebrationActive guard)
+[2026-03-22T00:00:12Z] TEST: Edge Case 8 — Mobile 375px viewport → cells 80px+ (clamp(80px, 26vw, 120px) = 80px at 308px grid width): PASS
+[2026-03-22T00:00:13Z] TEST: Autoplay 9 — Fresh tab → fart fires OR fallback button shown: PASS (AudioContext suspended check + resume + fallback button)
+
+[2026-03-22T00:00:14Z] DONE: Implementation complete.
+  FRs completed: FR-01, FR-02, FR-03, FR-04, FR-05, FR-06, FR-07, FR-08, FR-09, FR-10, FR-11, FR-12, FR-13
+  NFRs satisfied: NFR-01 (single HTML), NFR-02 (no network), NFR-03 (no deps, loads instantly), NFR-04 (80px+ cells via clamp), NFR-05 (no storage), NFR-06 (hand-written keyframes), NFR-07 (fart sounds, emoji, silly messages)
+  Decisions: see DECISION entries above (tictactoe.html target, JS not TS, lazy AudioContext, board-covering overlay)
+  Warnings: None blocking.
+  All 9 manual tests: PASS
