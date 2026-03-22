@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐶 Dogs vs Cats 🐱</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    background: linear-gradient(135deg, #ffeaa7 0%, #fab1d3 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 5vw, 2.8rem);
+    text-align: center;
+    margin-bottom: 12px;
+    text-shadow: 2px 2px 0 #fff;
+    color: #333;
+  }
+
+  #turn-indicator {
+    font-size: clamp(1.1rem, 4vw, 1.6rem);
+    text-align: center;
+    margin-bottom: 18px;
+    min-height: 2em;
+    color: #555;
+    font-weight: bold;
+  }
+
+  #board-wrapper {
+    position: relative;
+  }
+
+  #board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    background: #333;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  }
+
+  .cell {
+    width: clamp(80px, 26vw, 120px);
+    height: clamp(80px, 26vw, 120px);
+    background: #fff9f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(2rem, 8vw, 3.2rem);
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    user-select: none;
+  }
+
+  .cell:empty:hover,
+  .cell.empty:hover {
+    background: #ffe0b2;
+    transform: scale(1.05);
+  }
+
+  .cell.occupied {
+    cursor: default;
+  }
+
+  .cell.winner {
+    background: #fffde7;
+    border: 3px solid #4caf50;
+    animation: winPulse 0.7s ease-in-out infinite alternate;
+  }
+
+  @keyframes winPulse {
+    from { box-shadow: 0 0 6px 2px #4caf50; background: #fffde7; }
+    to   { box-shadow: 0 0 20px 6px #66bb6a; background: #f9fbe7; }
+  }
+
+  /* Victory Overlay */
+  #overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.72);
+    border-radius: 12px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    z-index: 10;
+  }
+
+  #overlay.active {
+    display: flex;
+  }
+
+  #overlay-animal {
+    font-size: clamp(4rem, 15vw, 7rem);
+    animation: bounce 0.6s ease-in-out infinite alternate;
+    z-index: 2;
+  }
+
+  @keyframes bounce {
+    from { transform: translateY(0) scale(1); }
+    to   { transform: translateY(-18px) scale(1.12); }
+  }
+
+  #overlay-text {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    font-size: clamp(1.1rem, 4.5vw, 1.8rem);
+    color: #fff;
+    text-align: center;
+    margin-top: 12px;
+    text-shadow: 0 2px 6px #000;
+    z-index: 2;
+    padding: 0 12px;
+  }
+
+  .fart-cloud {
+    position: absolute;
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    animation: driftUp linear forwards;
+    opacity: 0;
+    z-index: 1;
+  }
+
+  @keyframes driftUp {
+    0%   { opacity: 0; transform: translateY(0) rotate(0deg); }
+    15%  { opacity: 1; }
+    85%  { opacity: 0.7; }
+    100% { opacity: 0; transform: translateY(-200px) rotate(25deg); }
+  }
+
+  /* Play Again button */
+  #play-again {
+    margin-top: 20px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    font-size: clamp(1rem, 4vw, 1.3rem);
+    padding: 12px 28px;
+    background: #ff7043;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: transform 0.15s, background 0.15s;
+  }
+
+  #play-again:hover {
+    background: #f4511e;
+    transform: scale(1.07);
+  }
+
+  #play-again.pulse {
+    animation: btnPulse 0.8s ease-in-out infinite alternate;
+  }
+
+  @keyframes btnPulse {
+    from { transform: scale(1);    box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    to   { transform: scale(1.1);  box-shadow: 0 6px 22px rgba(255,112,67,0.7); }
+  }
+
+  /* Fart fallback button */
+  #fart-btn {
+    display: none;
+    margin-top: 8px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+    font-size: 1rem;
+    padding: 8px 18px;
+    background: #8e24aa;
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+  }
+
+  #fart-btn:hover { background: #6a1b9a; }
+</style>
+</head>
+<body>
+
+<h1>🐶 Dogs vs Cats 🐱</h1>
+<div id="turn-indicator">🐶 Dog's turn!</div>
+
+<div id="board-wrapper">
+  <div id="board">
+    <div class="cell empty" data-index="0"></div>
+    <div class="cell empty" data-index="1"></div>
+    <div class="cell empty" data-index="2"></div>
+    <div class="cell empty" data-index="3"></div>
+    <div class="cell empty" data-index="4"></div>
+    <div class="cell empty" data-index="5"></div>
+    <div class="cell empty" data-index="6"></div>
+    <div class="cell empty" data-index="7"></div>
+    <div class="cell empty" data-index="8"></div>
+  </div>
+
+  <div id="overlay">
+    <div id="overlay-animal"></div>
+    <div id="overlay-text"></div>
+  </div>
+</div>
+
+<button id="play-again">Play Again 💨</button>
+<button id="fart-btn">💨 Tap to Fart!</button>
+
+<script>
+  // ─── Data Model ───────────────────────────────────────────────────────────
+  const PIECE = { dog: '🐶', cat: '🐱' };
+
+  const WIN_LINES = [
+    [0,1,2],[3,4,5],[6,7,8],   // rows
+    [0,3,6],[1,4,7],[2,5,8],   // columns
+    [0,4,8],[2,4,6],           // diagonals
+  ];
+
+  let state = {
+    board: Array(9).fill(null),
+    currentPlayer: 'dog',
+    winner: null,
+    winningCells: null,
+    isDraw: false,
+    celebrationActive: false,
+  };
+
+  // ─── DOM refs ─────────────────────────────────────────────────────────────
+  const cells        = Array.from(document.querySelectorAll('.cell'));
+  const turnEl       = document.getElementById('turn-indicator');
+  const overlay      = document.getElementById('overlay');
+  const overlayAnim  = document.getElementById('overlay-animal');
+  const overlayText  = document.getElementById('overlay-text');
+  const playAgainBtn = document.getElementById('play-again');
+  const fartBtn      = document.getElementById('fart-btn');
+
+  // ─── Audio ────────────────────────────────────────────────────────────────
+  let audioCtx = null;
+
+  function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function playFart() {
+    try {
+      const ctx = getAudioCtx();
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(playFart);
+        showFartFallback();
+        return;
+      }
+
+      const now = ctx.currentTime;
+      const dur = 1.1;
+
+      // Low-frequency oscillator sweep downward
+      const osc = ctx.createOscillator();
+      const oscGain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(40, now + dur);
+      oscGain.gain.setValueAtTime(0.5, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      osc.connect(oscGain);
+      oscGain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + dur);
+
+      // White noise burst
+      const bufLen = ctx.sampleRate * dur;
+      const buffer = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const data   = buffer.getChannelData(0);
+      for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+      const noise  = ctx.createBufferSource();
+      noise.buffer = buffer;
+      // Low-pass filter to make it bassy
+      const lpf = ctx.createBiquadFilter();
+      lpf.type = 'lowpass';
+      lpf.frequency.setValueAtTime(600, now);
+      lpf.frequency.exponentialRampToValueAtTime(80, now + dur);
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.4, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      noise.connect(lpf);
+      lpf.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noise.start(now);
+      noise.stop(now + dur);
+
+      hideFartFallback();
+    } catch (e) {
+      console.warn('Web Audio API error:', e);
+      showFartFallback();
+    }
+  }
+
+  function showFartFallback() {
+    fartBtn.style.display = 'inline-block';
+  }
+
+  function hideFartFallback() {
+    fartBtn.style.display = 'none';
+  }
+
+  fartBtn.addEventListener('click', () => {
+    try {
+      const ctx = getAudioCtx();
+      ctx.resume().then(() => { playFart(); });
+    } catch(e) {}
+  });
+
+  // ─── Game Logic ───────────────────────────────────────────────────────────
+  function checkWinner(board) {
+    for (const [a, b, c] of WIN_LINES) {
+      if (board[a] && board[a] === board[b] && board[b] === board[c]) {
+        return { winner: board[a], cells: [a, b, c] };
+      }
+    }
+    return null;
+  }
+
+  function handleCellClick(e) {
+    const idx = parseInt(e.currentTarget.dataset.index, 10);
+    if (state.celebrationActive) return;
+    if (state.winner || state.isDraw) return;
+    if (state.board[idx] !== null) return;
+
+    state.board[idx] = state.currentPlayer;
+    renderCell(idx);
+
+    const result = checkWinner(state.board);
+    if (result) {
+      state.winner = result.winner;
+      state.winningCells = result.cells;
+      state.celebrationActive = true;
+      highlightWinners();
+      updateTurnIndicator();
+      setTimeout(() => triggerCelebration(), 100);
+    } else if (state.board.every(v => v !== null)) {
+      state.isDraw = true;
+      updateTurnIndicator();
+      playAgainBtn.classList.add('pulse');
+    } else {
+      state.currentPlayer = state.currentPlayer === 'dog' ? 'cat' : 'dog';
+      updateTurnIndicator();
+    }
+  }
+
+  function renderCell(idx) {
+    const cell = cells[idx];
+    cell.textContent = PIECE[state.board[idx]];
+    cell.classList.remove('empty');
+    cell.classList.add('occupied');
+  }
+
+  function highlightWinners() {
+    state.winningCells.forEach(i => {
+      cells[i].classList.add('winner');
+    });
+  }
+
+  function updateTurnIndicator() {
+    if (state.isDraw) {
+      turnEl.textContent = "😐 It's a draw! No one farted.";
+    } else if (state.winner) {
+      turnEl.textContent = state.winner === 'dog'
+        ? '🐶 Dog wins and rips one! 💨💨💨'
+        : '🐱 Cat wins! Someone dealt it! 💨💨💨';
+    } else {
+      const p = state.currentPlayer;
+      turnEl.textContent = p === 'dog' ? "🐶 Dog's turn!" : "🐱 Cat's turn!";
+    }
+  }
+
+  // ─── Celebration ──────────────────────────────────────────────────────────
+  function triggerCelebration() {
+    const w = state.winner;
+    overlayAnim.textContent = PIECE[w];
+    overlayText.textContent = w === 'dog'
+      ? '🐶 DOG WINS! 💨💨💨'
+      : '🐱 CAT WINS! 💨💨💨';
+
+    // Remove old fart clouds
+    overlay.querySelectorAll('.fart-cloud').forEach(el => el.remove());
+
+    // Spawn fart clouds at staggered intervals
+    const positions = [15, 35, 55, 75, 25, 65, 45, 10, 85];
+    positions.forEach((left, i) => {
+      const cloud = document.createElement('div');
+      cloud.className = 'fart-cloud';
+      cloud.textContent = '💨';
+      cloud.style.left = left + '%';
+      cloud.style.bottom = '10%';
+      const animDur = 1.5 + Math.random() * 1;
+      cloud.style.animationDuration = animDur + 's';
+      cloud.style.animationDelay = (i * 0.22) + 's';
+      overlay.appendChild(cloud);
+    });
+
+    overlay.classList.add('active');
+    playFart();
+
+    // After 3s make the play-again button pulse
+    setTimeout(() => {
+      playAgainBtn.classList.add('pulse');
+    }, 3000);
+  }
+
+  // ─── Restart ──────────────────────────────────────────────────────────────
+  function restartGame() {
+    state = {
+      board: Array(9).fill(null),
+      currentPlayer: 'dog',
+      winner: null,
+      winningCells: null,
+      isDraw: false,
+      celebrationActive: false,
+    };
+
+    cells.forEach(cell => {
+      cell.textContent = '';
+      cell.className = 'cell empty';
+    });
+
+    overlay.classList.remove('active');
+    playAgainBtn.classList.remove('pulse');
+    hideFartFallback();
+    updateTurnIndicator();
+  }
+
+  // ─── Event listeners ──────────────────────────────────────────────────────
+  cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+  playAgainBtn.addEventListener('click', restartGame);
+
+  // ─── Init ─────────────────────────────────────────────────────────────────
+  updateTurnIndicator();
+</script>
+</body>
+</html>
