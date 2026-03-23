@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>NEXUS Game Platform</title>
+
+    <style>
+        /* ===== GLOBAL ===== */
+
+        body {
+            margin: 0;
+            font-family: Segoe UI;
+            background: #0b0b14;
+            color: white;
+        }
+
+        /* ===== HEADER ===== */
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: #141421;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, .6);
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: bold;
+            color: #6c63ff;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            margin-left: 20px;
+            cursor: pointer;
+        }
+
+        /* ===== PAGES ===== */
+
+        .page {
+            display: none;
+            padding: 40px;
+        }
+
+        .active {
+            display: block;
+        }
+
+        /* ===== GAME GRID ===== */
+
+        #gameGrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 240px);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .gameCard {
+            background: #1a1a2b;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: .2s;
+        }
+
+        .gameCard:hover {
+            transform: translateY(-6px);
+        }
+
+        .thumb {
+            height: 140px;
+            background: linear-gradient(45deg, #6c63ff, #00d4ff);
+        }
+
+        .info {
+            padding: 15px;
+        }
+
+        .playBtn {
+            margin-top: 10px;
+            width: 100%;
+            padding: 10px;
+            background: #6c63ff;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* ===== CREATE PAGE ===== */
+
+        input {
+            width: 300px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 600px;
+            height: 300px;
+            background: #111;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+        }
+
+        .publishBtn {
+            display: block;
+            margin-top: 10px;
+            padding: 12px 20px;
+            background: #6c63ff;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* ===== PLAYER ===== */
+
+        #gameCanvas {
+            border: 3px solid #444;
+            background: black;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+
+        <div class="logo">NEXUS</div>
+
+        <nav>
+            <button onclick="showPage('home')">Home</button>
+            <button onclick="showPage('create')">Create Game</button>
+            <button onclick="showPage('play')">Play</button>
+        </nav>
+
+    </header>
+
+    <!-- HOME -->
+
+    <div id="home" class="page active">
+
+        <h1>Game Library</h1>
+
+        <div id="gameGrid"></div>
+
+    </div>
+
+    <!-- CREATE -->
+
+    <div id="create" class="page">
+
+        <h1>Create Game</h1>
+
+        <input id="gameName" placeholder="Game name">
+
+        <br>
+
+        <textarea id="gameCode">
+
+let player = {
+x:100,
+y:200,
+
+update(){
+this.x += 1
+},
+
+draw(ctx){
+ctx.fillStyle="red"
+ctx.fillRect(this.x,this.y,50,50)
+}
+
+}
+
+engine.add(player)
+
+</textarea>
+
+        <button class="publishBtn" onclick="publish()">Publish Game</button>
+
+    </div>
+
+    <!-- PLAY -->
+
+    <div id="play" class="page">
+
+        <h1 id="gameTitle">Game</h1>
+
+        <canvas id="gameCanvas" width="900" height="500"></canvas>
+
+    </div>
+
+    <script>
+
+        /* ===== PAGE SYSTEM ===== */
+
+        function showPage(id) {
+
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"))
+
+            document.getElementById(id).classList.add("active")
+
+        }
+
+        /* ===== GAME ENGINE ===== */
+
+        class Engine {
+
+            constructor(canvas) {
+
+                this.canvas = canvas
+                this.ctx = canvas.getContext("2d")
+
+                this.objects = []
+
+            }
+
+            add(obj) {
+                this.objects.push(obj)
+            }
+
+            start() {
+
+                const loop = () => {
+
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+                    this.objects.forEach(o => {
+                        if (o.update) o.update()
+                        if (o.draw) o.draw(this.ctx)
+                    })
+
+                    requestAnimationFrame(loop)
+
+                }
+
+                loop()
+
+            }
+
+        }
+
+        /* ===== STORAGE ===== */
+
+        function getGames() {
+            return JSON.parse(localStorage.getItem("nexusGames") || "[]")
+        }
+
+        function saveGames(g) {
+            localStorage.setItem("nexusGames", JSON.stringify(g))
+        }
+
+        /* ===== LOAD LIBRARY ===== */
+
+        function loadGames() {
+
+            let grid = document.getElementById("gameGrid")
+
+            grid.innerHTML = ""
+
+            let games = getGames()
+
+            games.forEach(game => {
+
+                let card = document.createElement("div")
+
+                card.className = "gameCard"
+
+                card.innerHTML = `
+
+<div class="thumb"></div>
+
+<div class="info">
+
+<h3>${game.name}</h3>
+
+<button class="playBtn" onclick="playGame('${game.id}')">Play</button>
+
+</div>
+
+`
+
+                grid.appendChild(card)
+
+            })
+
+        }
+
+        /* ===== PUBLISH ===== */
+
+        function publish() {
+
+            let name = document.getElementById("gameName").value
+            let code = document.getElementById("gameCode").value
+
+            let games = getGames()
+
+            let game = {
+
+                id: Date.now(),
+
+                name: name,
+
+                code: code
+
+            }
+
+            games.push(game)
+
+            saveGames(games)
+
+            alert("Game Published!")
+
+            loadGames()
+
+            showPage("home")
+
+        }
+
+        /* ===== PLAY ===== */
+
+        function playGame(id) {
+
+            showPage("play")
+
+            let games = getGames()
+
+            let game = games.find(g => g.id == id)
+
+            document.getElementById("gameTitle").innerText = game.name
+
+            let canvas = document.getElementById("gameCanvas")
+
+            window.engine = new Engine(canvas)
+
+            eval(game.code)
+
+            engine.start()
+
+        }
+
+        /* ===== START ===== */
+
+        loadGames()
+
+    </script>
+
+</body>
+
+</html>

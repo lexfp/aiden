@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cursed Energy Clicker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Cursed energy particles container -->
+  <div id="particles"></div>
+
+  <!-- Domain Expansion overlay -->
+  <div id="domain-overlay" class="hidden">
+    <div id="domain-content">
+      <div id="domain-title">INFINITE VOID</div>
+      <div id="domain-sub">Unlimited Void</div>
+      <div id="domain-bonus"></div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div id="title-area">
+      <span class="title-kanji">呪術廻戦</span>
+      <h1>CURSED ENERGY CLICKER</h1>
+    </div>
+    <div id="grade-badge">
+      <span id="grade-label">GRADE</span>
+      <span id="grade-value">4</span>
+    </div>
+  </header>
+
+  <!-- Main layout -->
+  <div id="main">
+
+    <!-- Left panel: Stats -->
+    <div id="left-panel">
+      <div class="panel-block" id="energy-display">
+        <div class="panel-label">CURSED ENERGY</div>
+        <div id="ce-count">0</div>
+        <div id="ce-per-sec"><span id="cps-val">0</span> CE/sec</div>
+      </div>
+
+      <div class="panel-block" id="total-display">
+        <div class="panel-label">TOTAL EXORCISED</div>
+        <div id="total-count">0</div>
+      </div>
+
+      <div class="panel-block" id="multiplier-display">
+        <div class="panel-label">CLICK POWER</div>
+        <div id="click-power">×1</div>
+      </div>
+
+      <!-- Domain Expansion button -->
+      <div id="domain-section">
+        <div class="panel-label">DOMAIN EXPANSION</div>
+        <div id="domain-charge-wrap">
+          <div id="domain-charge-bar"></div>
+          <span id="domain-charge-text">0%</span>
+        </div>
+        <button id="domain-btn" disabled>
+          <span class="btn-kanji">無限</span>
+          ACTIVATE
+        </button>
+      </div>
+
+      <!-- Prestige -->
+      <div id="prestige-section">
+        <button id="prestige-btn" disabled>
+          ✦ PRESTIGE ✦
+          <span id="prestige-cost-text">Need 1M CE</span>
+        </button>
+        <div id="prestige-count">Prestige: <span id="p-count">0</span></div>
+      </div>
+    </div>
+
+    <!-- Center: Click target -->
+    <div id="center-panel">
+      <div id="click-area-wrap">
+        <div id="click-ring-outer"></div>
+        <div id="click-ring-inner"></div>
+        <button id="click-btn" aria-label="Click to collect cursed energy">
+          <div id="click-eye">
+            <div id="eye-outer"></div>
+            <div id="eye-pupil"></div>
+            <div id="eye-inner"></div>
+            <div id="eye-shine"></div>
+          </div>
+          <div id="click-label">EXORCISE</div>
+        </button>
+      </div>
+
+      <!-- Technique unlocks -->
+      <div id="techniques">
+        <div class="technique-label">INNATE TECHNIQUES</div>
+        <div id="technique-list"></div>
+      </div>
+
+      <!-- Milestones -->
+      <div id="milestone-toast" class="hidden"></div>
+    </div>
+
+    <!-- Right panel: Upgrades / Sorcerers -->
+    <div id="right-panel">
+      <div id="shop-tabs">
+        <button class="tab-btn active" data-tab="sorcerers">SORCERERS</button>
+        <button class="tab-btn" data-tab="upgrades">TECHNIQUES</button>
+      </div>
+
+      <div id="shop-sorcerers" class="shop-tab active">
+        <div id="sorcerers-list"></div>
+      </div>
+
+      <div id="shop-upgrades" class="shop-tab">
+        <div id="upgrades-list"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Floating click numbers -->
+  <div id="floaters"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
