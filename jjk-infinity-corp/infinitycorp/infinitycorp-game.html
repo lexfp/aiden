@@ -1,0 +1,2511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INFINITY CORP — Corporate Empire</title>
+    <link rel="icon" href="./infinitycorp.avif">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #06040e;
+            --bg2: #0c0819;
+            --surface: #110d22;
+            --surface2: #18122f;
+            --border: #251748;
+            --p1: #6d28d9;
+            --p2: #8b5cf6;
+            --p3: #a78bfa;
+            --p4: #c4b5fd;
+            --glow: rgba(139, 92, 246, 0.45);
+            --glow-strong: rgba(139, 92, 246, 0.8);
+            --gold: #fbbf24;
+            --gold-dim: rgba(251, 191, 36, 0.35);
+            --text: #e8dff7;
+            --text2: #b0a0d0;
+            --text3: #6a5a8a;
+            --success: #34d399;
+            --danger: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            flex-shrink: 0;
+            height: 64px;
+            background: linear-gradient(180deg, #100620 0%, var(--bg2) 100%);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% -30%, rgba(109, 40, 217, 0.25) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .header-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--p3);
+            text-shadow: 0 0 18px var(--glow-strong), 0 0 36px var(--glow);
+            letter-spacing: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-title span {
+            color: var(--gold);
+            text-shadow: 0 0 15px var(--gold-dim);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .active-boosts {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .boost-pill {
+            background: rgba(52, 211, 153, 0.15);
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--success);
+            letter-spacing: 0.5px;
+            animation: boostPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes boostPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 6px rgba(52, 211, 153, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 14px rgba(52, 211, 153, 0.5);
+            }
+        }
+
+        .money-wrap {
+            text-align: right;
+        }
+
+        .money-display {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gold);
+            text-shadow: 0 0 12px var(--gold-dim);
+            line-height: 1;
+        }
+
+        .money-ips {
+            font-size: 10px;
+            color: var(--text3);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 268px;
+            flex-shrink: 0;
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .sidebar-tab {
+            flex: 1;
+            padding: 10px 0;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            text-align: center;
+            cursor: pointer;
+            color: var(--text3);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .sidebar-tab:hover {
+            color: var(--p3);
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .sidebar-tab.active {
+            color: var(--p3);
+            border-bottom: 2px solid var(--p2);
+            background: rgba(139, 92, 246, 0.08);
+        }
+
+        .sidebar-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 10px;
+        }
+
+        .sidebar-body::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .sidebar-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-body::-webkit-scrollbar-thumb {
+            background: var(--p1);
+            border-radius: 2px;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .panel-section {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--p3);
+            padding: 8px 2px 6px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 8px;
+        }
+
+        .panel-section:not(:first-child) {
+            margin-top: 14px;
+        }
+
+        .upgrade-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 11px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upgrade-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--p2);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .upgrade-card:hover:not(.owned):not(.locked) {
+            border-color: var(--p2);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.18);
+            transform: translateY(-1px);
+        }
+
+        .upgrade-card:hover:not(.owned):not(.locked)::before {
+            opacity: 1;
+        }
+
+        .upgrade-card.locked {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .upgrade-card.owned {
+            border-color: rgba(52, 211, 153, 0.3);
+            opacity: 0.65;
+            cursor: default;
+        }
+
+        .upgrade-card.owned::before {
+            background: var(--success);
+            opacity: 1;
+        }
+
+        .upg-name {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 2px;
+            color: var(--text);
+        }
+
+        .upg-desc {
+            font-size: 10px;
+            color: var(--text3);
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .upg-cost {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .upg-owned-tag {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--success);
+        }
+
+        .manager-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 11px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .manager-card:hover:not(.locked) {
+            border-color: var(--p2);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.18);
+            transform: translateY(-1px);
+        }
+
+        .manager-card.locked {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .manager-card.has-some {
+            border-color: rgba(139, 92, 246, 0.35);
+        }
+
+        .mgr-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .mgr-name {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .mgr-badge {
+            background: var(--p1);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 20px;
+        }
+
+        .mgr-ips {
+            font-size: 10px;
+            color: var(--p3);
+            margin-bottom: 4px;
+        }
+
+        .mgr-cost {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .investor-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 11px;
+            margin-bottom: 6px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .investor-card.state-ready {
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.15);
+            cursor: pointer;
+        }
+
+        .investor-card.state-ready:hover {
+            box-shadow: 0 0 22px rgba(251, 191, 36, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .investor-card.state-active {
+            border-color: rgba(52, 211, 153, 0.4);
+            box-shadow: 0 0 12px rgba(52, 211, 153, 0.15);
+        }
+
+        .inv-name {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .inv-boost {
+            font-size: 10px;
+            color: var(--p3);
+            margin-bottom: 5px;
+        }
+
+        .inv-status {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .inv-status.s-ready {
+            color: var(--gold);
+        }
+
+        .inv-status.s-active {
+            color: var(--success);
+        }
+
+        .inv-status.s-cooldown {
+            color: var(--text3);
+        }
+
+        .inv-bar {
+            width: 100%;
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .inv-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s linear;
+        }
+
+        .inv-bar-fill.f-ready {
+            background: var(--gold);
+        }
+
+        .inv-bar-fill.f-active {
+            background: var(--success);
+        }
+
+        .inv-bar-fill.f-cooldown {
+            background: var(--p1);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 2px;
+            border-bottom: 1px solid rgba(37, 23, 72, 0.8);
+            font-size: 12px;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-lbl {
+            color: var(--text3);
+        }
+
+        .stat-val {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .slots-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: radial-gradient(ellipse at 50% -10%, rgba(109, 40, 217, 0.05) 0%, transparent 55%);
+        }
+
+        .slots-area::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .slots-area::-webkit-scrollbar-thumb {
+            background: var(--p1);
+            border-radius: 2px;
+        }
+
+        .topbar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .topbar-info {
+            font-size: 13px;
+            color: var(--text3);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .topbar-info strong {
+            color: var(--text);
+        }
+
+        .mult-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--p3);
+        }
+
+        .btn-roll-all {
+            background: linear-gradient(130deg, #5b21b6, var(--p2));
+            border: none;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 9px 22px;
+            border-radius: 7px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            box-shadow: 0 0 14px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-roll-all:hover {
+            box-shadow: 0 0 24px rgba(139, 92, 246, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .btn-roll-all:active {
+            transform: translateY(0);
+        }
+
+        .btn-roll-all:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .slot {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            height: 168px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .slot-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text3);
+            gap: 4px;
+        }
+
+        .slot-empty-icon {
+            font-size: 26px;
+            opacity: 0.3;
+        }
+
+        .slot-empty-lbl {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .slot-rarity {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            padding: 2px 7px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid currentColor;
+            text-transform: uppercase;
+            z-index: 3;
+        }
+
+        .slot-icon {
+            font-size: 30px;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .slot-name {
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.2;
+            position: relative;
+            z-index: 2;
+            margin-bottom: 3px;
+        }
+
+        .slot-ips {
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            opacity: 0.8;
+            position: relative;
+            z-index: 2;
+        }
+
+        .slot-btn {
+            background: rgba(0, 0, 0, 0.35);
+            border: none;
+            border-top: 1px solid var(--border);
+            color: var(--text3);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 7px;
+            cursor: pointer;
+            transition: all 0.15s;
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        .slot-btn:hover {
+            background: rgba(139, 92, 246, 0.25);
+            color: var(--p3);
+        }
+
+        .slot-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .slot-actions {
+            display: flex;
+            gap: 8px;
+            padding: 0 8px 8px;
+        }
+
+        .slot-actions .slot-btn {
+            flex: 1;
+            padding: 7px;
+        }
+
+        .slot-actions .slot-btn.secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text3);
+        }
+
+        .r-common {
+            color: #94a3b8;
+        }
+
+        .r-uncommon {
+            color: #4ade80;
+        }
+
+        .r-rare {
+            color: #60a5fa;
+        }
+
+        .r-epic {
+            color: #c084fc;
+        }
+
+        .r-legendary {
+            color: #fbbf24;
+        }
+
+        .r-mythic {
+            color: #f87171;
+        }
+
+        .r-infinity {
+            color: #a78bfa;
+        }
+
+        .slot.is-infinity {
+            animation: infPulse 2s ease-in-out infinite;
+            border-color: #7c3aed !important;
+        }
+
+        @keyframes infPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 18px rgba(139, 92, 246, 0.55), 0 0 36px rgba(109, 40, 217, 0.3), inset 0 0 18px rgba(124, 58, 237, 0.08);
+            }
+
+            50% {
+                box-shadow: 0 0 35px rgba(139, 92, 246, 0.9), 0 0 70px rgba(109, 40, 217, 0.5), inset 0 0 35px rgba(124, 58, 237, 0.15);
+            }
+        }
+
+        .inf-particles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .inf-p {
+            position: absolute;
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(110%) translateX(0px);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            85% {
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: translateY(-15px) translateX(var(--dx));
+                opacity: 0;
+            }
+        }
+
+        .inf-name {
+            font-family: 'Cinzel Decorative', serif !important;
+            font-size: 14px !important;
+            font-weight: 900 !important;
+            color: #c4b5fd !important;
+            text-shadow: 0 0 10px rgba(167, 139, 250, 0.9), 0 0 22px rgba(139, 92, 246, 0.6);
+            letter-spacing: 3px;
+        }
+
+        .roll-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 32px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(17, 13, 34, 0.85);
+            animation: overlayFade 0.65s ease-out forwards;
+        }
+
+        @keyframes overlayFade {
+            0% {
+                opacity: 1;
+                background: rgba(109, 40, 217, 0.3);
+            }
+
+            100% {
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
+        .roll-spin {
+            width: 28px;
+            height: 28px;
+            border: 3px solid var(--border);
+            border-top-color: var(--p2);
+            border-radius: 50%;
+            animation: spin 0.35s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 76px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-16px);
+            background: var(--surface2);
+            border: 1px solid var(--p2);
+            border-radius: 10px;
+            padding: 10px 22px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--p3);
+            box-shadow: 0 0 28px rgba(139, 92, 246, 0.35);
+            opacity: 0;
+            transition: opacity 0.25s, transform 0.25s;
+            z-index: 999;
+            pointer-events: none;
+            text-align: center;
+            width: max-content;
+            max-width: min(92vw, 640px);
+            white-space: normal;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .notification.inf-notif {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 15px;
+            letter-spacing: 2px;
+            border-color: var(--p3);
+            color: var(--p4);
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.8), 0 0 100px rgba(109, 40, 217, 0.4);
+            max-width: min(96vw, 980px);
+            line-height: 1.35;
+        }
+
+        /* Redeem modal */
+        .code-modal {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--surface2);
+            border: 1px solid var(--p2);
+            padding: 14px;
+            border-radius: 10px;
+            display: none;
+            z-index: 1200;
+            min-width: 320px;
+        }
+
+        .code-modal.show {
+            display: block;
+        }
+
+        .code-modal h3 {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: var(--p4);
+            font-family: 'Cinzel Decorative', serif;
+        }
+
+        .code-modal input {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .code-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .btn-code {
+            background: linear-gradient(130deg, #312e81, var(--p2));
+            color: #fff;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700
+        }
+
+        .btn-code.secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text3)
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--p1);
+            border-radius: 2px;
+        }
+
+        /* ===== BATTLE WORLD ===== */
+        .battle-world {
+            position: fixed;
+            inset: 0;
+            background: #030108;
+            z-index: 800;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .battle-world.open {
+            transform: translateX(0);
+        }
+
+        .battle-header {
+            height: 60px;
+            background: linear-gradient(180deg, #12020a 0%, #0a0112 100%);
+            border-bottom: 1px solid #3b0a1e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .battle-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% -30%, rgba(220, 38, 38, 0.2) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .battle-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 20px;
+            font-weight: 900;
+            color: #f87171;
+            text-shadow: 0 0 18px rgba(248, 113, 113, 0.8), 0 0 36px rgba(220, 38, 38, 0.45);
+            letter-spacing: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .battle-stats-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .battle-stat {
+            text-align: right;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .battle-stat span {
+            color: var(--text3);
+            font-weight: 400;
+            font-size: 10px;
+            display: block;
+        }
+
+        .btn-back {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            color: #f87171;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 7px 16px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-back:hover {
+            background: rgba(248, 113, 113, 0.2);
+            box-shadow: 0 0 14px rgba(248, 113, 113, 0.25);
+        }
+
+        .battle-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+            align-content: start;
+        }
+
+        .battle-body::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .battle-body::-webkit-scrollbar-thumb {
+            background: #dc2626;
+            border-radius: 2px;
+        }
+
+        .spirit-card {
+            background: #0e0514;
+            border: 1px solid #2d0b1e;
+            border-radius: 12px;
+            padding: 14px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .spirit-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 50% 0%, var(--spirit-glow, rgba(248, 113, 113, 0.06)) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .spirit-card.dead {
+            opacity: 0.45;
+        }
+
+        .spirit-card.dead .btn-attack {
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        .spirit-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .spirit-icon {
+            font-size: 32px;
+        }
+
+        .spirit-info {
+            flex: 1;
+        }
+
+        .spirit-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .spirit-grade {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid currentColor;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .spirit-hp-wrap {
+            margin-bottom: 8px;
+        }
+
+        .spirit-hp-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--text3);
+            margin-bottom: 3px;
+        }
+
+        .spirit-hp-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .spirit-hp-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.25s ease;
+            background: linear-gradient(90deg, #dc2626, #f87171);
+        }
+
+        .spirit-hp-fill.low {
+            background: linear-gradient(90deg, #7f1d1d, #dc2626);
+        }
+
+        .spirit-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .spirit-reward {
+            font-size: 11px;
+            color: #fdba74;
+            font-weight: 700;
+        }
+
+        .spirit-reward span {
+            color: var(--text3);
+            font-weight: 400;
+            font-size: 10px;
+        }
+
+        .btn-attack {
+            background: linear-gradient(130deg, #7f1d1d, #dc2626);
+            border: none;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 7px 16px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.15s;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-attack:hover:not(:disabled) {
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .btn-attack:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .spirit-respawn {
+            font-size: 10px;
+            color: var(--text3);
+            font-weight: 600;
+        }
+
+        .dmg-pop {
+            position: absolute;
+            z-index: 20;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 18px;
+            font-weight: 900;
+            color: #f87171;
+            text-shadow: 0 0 8px rgba(248, 113, 113, 0.8);
+            pointer-events: none;
+            animation: dmgFloat 1s ease-out forwards;
+        }
+
+        @keyframes dmgFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-45px) scale(1.3);
+            }
+        }
+
+        /* ===== PRESTIGE ===== */
+        .prestige-pill {
+            background: linear-gradient(130deg, #4c1d95, #7c3aed);
+            border: 1px solid #a78bfa;
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #ede9fe;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-prestige {
+            background: linear-gradient(130deg, #4c1d95, #7c3aed) !important;
+            border: 1px solid #a78bfa !important;
+            color: #ede9fe !important;
+            animation: prestigeGlow 2s ease-in-out infinite;
+        }
+
+        .btn-prestige.locked {
+            background: rgba(109, 40, 217, 0.12) !important;
+            border: 1px solid rgba(109, 40, 217, 0.25) !important;
+            color: var(--text3) !important;
+            animation: none !important;
+            opacity: 0.7;
+        }
+
+        @keyframes prestigeGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 28px rgba(139, 92, 246, 0.9), 0 0 50px rgba(109, 40, 217, 0.4);
+            }
+        }
+
+        .prestige-modal-inner {
+            text-align: center;
+        }
+
+        .prestige-modal-inner .p-icon {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        .prestige-modal-inner h3 {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 18px;
+            color: #a78bfa;
+            letter-spacing: 3px;
+            margin-bottom: 6px;
+            text-shadow: 0 0 16px rgba(167, 139, 250, 0.7);
+        }
+
+        .prestige-reward-box {
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: var(--text);
+            text-align: left;
+            line-height: 1.7;
+        }
+
+        .prestige-reward-box strong {
+            color: #a78bfa;
+        }
+
+        /* Battle button in topbar */
+        .btn-battle {
+            background: linear-gradient(130deg, #7f1d1d, #b91c1c);
+            border: none;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 9px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            box-shadow: 0 0 14px rgba(220, 38, 38, 0.3);
+        }
+
+        .btn-battle:hover {
+            box-shadow: 0 0 24px rgba(220, 38, 38, 0.6);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="notification" id="notif"></div>
+    <audio id="bgAudio"
+        src="Aiden Yip - Jujutsu Kaisen_ Gojo Satoru Hollow Purple Theme _ EPIC VERSION (Besto Quality Remix).mp3"
+        autoplay loop style="display:none"></audio>
+
+    <!-- BATTLE WORLD OVERLAY -->
+    <div class="battle-world" id="battleWorld">
+        <div class="battle-header">
+            <div class="battle-title">⚔ Cursed Realm</div>
+            <div class="battle-stats-bar">
+                <div class="battle-stat" id="bAtk" style="color:#f87171">0<span>ATTACK / HIT</span></div>
+                <div class="battle-stat" id="bKills" style="color:#fdba74">0<span>KILLS</span></div>
+                <div class="battle-stat" id="bPrestige" style="color:#a78bfa">×1<span>PRESTIGE MULT</span></div>
+            </div>
+            <button class="btn-back" onclick="closeBattleWorld()">← Back to Empire</button>
+        </div>
+        <div class="battle-body" id="battleBody"></div>
+    </div>
+
+    <!-- PRESTIGE MODAL -->
+    <div class="code-modal" id="prestigeModal" role="dialog" aria-modal="true" style="min-width:420px">
+        <div class="prestige-modal-inner">
+            <div class="p-icon">♾️</div>
+            <h3>PRESTIGE</h3>
+            <p style="color:var(--text2);font-size:12px;margin-bottom:8px">Perform a Special Grade Exorcism to transcend
+                your limits.</p>
+            <div class="prestige-reward-box" id="prestigeRewardBox"></div>
+            <p style="color:var(--danger);font-size:11px;margin-bottom:12px;line-height:1.5">
+                ⚠️ All money, slots, upgrades, and managers will be reset.<br>Only your kills and prestige multiplier
+                carry over.
+            </p>
+        </div>
+        <div class="code-actions">
+            <button class="btn-code secondary" id="btnCancelPrestige">Cancel</button>
+            <button class="btn-code" id="btnConfirmPrestige"
+                style="background:linear-gradient(130deg,#4c1d95,#7c3aed);border:1px solid #a78bfa">
+                ✦ Transcend
+            </button>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-title">∞ <span>INFINITY</span> CORP</div>
+        <div class="header-right">
+            <div class="active-boosts" id="activeBoosts"></div>
+            <button id="btnOpenCode" class="btn-code" style="margin-right:8px">Redeem</button>
+            <button id="btnLeaderboard" class="btn-code" style="margin-right:8px">Leaderboard</button>
+            <button id="btnPrestige" class="btn-code btn-prestige locked" style="margin-right:8px">♾ Prestige</button>
+            <div class="money-wrap">
+                <div class="money-display" id="moneyDisplay">100 Cursed Spirits</div>
+                <div class="money-ips" id="ipsDisplay">0.00 Cursed Spirits/sec</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="code-modal" id="codeModal" role="dialog" aria-modal="true">
+        <h3>Redeem Code</h3>
+        <input id="codeInput" placeholder="Enter code" />
+        <div class="code-actions">
+            <button class="btn-code secondary" id="btnCloseCode">Close</button>
+            <button class="btn-code" id="btnRedeem">Redeem</button>
+        </div>
+    </div>
+
+    <div class="code-modal" id="leaderboardModal" role="dialog" aria-modal="true">
+        <h3>Leaderboard</h3>
+        <div id="leaderboardList" style="max-height:300px;overflow:auto;margin-bottom:8px;color:var(--text)"></div>
+        <div class="code-actions">
+            <button class="btn-code secondary" id="btnCloseLeaderboard">Close</button>
+        </div>
+    </div>
+
+
+
+    <div class="code-modal" id="nameModal" role="dialog" aria-modal="true">
+        <h3>Player Name</h3>
+        <input id="nameInput" placeholder="Enter your name" />
+        <div class="code-actions">
+            <button class="btn-code secondary" id="btnCloseName">Close</button>
+            <button class="btn-code" id="btnSaveName">Save</button>
+        </div>
+    </div>
+
+
+
+
+    <div class="main-layout">
+
+        <aside class="sidebar">
+            <div class="sidebar-tabs">
+                <div class="sidebar-tab active" data-tab="upgrades">Upgrades</div>
+                <div class="sidebar-tab" data-tab="managers">Managers</div>
+                <div class="sidebar-tab" data-tab="investors">Investors</div>
+                <div class="sidebar-tab" data-tab="stats">Stats</div>
+            </div>
+            <div class="sidebar-body">
+                <div class="tab-panel active" id="tab-upgrades">
+                    <div id="upgradesList"></div>
+                </div>
+                <div class="tab-panel" id="tab-managers">
+                    <div id="managersList"></div>
+                </div>
+                <div class="tab-panel" id="tab-investors">
+                    <div id="investorsList"></div>
+                </div>
+                <div class="tab-panel" id="tab-stats">
+                    <div id="statsList"></div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="slots-area">
+            <div class="topbar">
+                <div class="topbar-info">
+                    <span>Roll: <strong id="rollCostLbl">100 CS</strong></span>
+                    <span>Multiplier: <span class="mult-badge" id="multBadge">1×</span></span>
+                </div>
+                <div style="display:flex;gap:8px">
+                    <button class="btn-battle" id="btnOpenBattle">⚔ Battle World</button>
+                    <button class="btn-roll-all" id="btnRollAll">⚄ Roll All Empty</button>
+                </div>
+            </div>
+            <div class="slots-grid" id="slotsGrid"></div>
+        </main>
+
+    </div>
+
+    <script>
+        const COMPANIES = [
+            { id: 'taunt', name: 'Taunt/Provocation', icon: '😏', chance: 0.13, baseIncome: 0.5, rarity: 'Common', css: 'r-common', color: '#94a3b8', glow: 'rgba(148,163,184,0.12)' },
+            { id: 'snake', name: 'Snake Eyes and Fangs', icon: '🐍', chance: 0.13, baseIncome: 1, rarity: 'Common', css: 'r-common', color: '#86efac', glow: 'rgba(134,239,172,0.12)' },
+            { id: 'collapse', name: 'Collapse', icon: '💥', chance: 0.10, baseIncome: 3, rarity: 'Common', css: 'r-common', color: '#94a3b8', glow: 'rgba(148,163,184,0.12)' },
+            { id: 'ice', name: 'Thin Ice Breaker', icon: '❄️', chance: 0.10, baseIncome: 6, rarity: 'Uncommon', css: 'r-uncommon', color: '#7dd3fc', glow: 'rgba(125,211,252,0.15)' },
+            { id: 'discharge', name: 'Cursed Energy Discharge', icon: '⚡', chance: 0.09, baseIncome: 10, rarity: 'Uncommon', css: 'r-uncommon', color: '#fdba74', glow: 'rgba(253,186,116,0.15)' },
+            { id: 'explosion', name: 'Explosion', icon: '💣', chance: 0.08, baseIncome: 20, rarity: 'Uncommon', css: 'r-uncommon', color: '#fb923c', glow: 'rgba(251,146,60,0.15)' },
+            { id: 'divergent', name: 'Divergent Fist', icon: '👊', chance: 0.07, baseIncome: 40, rarity: 'Rare', css: 'r-rare', color: '#fcd34d', glow: 'rgba(252,211,77,0.2)' },
+            { id: 'flowing', name: 'Flowing Red Scale', icon: '🩸', chance: 0.06, baseIncome: 80, rarity: 'Rare', css: 'r-rare', color: '#f87171', glow: 'rgba(248,113,113,0.2)' },
+            { id: 'straw', name: 'Straw Doll Technique', icon: '🎎', chance: 0.05, baseIncome: 150, rarity: 'Rare', css: 'r-rare', color: '#d97706', glow: 'rgba(217,119,6,0.2)' },
+            { id: 'puppet', name: 'Puppet Manipulation', icon: '🎭', chance: 0.04, baseIncome: 300, rarity: 'Epic', css: 'r-epic', color: '#c084fc', glow: 'rgba(192,132,252,0.22)' },
+            { id: 'worm', name: 'Worm Technique', icon: '🪱', chance: 0.035, baseIncome: 600, rarity: 'Epic', css: 'r-epic', color: '#a855f7', glow: 'rgba(168,85,247,0.22)' },
+            { id: 'tides', name: 'Disaster Tides', icon: '🌊', chance: 0.03, baseIncome: 1200, rarity: 'Epic', css: 'r-epic', color: '#3b82f6', glow: 'rgba(59,130,246,0.25)' },
+            { id: 'plants', name: 'Disaster Plants', icon: '🌿', chance: 0.025, baseIncome: 2400, rarity: 'Epic', css: 'r-epic', color: '#22c55e', glow: 'rgba(34,197,94,0.25)' },
+            { id: 'flamearrow', name: 'Flame Arrow', icon: '🔥', chance: 0.02, baseIncome: 5000, rarity: 'Legendary', css: 'r-legendary', color: '#f59e0b', glow: 'rgba(245,158,11,0.3)' },
+            { id: 'ratio', name: 'Ratio Technique', icon: '🎯', chance: 0.018, baseIncome: 10000, rarity: 'Legendary', css: 'r-legendary', color: '#fbbf24', glow: 'rgba(251,191,36,0.3)' },
+            { id: 'boogie', name: 'Boogie Woogie', icon: '👏', chance: 0.015, baseIncome: 20000, rarity: 'Legendary', css: 'r-legendary', color: '#fb923c', glow: 'rgba(251,146,60,0.28)' },
+            { id: 'blood', name: 'Blood Manipulation', icon: '🩸', chance: 0.012, baseIncome: 40000, rarity: 'Legendary', css: 'r-legendary', color: '#dc2626', glow: 'rgba(220,38,38,0.3)' },
+            { id: 'contract', name: 'Contractual Re-Creation', icon: '📜', chance: 0.01, baseIncome: 80000, rarity: 'Mythic', css: 'r-mythic', color: '#f87171', glow: 'rgba(248,113,113,0.35)' },
+            { id: 'csmanip', name: 'Cursed Spirit Manipulation', icon: '👻', chance: 0.008, baseIncome: 160000, rarity: 'Mythic', css: 'r-mythic', color: '#a855f7', glow: 'rgba(168,85,247,0.35)' },
+            { id: 'comedian', name: 'Comedian', icon: '🎪', chance: 0.006, baseIncome: 320000, rarity: 'Mythic', css: 'r-mythic', color: '#f43f5e', glow: 'rgba(244,63,94,0.32)' },
+            { id: 'starrage', name: 'Star Rage', icon: '⭐', chance: 0.005, baseIncome: 640000, rarity: 'Mythic', css: 'r-mythic', color: '#fb7185', glow: 'rgba(251,113,133,0.32)' },
+            { id: 'projection', name: 'Projection Sorcery', icon: '🎬', chance: 0.003, baseIncome: 1280000, rarity: 'Infinity', css: 'r-infinity', color: '#facc15', glow: 'rgba(250,204,21,0.4)' },
+            { id: 'tenshadows', name: 'Ten Shadows Technique', icon: '🐺', chance: 0.002, baseIncome: 2560000, rarity: 'Infinity', css: 'r-infinity', color: '#1e293b', glow: 'rgba(30,41,59,0.45)' },
+            { id: 'idle', name: 'Idle Transfiguration', icon: '🧬', chance: 0.001, baseIncome: 5120000, rarity: 'Infinity', css: 'r-infinity', color: '#6366f1', glow: 'rgba(99,102,241,0.45)' },
+            { id: 'shrine', name: 'Shrine (Dismantle & Cleave)', icon: '⛩️', chance: 0.0005, baseIncome: 10240000, rarity: 'Infinity', css: 'r-infinity', color: '#ef4444', glow: 'rgba(239,68,68,0.5)' },
+            { id: 'limitless', name: 'Limitless', icon: '♾️', chance: 0.0002, baseIncome: 20480000, rarity: 'Infinity', css: 'r-infinity', color: '#3b82f6', glow: 'rgba(59,130,246,0.75)' },
+        ];
+
+        const UPGRADES = [
+            { id: 'eff', name: 'Efficiency Drive', desc: 'All companies earn 50% more', mult: 1.5, cost: 400 },
+            { id: 'auto', name: 'Automation Suite', desc: 'All companies earn 50% more', mult: 1.5, cost: 2000 },
+            { id: 'syn', name: 'Corporate Synergy', desc: 'All companies earn 2× more', mult: 2, cost: 10000 },
+            { id: 'ai', name: 'AI Integration', desc: 'All companies earn 2× more', mult: 2, cost: 55000 },
+            { id: 'roll', name: 'Bulk Licensing', desc: 'Roll cost reduced by 50%', rollDiscount: 0.5, cost: 900 },
+            { id: 'glob', name: 'Global Network', desc: 'All companies earn 3× more', mult: 3, cost: 300000 },
+            { id: 'dark', name: 'Dark Pool Trading', desc: 'All companies earn 3× more', mult: 3, cost: 2500000 },
+            { id: 'quant', name: 'Quantum Computing', desc: 'All companies earn 5× more', mult: 5, cost: 18000000 },
+            { id: 'neural', name: 'Neural Optimization', desc: 'All companies earn 5× more', mult: 5, cost: 150000000 },
+            { id: 'cosmic', name: 'Cosmic Leverage', desc: 'All companies earn 10× more', mult: 10, cost: 1500000000 },
+        ];
+
+        const MANAGERS_TEMPLATE = [
+            { id: 'intern', name: 'Office Intern', icon: '👔', ips: 1, base: 200, scale: 2.5 },
+            { id: 'jrmgr', name: 'Junior Manager', icon: '💼', ips: 5, base: 1000, scale: 2.5 },
+            { id: 'dept', name: 'Department Head', icon: '🧑‍💼', ips: 20, base: 5000, scale: 2.5 },
+            { id: 'vp', name: 'VP of Operations', icon: '🎩', ips: 100, base: 28000, scale: 2.5 },
+            { id: 'ceo', name: 'C-Suite Executive', icon: '👑', ips: 500, base: 140000, scale: 2.5 },
+            { id: 'board', name: 'Board of Directors', icon: '🏛️', ips: 2500, base: 800000, scale: 2.5 },
+            { id: 'shadow', name: 'Shadow Council', icon: '🌑', ips: 15000, base: 6000000, scale: 2.5 },
+            { id: 'cosmic', name: 'Cosmic Overseer', icon: '🌌', ips: 100000, base: 55000000, scale: 2.5 },
+        ];
+
+        const INVESTORS_TEMPLATE = [
+            { id: 'angel', name: 'Angel Investor', icon: '😇', mult: 2, duration: 30, cooldown: 120 },
+            { id: 'vc', name: 'Venture Capital', icon: '📈', mult: 5, duration: 30, cooldown: 300 },
+            { id: 'hedge', name: 'Hedge Fund', icon: '🦈', mult: 10, duration: 45, cooldown: 600 },
+            { id: 'sov', name: 'Sovereign Wealth', icon: '🏦', mult: 25, duration: 60, cooldown: 1200 },
+            { id: 'cosmic_i', name: 'Cosmic Entity', icon: '✨', mult: 100, duration: 60, cooldown: 2700 },
+        ];
+
+        const S = {
+            money: 100,
+            totalEarned: 0,
+            totalRolls: 0,
+            found: new Set(),
+            slots: Array(10).fill(null),
+            upgrades: new Set(),
+            redeemed: new Set(),
+            playerName: localStorage.getItem('infinity_player') || ('Player' + (1000 + Math.floor(Math.random() * 9000))),
+            managers: MANAGERS_TEMPLATE.map(m => ({ ...m, count: 0 })),
+            investors: INVESTORS_TEMPLATE.map(i => ({ ...i, status: 'ready', timer: 0 })),
+            companyMult: 1,
+            rollDiscount: 1,
+            boostMult: 1,
+            startTime: Date.now(),
+            lastTick: Date.now(),
+        };
+
+        function fmt(n) {
+            if (!isFinite(n)) return String(n) + ' CS';
+            const abs = Math.abs(n);
+            if (abs < 1000) return Math.floor(n).toLocaleString() + ' CS';
+
+            const suffixes = [
+                '', 'K', 'M', 'B', 'T', 'Quadrillion', 'Quintillion', 'Sextillion', 'Septillion', 'Octillion', 'Nonillion', 'Decillion',
+                'Undecillion', 'Duodecillion', 'Tredecillion', 'Quattuordecillion', 'Quindecillion', 'Sexdecillion', 'Septendecillion', 'Octodecillion',
+                'Novemdecillion', 'Vigintillion', 'Unvigintillion', 'Duovigintillion', 'Trevigintillion', 'Quattuorvigintillion', 'Quinvigintillion',
+                'Sentillion'
+            ];
+
+            const exponent = Math.floor(Math.log10(abs) / 3); // thousands-based exponent
+            const scale = Math.pow(1000, exponent);
+            const value = n / scale;
+            const suffix = suffixes[exponent] || null;
+
+            // choose decimals based on magnitude for readability
+            const decimals = value >= 100 ? 0 : value >= 10 ? 1 : 2;
+            const num = value.toFixed(decimals);
+            if (suffix) return num + ' ' + suffix + ' CS';
+            // fallback to scientific notation when beyond our suffix list
+            return Number.parseFloat(n).toExponential(3) + ' CS';
+        }
+        function fmtTime(s) {
+            if (s < 60) return Math.ceil(s) + 's';
+            if (s < 3600) return Math.floor(s / 60) + 'm ' + Math.ceil(s % 60) + 's';
+            return Math.floor(s / 3600) + 'h ' + Math.floor((s % 3600) / 60) + 'm';
+        }
+        function rollCompany() {
+            // Normalize company chances so we can add more entries without worrying
+            // about the sum being 1. This picks a random company proportional to its chance.
+            const total = COMPANIES.reduce((s, c) => s + (c.chance || 0), 0);
+            let r = Math.random() * total, cum = 0;
+            for (const c of COMPANIES) { cum += (c.chance || 0); if (r < cum) return { ...c }; }
+            return { ...COMPANIES[0] };
+        }
+        function totalIps() {
+            let ips = 0;
+            S.slots.forEach(s => { if (s) ips += s.baseIncome * S.companyMult * S.boostMult; });
+            S.managers.forEach(m => { ips += m.ips * m.count * S.boostMult; });
+            return ips;
+        }
+        function rollCost() { return Math.max(50, Math.floor(100 * S.rollDiscount)); }
+        function mgrCost(m) { return Math.floor(m.base * Math.pow(m.scale, m.count)); }
+
+        // --- Save / Load (cookies) ---
+        function setCookie(name, value, days = 365) {
+            const d = new Date();
+            d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/`;
+        }
+        function getCookie(name) {
+            const v = `; ${document.cookie}`;
+            const parts = v.split(`; ${name}=`);
+            if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+            return null;
+        }
+
+        function saveGame() {
+            try {
+                const state = {
+                    money: S.money,
+                    totalEarned: S.totalEarned,
+                    totalRolls: S.totalRolls,
+                    slots: S.slots.map(s => s ? s.id : null),
+                    found: Array.from(S.found),
+                    upgrades: Array.from(S.upgrades),
+                    redeemed: Array.from(S.redeemed),
+                    playerName: S.playerName,
+                    managers: S.managers.map(m => m.count),
+                    investors: S.investors.map(i => ({ id: i.id, status: i.status, timer: i.timer })),
+                    companyMult: S.companyMult,
+                    rollDiscount: S.rollDiscount,
+                    boostMult: S.boostMult,
+                    battleKills: S.battleKills || 0,
+                    battleSpirits: (S.battleSpirits || []).map(s => ({ id: s.id, hp: s.hp, dead: s.dead, respawnTimer: s.respawnTimer }))
+                };
+                setCookie('infinity_save', JSON.stringify(state));
+            } catch (e) {
+                console.error('Save failed', e);
+            }
+        }
+
+        function loadGame() {
+            try {
+                const raw = getCookie('infinity_save');
+                if (!raw) return false;
+                const state = JSON.parse(raw);
+                if (!state) return false;
+
+                S.money = state.money ?? S.money;
+                S.totalEarned = state.totalEarned ?? S.totalEarned;
+                S.totalRolls = state.totalRolls ?? S.totalRolls;
+                S.slots = (state.slots || Array(10).fill(null)).map(id => {
+                    if (!id) return null;
+                    const c = COMPANIES.find(x => x.id === id);
+                    return c ? { ...c } : null;
+                });
+                S.found = new Set(state.found || []);
+                S.upgrades = new Set(state.upgrades || []);
+                S.redeemed = new Set(state.redeemed || []);
+                if (state.playerName) { S.playerName = state.playerName; localStorage.setItem('infinity_player', S.playerName); }
+                if (Array.isArray(state.managers)) {
+                    S.managers.forEach((m, idx) => m.count = state.managers[idx] || 0);
+                }
+                if (Array.isArray(state.investors)) {
+                    S.investors.forEach(inv => {
+                        const saved = state.investors.find(i => i.id === inv.id);
+                        if (saved) {
+                            inv.status = saved.status || inv.status;
+                            inv.timer = saved.timer || inv.timer;
+                        }
+                    });
+                }
+                S.companyMult = state.companyMult ?? S.companyMult;
+                S.rollDiscount = state.rollDiscount ?? S.rollDiscount;
+                S.boostMult = state.boostMult ?? S.boostMult;
+                S.battleKills = state.battleKills ?? 0;
+                if (Array.isArray(state.battleSpirits)) {
+                    S.battleSpirits = state.battleSpirits;
+                }
+                return true;
+            } catch (e) {
+                console.error('Load failed', e);
+                return false;
+            }
+        }
+
+        // --- Leaderboard (localStorage) ---
+        function getLeaderboard() {
+            try {
+                const raw = localStorage.getItem('infinity_leaderboard') || '[]';
+                return JSON.parse(raw);
+            } catch (e) { return []; }
+        }
+        function setLeaderboard(lb) { localStorage.setItem('infinity_leaderboard', JSON.stringify(lb)); }
+
+        function updateLeaderboard() {
+            const lb = getLeaderboard();
+            // find existing entry for this player
+            const existing = lb.find(e => e.name === S.playerName);
+            if (existing) existing.money = Math.max(existing.money, S.money);
+            else lb.push({ name: S.playerName, money: S.money });
+            // sort desc and keep top 50
+            lb.sort((a, b) => b.money - a.money);
+            setLeaderboard(lb.slice(0, 50));
+        }
+
+        function openLeaderboard() {
+            const modal = document.getElementById('leaderboardModal');
+            const list = document.getElementById('leaderboardList');
+            const lb = getLeaderboard();
+            list.innerHTML = '';
+            if (!lb.length) {
+                list.innerHTML = '<div style="color:var(--text3)">No entries yet.</div>';
+                modal.classList.add('show');
+                return;
+            }
+            lb.forEach((e, i) => {
+                const row = document.createElement('div');
+                row.style.padding = '6px 4px';
+                row.style.borderBottom = '1px solid rgba(255,255,255,0.03)';
+                row.innerHTML = `<strong>#${i + 1}</strong> ${e.name} — ${fmt(e.money)}`;
+                if (getAdmin() && isAdmin() && e.name !== getAdmin()) {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-code';
+                    btn.style.marginLeft = '8px';
+                    btn.style.padding = '4px 8px';
+                    btn.style.fontSize = '11px';
+                    btn.textContent = 'Delete';
+                    btn.addEventListener('click', () => deletePlayer(e.name));
+                    row.appendChild(btn);
+                }
+                list.appendChild(row);
+            });
+            modal.classList.add('show');
+        }
+        function closeLeaderboard() { document.getElementById('leaderboardModal').classList.remove('show'); }
+
+        // --- Admin helpers ---
+        function getAdmin() { return localStorage.getItem('infinity_admin') || null; }
+        function setAdmin(name) { if (!name) localStorage.removeItem('infinity_admin'); else localStorage.setItem('infinity_admin', name); }
+        function isAdmin() { return getAdmin() && getAdmin() === S.playerName; }
+
+        function deletePlayer(name) {
+            if (!isAdmin()) { notify('Only the admin may delete players'); return; }
+            if (!name) return;
+            if (!confirm(`Delete player ${name} from leaderboard? This cannot be undone.`)) return;
+            try {
+                const lb = getLeaderboard();
+                const filtered = lb.filter(e => e.name !== name);
+                setLeaderboard(filtered);
+                notify(`Deleted ${name} from leaderboard`);
+                openLeaderboard();
+            } catch (e) { console.error(e); notify('Delete failed'); }
+        }
+
+        // Music modal handlers
+        function openMusicModal() { document.getElementById('musicModal').classList.add('show'); }
+        function closeMusicModal() { document.getElementById('musicModal').classList.remove('show'); }
+
+        function openNameModal() { document.getElementById('nameInput').value = S.playerName || ''; document.getElementById('nameModal').classList.add('show'); document.getElementById('nameInput').focus(); }
+        function closeNameModal() { document.getElementById('nameModal').classList.remove('show'); }
+
+        function savePlayerName() {
+            const v = (document.getElementById('nameInput').value || '').trim();
+            if (!v) return notify('Enter a valid name');
+            const prev = S.playerName;
+            const prevAdmin = getAdmin();
+            if (prev && prev !== v) {
+                // remove old name entries from leaderboard
+                try {
+                    const lb = getLeaderboard();
+                    const filtered = lb.filter(e => e.name !== prev);
+                    setLeaderboard(filtered);
+                } catch (e) { }
+            }
+            S.playerName = v;
+            localStorage.setItem('infinity_player', S.playerName);
+            // if there is no admin yet, or the previous name was the admin, make the new name the admin
+            if (!prevAdmin) setAdmin(S.playerName);
+            else if (prevAdmin === prev) setAdmin(S.playerName);
+            // ensure leaderboard reflects new name
+            updateLeaderboard();
+            saveGame();
+            updateHeader();
+            notify('Name saved');
+            closeNameModal();
+        }
+
+        let notifTimer;
+        function notify(msg, type = '') {
+            const el = document.getElementById('notif');
+            el.textContent = msg;
+            el.className = 'notification show' + (type === 'inf' ? ' inf-notif' : '');
+            clearTimeout(notifTimer);
+            notifTimer = setTimeout(() => el.classList.remove('show'), type === 'inf' ? 4000 : 2500);
+        }
+
+        // --- Code redemption ---
+        const CODES = {
+            'LEGENDARY1': { type: 'company', id: 'galaxy', note: 'Galaxy Corp (Legendary)' },
+            'LEGENDARY2': { type: 'company', id: 'nebula', note: 'Nebula Holdings (Legendary)' },
+            'MYTHIC1': { type: 'company', id: 'universe', note: 'Universe Holdings (Mythic)' },
+            'MYTHIC2': { type: 'company', id: 'omni', note: 'OmniCorp (Mythic)' },
+            'INFINITYGIFT': { type: 'company', id: 'infinity', note: 'INFINITY' },
+            'BLUEINF': { type: 'company', id: 'blue', note: 'BLUE INFINITY' },
+            'BLUEINFINITY': { type: 'company', id: 'blue', note: 'BLUE INFINITY' },
+            'REDINF': { type: 'company', id: 'red', note: 'RED INFINITY' },
+            'REDINFINITY': { type: 'company', id: 'red', note: 'RED INFINITY' },
+            'STARTERUP': { type: 'upgrades', upgrades: ['eff', 'auto'], note: 'Starter Upgrades' },
+            'COINS100K': { type: 'money', amount: 100000, note: '100k CS' }
+        };
+
+        function openCodeModal() { document.getElementById('codeModal').classList.add('show'); document.getElementById('codeInput').focus(); }
+        function closeCodeModal() { document.getElementById('codeModal').classList.remove('show'); document.getElementById('codeInput').value = ''; }
+
+        function grantCompanyById(id, opts = {}) {
+            const comp = COMPANIES.find(c => c.id === id);
+            if (!comp) { notify('Company not found'); return false; }
+            const empty = S.slots.findIndex(s => s === null);
+            let slotIndex = empty;
+            if (slotIndex === -1 && opts.replaceOnFull) {
+                slotIndex = S.slots.findIndex(s => !s || s.rarity !== 'Infinity');
+                if (slotIndex === -1) slotIndex = 0;
+            }
+            if (slotIndex === -1) { notify('No empty slot available. Free a slot first.'); return false; }
+            S.slots[slotIndex] = { ...comp };
+            S.found.add(comp.id);
+            renderSlot(slotIndex);
+            updateHeader();
+            saveGame();
+            return true;
+        }
+
+        function redeemCodeRaw(code) {
+            const c = (code || '').toString().trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (!c) return notify('Enter a code');
+            const meta = CODES[c];
+            if (!meta) return notify('Invalid code');
+            const singleUse = meta.singleUse === true;
+            if (singleUse && S.redeemed.has(c)) return notify('Code already redeemed');
+
+            let ok = false;
+            if (meta.type === 'company') {
+                ok = grantCompanyById(meta.id, { replaceOnFull: true });
+            }
+            else if (meta.type === 'upgrades') {
+                (meta.upgrades || []).forEach(u => S.upgrades.add(u));
+                ok = true;
+                renderUpgrades();
+            } else if (meta.type === 'money') { S.money += (meta.amount || 0); ok = true; }
+
+            if (ok) {
+                if (singleUse) S.redeemed.add(c);
+                saveGame();
+                notify(`✓ Redeemed: ${meta.note || c}`);
+                closeCodeModal();
+            }
+        }
+
+        const particleIntervals = {};
+        function startParticles(idx) {
+            if (particleIntervals[idx]) clearInterval(particleIntervals[idx]);
+            function spawn() {
+                const cont = document.querySelector(`#slot-${idx} .inf-particles`);
+                if (!cont) { clearInterval(particleIntervals[idx]); delete particleIntervals[idx]; return; }
+                for (let i = 0; i < 3; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'inf-p';
+                    const x = 10 + Math.random() * 80;
+                    const dx = (Math.random() - 0.5) * 35;
+                    const sz = 2 + Math.random() * 3.5;
+                    const dur = 1.8 + Math.random() * 1.8;
+                    const delay = Math.random() * 0.8;
+                    const colors = ['#a78bfa', '#c4b5fd', '#7c3aed', '#8b5cf6', '#ddd6fe', '#ede9fe'];
+                    const col = colors[Math.floor(Math.random() * colors.length)];
+                    p.style.cssText = `left:${x}%;bottom:0;width:${sz}px;height:${sz}px;background:${col};
+        box-shadow:0 0 ${4 + Math.random() * 5}px ${col};
+        animation-duration:${dur}s;animation-delay:${delay}s;--dx:${dx}px;`;
+                    cont.appendChild(p);
+                    setTimeout(() => p.remove(), (dur + delay + 0.2) * 1000);
+                }
+            }
+            spawn();
+            particleIntervals[idx] = setInterval(spawn, 600);
+        }
+
+        function renderSlot(i) {
+            const el = document.getElementById(`slot-${i}`);
+            if (!el) return;
+            const c = S.slots[i];
+            const rc = rollCost();
+            const canAfford = S.money >= rc;
+
+            if (!c) {
+                el.className = 'slot';
+                el.style.borderColor = '';
+                el.style.boxShadow = '';
+                el.innerHTML = `
+      <div class="slot-body">
+        <div class="slot-empty">
+          <div class="slot-empty-icon">⬡</div>
+          <div class="slot-empty-lbl">Empty Slot</div>
+        </div>
+      </div>
+      <button class="slot-btn" id="sbtn-${i}" onclick="doRoll(${i})" ${canAfford ? '' : 'disabled'}>
+        Roll — ${fmt(rc)}
+      </button>`;
+                return;
+            }
+
+            const isInf = c.rarity === 'Infinity';
+            el.className = 'slot' + (isInf ? ' is-infinity' : '');
+            el.style.borderColor = isInf ? '' : c.color + '66';
+            el.style.boxShadow = isInf ? '' : `0 0 12px ${c.glow}`;
+            const ips = c.baseIncome * S.companyMult * S.boostMult;
+            el.innerHTML = `
+        <div class="slot-body" style="background:linear-gradient(155deg,transparent 0%,${c.glow} 100%)">
+            ${isInf ? '<div class="inf-particles"></div>' : ''}
+            <span class="slot-rarity ${c.css}" style="color:${c.color}">${c.rarity}</span>
+            <div class="slot-icon">${c.icon}</div>
+            <div class="slot-name ${isInf ? 'inf-name' : ''}" style="color:${isInf ? '' : c.color}">${c.name}</div>
+            <div class="slot-ips" style="color:${c.color}">${fmt(ips)}/s</div>
+        </div>
+        <div class="slot-actions">
+            <button class="slot-btn secondary" id="sempty-${i}" onclick="emptySlot(${i})">Empty</button>
+            <button class="slot-btn" id="sbtn-${i}" onclick="doRoll(${i})" ${canAfford ? '' : 'disabled'}>Reroll — ${fmt(rc)}</button>
+        </div>`;
+
+            if (isInf) startParticles(i);
+        }
+        function renderAllSlots() { for (let i = 0; i < 10; i++) renderSlot(i); }
+
+        function emptySlot(i) {
+            if (i < 0 || i >= S.slots.length) return;
+            S.slots[i] = null;
+            renderSlot(i);
+            updateHeader();
+            saveGame();
+            notify('Slot emptied');
+        }
+
+        function renderUpgrades() {
+            document.getElementById('upgradesList').innerHTML =
+                `<div class="panel-section">Company Upgrades</div>` +
+                UPGRADES.map(u => {
+                    const owned = S.upgrades.has(u.id);
+                    const canBuy = !owned && S.money >= u.cost;
+                    return `<div class="upgrade-card ${owned ? 'owned' : !canBuy ? 'locked' : ''}" onclick="buyUpgrade('${u.id}')">
+        <div class="upg-name">${u.name}</div>
+        <div class="upg-desc">${u.desc}</div>
+        ${owned ? '<span class="upg-owned-tag">✓ OWNED</span>' : `<div class="upg-cost">${fmt(u.cost)}</div>`}
+      </div>`;
+                }).join('');
+        }
+
+        function renderManagers() {
+            document.getElementById('managersList').innerHTML =
+                `<div class="panel-section">Hire Managers</div>` +
+                S.managers.map(m => {
+                    const cost = mgrCost(m);
+                    const canBuy = S.money >= cost;
+                    return `<div class="manager-card ${canBuy ? '' : 'locked'} ${m.count > 0 ? 'has-some' : ''}" onclick="buyManager('${m.id}')">
+        <div class="mgr-header">
+          <div class="mgr-name">${m.icon} ${m.name}</div>
+          ${m.count > 0 ? `<div class="mgr-badge">${m.count}</div>` : ''}
+        </div>
+        <div class="mgr-ips">+${fmt(m.ips)}/sec each</div>
+        <div class="mgr-cost">${fmt(cost)}</div>
+      </div>`;
+                }).join('');
+        }
+
+        function renderInvestors() {
+            document.getElementById('investorsList').innerHTML =
+                `<div class="panel-section">Claim Boosts</div>` +
+                S.investors.map(inv => {
+                    const isReady = inv.status === 'ready';
+                    const isActive = inv.status === 'active';
+                    let pct, statusTxt, sCss, fCss;
+                    if (isReady) {
+                        pct = 100; statusTxt = '✦ CLAIM NOW'; sCss = 's-ready'; fCss = 'f-ready';
+                    } else if (isActive) {
+                        pct = (inv.timer / inv.duration) * 100;
+                        statusTxt = `⚡ ACTIVE — ${fmtTime(inv.timer)}`; sCss = 's-active'; fCss = 'f-active';
+                    } else {
+                        pct = ((inv.cooldown - inv.timer) / inv.cooldown) * 100;
+                        statusTxt = `⏳ ${fmtTime(inv.cooldown - inv.timer)}`; sCss = 's-cooldown'; fCss = 'f-cooldown';
+                    }
+                    return `<div class="investor-card state-${inv.status}" onclick="claimInvestor('${inv.id}')">
+        <div class="inv-name">${inv.icon} ${inv.name}</div>
+        <div class="inv-boost">${inv.mult}× income · ${inv.duration}s · Cooldown: ${fmtTime(inv.cooldown)}</div>
+        <div class="inv-status ${sCss}">${statusTxt}</div>
+        <div class="inv-bar"><div class="inv-bar-fill ${fCss}" style="width:${pct}%"></div></div>
+      </div>`;
+                }).join('');
+        }
+
+        function renderStats() {
+            const filled = S.slots.filter(Boolean).length;
+            const elapsed = (Date.now() - S.startTime) / 1000;
+            const hasInf = S.slots.some(s => s && s.id === 'infinity');
+            const counts = {};
+            S.slots.forEach(s => { if (s) counts[s.name] = (counts[s.name] || 0) + 1; });
+
+            const rarityOrder = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Mythic', 'Infinity'];
+            const foundArr = [...S.found].map(id => COMPANIES.find(c => c.id === id)).filter(Boolean)
+                .sort((a, b) => rarityOrder.indexOf(b.rarity) - rarityOrder.indexOf(a.rarity));
+
+            document.getElementById('statsList').innerHTML = `
+    <div class="panel-section">Performance</div>
+    <div class="stat-row"><span class="stat-lbl">Total Earned</span><span class="stat-val">${fmt(S.totalEarned)}</span></div>
+    <div class="stat-row"><span class="stat-lbl">Income / sec</span><span class="stat-val">${fmt(totalIps())}</span></div>
+    <div class="stat-row"><span class="stat-lbl">Multiplier</span><span class="stat-val">${S.companyMult.toFixed(1)}×</span></div>
+    <div class="stat-row"><span class="stat-lbl">Active Boost</span><span class="stat-val">${S.boostMult > 1 ? S.boostMult + '×' : 'None'}</span></div>
+    <div class="panel-section">Empire</div>
+    <div class="stat-row"><span class="stat-lbl">Slots Filled</span><span class="stat-val">${filled}/10</span></div>
+    <div class="stat-row"><span class="stat-lbl">Total Rolls</span><span class="stat-val">${S.totalRolls.toLocaleString()}</span></div>
+    <div class="stat-row"><span class="stat-lbl">Time Played</span><span class="stat-val">${fmtTime(elapsed)}</span></div>
+    <div class="stat-row"><span class="stat-lbl">INFINITY Owned</span><span class="stat-val" style="color:#a78bfa">${hasInf ? '✦ YES!' : 'Not yet…'}</span></div>
+    <div class="panel-section">Portfolio</div>
+    ${Object.entries(counts).map(([n, ct]) => `<div class="stat-row"><span class="stat-lbl">${n}</span><span class="stat-val">×${ct}</span></div>`).join('') || '<div style="color:var(--text3);font-size:11px;padding:6px 2px">Roll companies to fill slots!</div>'}
+    <div class="panel-section">Discoveries (${S.found.size}/${COMPANIES.length})</div>
+    ${foundArr.map(c => `<div class="stat-row"><span class="stat-lbl">${c.icon} ${c.name}</span><span class="stat-val ${c.css}">${c.rarity}</span></div>`).join('') || '<div style="color:var(--text3);font-size:11px;padding:6px 2px">None yet!</div>'}
+  `;
+        }
+
+        function updateHeader() {
+            document.getElementById('moneyDisplay').textContent = fmt(S.money);
+            document.getElementById('ipsDisplay').textContent = fmt(totalIps()) + '/sec';
+            document.getElementById('rollCostLbl').textContent = fmt(rollCost());
+            document.getElementById('multBadge').textContent = S.companyMult.toFixed(1) + '×';
+            const activeInvs = S.investors.filter(i => i.status === 'active');
+            document.getElementById('activeBoosts').innerHTML = activeInvs.map(i =>
+                `<div class="boost-pill">⚡ ${i.mult}× ${i.name}</div>`
+            ).join('');
+
+            // update player name display if present
+            if (!document.getElementById('playerNameLbl')) {
+                const wrap = document.querySelector('.header-right .money-wrap');
+                const lbl = document.createElement('div');
+                lbl.id = 'playerNameLbl';
+                lbl.style.fontSize = '11px';
+                lbl.style.color = 'var(--text3)';
+                lbl.style.marginTop = '4px';
+                wrap.appendChild(lbl);
+            }
+            const pnl = document.getElementById('playerNameLbl');
+            if (isAdmin()) pnl.innerHTML = `${S.playerName} <span style="color:var(--gold);font-weight:800;margin-left:6px;font-size:10px">ADMIN</span>`;
+            else pnl.textContent = S.playerName;
+        }
+
+        function doRoll(i) {
+            const rc = rollCost();
+            if (S.money < rc) { notify('Not enough money!'); return; }
+            S.money -= rc;
+            S.totalRolls++;
+
+            const el = document.getElementById(`slot-${i}`);
+            const ov = document.createElement('div');
+            ov.className = 'roll-overlay';
+            ov.innerHTML = '<div class="roll-spin"></div>';
+            el.appendChild(ov);
+
+            setTimeout(() => {
+                const company = rollCompany();
+                S.slots[i] = company;
+                S.found.add(company.id);
+                if (company.id === 'infinity') {
+                    notify('✦ INFINITY ACQUIRED — THE COSMOS YIELDS TO YOU ✦', 'inf');
+                } else if (company.rarity === 'Mythic') {
+                    notify(`🌠 MYTHIC! ${company.name} secured!`);
+                } else if (company.rarity === 'Legendary') {
+                    notify(`⭐ Legendary! ${company.name} found!`);
+                } else if (company.rarity === 'Epic') {
+                    notify(`💜 Epic pull! ${company.name}`);
+                }
+                renderSlot(i);
+                updateHeader();
+                renderUpgrades();
+                renderManagers();
+                saveGame();
+            }, 650);
+        }
+
+        function rollAllEmpty() {
+            const rc = rollCost();
+            const empties = S.slots.map((s, i) => s === null ? i : -1).filter(i => i >= 0);
+            if (!empties.length) { notify('All slots filled! Reroll individually.'); return; }
+            if (S.money < rc) { notify('Not enough money to roll!'); return; }
+            empties.forEach((i, delay) => setTimeout(() => {
+                if (S.money >= rollCost()) doRoll(i);
+            }, delay * 80));
+        }
+
+        function buyUpgrade(id) {
+            if (S.upgrades.has(id)) return;
+            const u = UPGRADES.find(x => x.id === id);
+            if (!u || S.money < u.cost) return;
+            S.money -= u.cost;
+            S.upgrades.add(id);
+            if (u.mult) S.companyMult *= u.mult;
+            if (u.rollDiscount) S.rollDiscount *= u.rollDiscount;
+            notify(`✓ ${u.name} purchased!`);
+            renderUpgrades();
+            renderAllSlots();
+            updateHeader();
+            saveGame();
+        }
+
+        function buyManager(id) {
+            const m = S.managers.find(x => x.id === id);
+            if (!m) return;
+            const cost = mgrCost(m);
+            if (S.money < cost) return;
+            S.money -= cost;
+            m.count++;
+            notify(`✓ ${m.name} hired! (×${m.count})`);
+            renderManagers();
+            updateHeader();
+            saveGame();
+        }
+
+        function claimInvestor(id) {
+            const inv = S.investors.find(x => x.id === id);
+            if (!inv || inv.status !== 'ready') return;
+            inv.status = 'active';
+            inv.timer = inv.duration;
+            S.boostMult = Math.max(S.boostMult, inv.mult);
+            notify(`⚡ ${inv.name} activated! ${inv.mult}× for ${inv.duration}s`);
+            renderInvestors();
+            updateHeader();
+            saveGame();
+        }
+
+        function tick() {
+            const now = Date.now();
+            const dt = Math.min((now - S.lastTick) / 1000, 0.5);
+            S.lastTick = now;
+            const ips = totalIps();
+            S.money += ips * dt;
+            S.totalEarned += ips * dt;
+
+            let maxBoost = 1;
+            S.investors.forEach(inv => {
+                if (inv.status === 'active') {
+                    inv.timer -= dt;
+                    if (inv.timer <= 0) {
+                        inv.status = 'cooldown';
+                        inv.timer = 0;
+                        notify(`${inv.name} expired. Cooldown: ${fmtTime(inv.cooldown)}`);
+                    } else {
+                        maxBoost = Math.max(maxBoost, inv.mult);
+                    }
+                } else if (inv.status === 'cooldown') {
+                    inv.timer += dt;
+                    if (inv.timer >= inv.cooldown) {
+                        inv.status = 'ready';
+                        inv.timer = 0;
+                        notify(`✦ ${inv.name} is ready!`);
+                    }
+                }
+            });
+            S.boostMult = maxBoost;
+        }
+
+        let activeTab = 'upgrades';
+        document.querySelectorAll('.sidebar-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                activeTab = tab.dataset.tab;
+                document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`tab-${activeTab}`).classList.add('active');
+                if (activeTab === 'stats') renderStats();
+                if (activeTab === 'managers') renderManagers();
+                if (activeTab === 'investors') renderInvestors();
+                if (activeTab === 'upgrades') renderUpgrades();
+            });
+        });
+        document.getElementById('btnRollAll').addEventListener('click', rollAllEmpty);
+        document.getElementById('btnOpenCode').addEventListener('click', openCodeModal);
+        document.getElementById('btnCloseCode').addEventListener('click', closeCodeModal);
+        document.getElementById('btnRedeem').addEventListener('click', () => redeemCodeRaw(document.getElementById('codeInput').value));
+        document.getElementById('codeInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') redeemCodeRaw(e.target.value); });
+        document.getElementById('btnLeaderboard').addEventListener('click', () => { updateLeaderboard(); openLeaderboard(); });
+        document.getElementById('btnCloseLeaderboard').addEventListener('click', closeLeaderboard);
+
+
+        // Name modal buttons
+        // create name edit trigger on player name label
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'playerNameLbl') openNameModal();
+        });
+        document.getElementById('btnCloseName').addEventListener('click', closeNameModal);
+        document.getElementById('btnSaveName').addEventListener('click', savePlayerName);
+        document.getElementById('nameInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') savePlayerName(); });
+
+        // Reset modal functions - REPLACED by prestige
+        function openResetModal() { openPrestigeModal(); }
+        function closeResetModal() { closePrestigeModal(); }
+
+        // ═══════════════════════════════════════════
+        // PRESTIGE SYSTEM
+        // ═══════════════════════════════════════════
+        const PRESTIGE_THRESHOLD = 1e9; // 1 Billion CS total earned
+
+        function getPrestigeData() {
+            try { return JSON.parse(localStorage.getItem('infinity_prestige') || '{"count":0,"kills":0}'); }
+            catch (e) { return { count: 0, kills: 0 }; }
+        }
+        function setPrestigeData(d) { localStorage.setItem('infinity_prestige', JSON.stringify(d)); }
+
+        function prestigeMult() {
+            const d = getPrestigeData();
+            return d.count === 0 ? 1 : Math.pow(5, d.count); // 5x per prestige
+        }
+
+        function canPrestige() { return S.totalEarned >= PRESTIGE_THRESHOLD; }
+
+        function openPrestigeModal() {
+            if (!canPrestige()) {
+                const needed = PRESTIGE_THRESHOLD - S.totalEarned;
+                notify(`Need ${fmt(needed)} more earned to Prestige!`);
+                return;
+            }
+            const d = getPrestigeData();
+            const nextMult = Math.pow(5, d.count + 1);
+            const box = document.getElementById('prestigeRewardBox');
+            box.innerHTML = `
+                <strong>Special Grade Exorcism Reward:</strong><br>
+                ✦ All income boosted by <strong style="color:#fbbf24;font-size:14px">×${nextMult.toLocaleString()}</strong> (permanent)<br>
+                ✦ Battle spirits drop <strong>×${d.count + 2}</strong> extra rewards<br>
+                ✦ Prestige count: <strong>${d.count} → ${d.count + 1}</strong><br>
+                ✦ Current kills carried over: <strong>${d.kills.toLocaleString()}</strong>
+            `;
+            document.getElementById('prestigeModal').classList.add('show');
+        }
+        function closePrestigeModal() { document.getElementById('prestigeModal').classList.remove('show'); }
+
+        function confirmPrestige() {
+            const d = getPrestigeData();
+            d.count++;
+            d.kills = (d.kills || 0) + (S.battleKills || 0);
+            setPrestigeData(d);
+            // clear save
+            setCookie('infinity_save', '', -1);
+            notify('✦ SPECIAL GRADE EXORCISM COMPLETE — TRANSCENDENCE ACHIEVED ✦', 'inf');
+            closePrestigeModal();
+            setTimeout(() => location.reload(), 1800);
+        }
+
+        function updatePrestigeButton() {
+            const btn = document.getElementById('btnPrestige');
+            const d = getPrestigeData();
+            if (canPrestige()) {
+                btn.classList.remove('locked');
+                btn.textContent = `♾ Prestige (×${Math.pow(5, d.count + 1).toLocaleString()})`;
+            } else {
+                btn.classList.add('locked');
+                const pct = Math.floor((S.totalEarned / PRESTIGE_THRESHOLD) * 100);
+                btn.textContent = `♾ Prestige (${pct}%)`;
+            }
+        }
+
+        // ═══════════════════════════════════════════
+        // BATTLE WORLD
+        // ═══════════════════════════════════════════
+        const BATTLE_SPIRITS = [
+            { id: 'fingerbear', name: 'Finger Bearer', icon: '☠️', grade: 'Grade 4', gradeColor: '#94a3b8', maxHp: 500, reward: 150, rewardMult: 8, respawn: 8, glow: 'rgba(148,163,184,0.1)' },
+            { id: 'womb', name: 'Womb Death Painting', icon: '🩸', grade: 'Grade 3', gradeColor: '#f87171', maxHp: 2000, reward: 600, rewardMult: 10, respawn: 12, glow: 'rgba(248,113,113,0.12)' },
+            { id: 'grasshop', name: 'Grasshopper Curse', icon: '🦗', grade: 'Grade 2', gradeColor: '#4ade80', maxHp: 8000, reward: 2500, rewardMult: 12, respawn: 18, glow: 'rgba(74,222,128,0.1)' },
+            { id: 'smallpox', name: 'Smallpox Deity', icon: '💀', grade: 'Grade 2', gradeColor: '#fdba74', maxHp: 25000, reward: 9000, rewardMult: 14, respawn: 22, glow: 'rgba(253,186,116,0.12)' },
+            { id: 'ocean', name: 'Ocean Spirit', icon: '🌊', grade: 'Grade 1', gradeColor: '#60a5fa', maxHp: 100000, reward: 40000, rewardMult: 16, respawn: 30, glow: 'rgba(96,165,250,0.15)' },
+            { id: 'vine', name: 'Disaster Vine', icon: '🌿', grade: 'Grade 1', gradeColor: '#86efac', maxHp: 400000, reward: 150000, rewardMult: 18, respawn: 40, glow: 'rgba(134,239,172,0.15)' },
+            { id: 'mahito', name: 'Mahito', icon: '🔵', grade: 'Special Grade', gradeColor: '#818cf8', maxHp: 2000000, reward: 1000000, rewardMult: 22, respawn: 60, glow: 'rgba(129,140,248,0.2)' },
+            { id: 'jogo', name: 'Jogo', icon: '🌋', grade: 'Special Grade', gradeColor: '#fb923c', maxHp: 8000000, reward: 4000000, rewardMult: 25, respawn: 90, glow: 'rgba(251,146,60,0.2)' },
+            { id: 'hanami', name: 'Hanami', icon: '🌸', grade: 'Special Grade', gradeColor: '#f9a8d4', maxHp: 30000000, reward: 18000000, rewardMult: 28, respawn: 120, glow: 'rgba(249,168,212,0.2)' },
+            { id: 'rika', name: 'Rika — Queen of Curses', icon: '👁️', grade: 'Special Grade', gradeColor: '#a78bfa', maxHp: 200000000, reward: 120000000, rewardMult: 35, respawn: 180, glow: 'rgba(167,139,250,0.25)' },
+        ];
+
+        // inject prestige multiplier to rewards at runtime
+        function spiritReward(sp) {
+            const d = getPrestigeData();
+            return Math.floor(sp.reward * Math.max(1, d.count + 1));
+        }
+
+        function fmtNum(n) {
+            if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+            if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+            if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+            return Math.floor(n).toString();
+        }
+
+        function ensureBattleState() {
+            if (!S.battleSpirits || S.battleSpirits.length !== BATTLE_SPIRITS.length) {
+                S.battleSpirits = BATTLE_SPIRITS.map(sp => ({
+                    id: sp.id, hp: sp.maxHp, respawnTimer: 0, dead: false
+                }));
+            }
+            if (typeof S.battleKills !== 'number') S.battleKills = 0;
+        }
+
+        function playerAttack() {
+            const d = getPrestigeData();
+            const base = Math.max(10, totalIps() * 0.15);
+            return Math.floor(base * (1 + d.count * 0.5));
+        }
+
+        function openBattleWorld() {
+            ensureBattleState();
+            document.getElementById('battleWorld').classList.add('open');
+            buildBattleCards();
+            updateBattleStats();
+        }
+        function closeBattleWorld() {
+            document.getElementById('battleWorld').classList.remove('open');
+        }
+
+        // Build full card HTML once, then update in-place
+        function buildBattleCards() {
+            const body = document.getElementById('battleBody');
+            body.innerHTML = BATTLE_SPIRITS.map(sp => `
+                <div class="spirit-card" id="bcard-${sp.id}"
+                     style="--spirit-glow:${sp.glow}; border-color:${sp.gradeColor}33">
+                    <div class="spirit-top">
+                        <div class="spirit-icon">${sp.icon}</div>
+                        <div class="spirit-info">
+                            <div class="spirit-name">${sp.name}</div>
+                            <div class="spirit-grade" style="color:${sp.gradeColor}">${sp.grade}</div>
+                        </div>
+                    </div>
+                    <div class="spirit-hp-wrap">
+                        <div class="spirit-hp-label">
+                            <span>HP</span>
+                            <span id="bhp-${sp.id}">${fmtNum(sp.maxHp)} / ${fmtNum(sp.maxHp)}</span>
+                        </div>
+                        <div class="spirit-hp-bar">
+                            <div class="spirit-hp-fill" id="bhpbar-${sp.id}" style="width:100%"></div>
+                        </div>
+                    </div>
+                    <div class="spirit-bottom">
+                        <div class="spirit-reward" id="brewrd-${sp.id}">+${fmt(spiritReward(sp))}<span> on kill</span></div>
+                        <div id="baction-${sp.id}">
+                            <button class="btn-attack" onclick="attackSpirit('${sp.id}')">⚔ Attack</button>
+                        </div>
+                    </div>
+                </div>`
+            ).join('');
+            // sync with current state
+            BATTLE_SPIRITS.forEach(sp => updateSpiritCard(sp.id));
+        }
+
+        // Update a single card's live values without rebuilding DOM
+        function updateSpiritCard(id) {
+            const sp = BATTLE_SPIRITS.find(s => s.id === id);
+            const bsp = S.battleSpirits && S.battleSpirits.find(s => s.id === id);
+            if (!sp || !bsp) return;
+
+            const card = document.getElementById('bcard-' + id);
+            const hpLbl = document.getElementById('bhp-' + id);
+            const hpBar = document.getElementById('bhpbar-' + id);
+            const action = document.getElementById('baction-' + id);
+            const reward = document.getElementById('brewrd-' + id);
+            if (!card || !hpLbl || !hpBar || !action) return;
+
+            const pct = Math.max(0, (bsp.hp / sp.maxHp) * 100);
+
+            if (bsp.dead) {
+                card.classList.add('dead');
+                hpLbl.textContent = '0 / ' + fmtNum(sp.maxHp);
+                hpBar.style.width = '0%';
+                hpBar.classList.add('low');
+                action.innerHTML = `<div class="spirit-respawn">Respawns in ${Math.ceil(Math.max(0, bsp.respawnTimer))}s</div>`;
+            } else {
+                card.classList.remove('dead');
+                hpLbl.textContent = fmtNum(bsp.hp) + ' / ' + fmtNum(sp.maxHp);
+                hpBar.style.width = pct + '%';
+                hpBar.classList.toggle('low', pct < 25);
+                // Only rebuild button if it doesn't already exist (avoids click lag)
+                if (!action.querySelector('.btn-attack')) {
+                    action.innerHTML = `<button class="btn-attack" onclick="attackSpirit('${id}')">⚔ Attack</button>`;
+                }
+            }
+            if (reward) reward.innerHTML = `+${fmt(spiritReward(sp))}<span> on kill</span>`;
+        }
+
+        function updateBattleStats() {
+            const d = getPrestigeData();
+            const atkEl = document.getElementById('bAtk');
+            const kilEl = document.getElementById('bKills');
+            const preEl = document.getElementById('bPrestige');
+            if (atkEl) atkEl.innerHTML = fmtNum(playerAttack()) + '<span>ATTACK / HIT</span>';
+            if (kilEl) kilEl.innerHTML = ((S.battleKills || 0) + (d.kills || 0)).toLocaleString() + '<span>KILLS</span>';
+            if (preEl) preEl.innerHTML = '×' + prestigeMult().toLocaleString() + '<span>PRESTIGE MULT</span>';
+        }
+
+        function attackSpirit(id) {
+            ensureBattleState();
+            const bsp = S.battleSpirits.find(s => s.id === id);
+            const sp = BATTLE_SPIRITS.find(s => s.id === id);
+            if (!bsp || !sp || bsp.dead) return;
+
+            const dmg = playerAttack();
+            bsp.hp = Math.max(0, bsp.hp - dmg);
+
+            // Damage pop — append to card, safe because we don't rebuild innerHTML
+            const card = document.getElementById('bcard-' + id);
+            if (card) {
+                const pop = document.createElement('div');
+                pop.className = 'dmg-pop';
+                pop.textContent = '-' + fmtNum(dmg);
+                pop.style.left = (20 + Math.random() * 55) + '%';
+                pop.style.top = (15 + Math.random() * 30) + '%';
+                card.appendChild(pop);
+                setTimeout(() => { if (pop.parentNode) pop.parentNode.removeChild(pop); }, 1000);
+            }
+
+            if (bsp.hp <= 0) {
+                bsp.dead = true;
+                bsp.respawnTimer = sp.respawn;
+                bsp.hp = 0;
+                S.battleKills = (S.battleKills || 0) + 1;
+                const rew = spiritReward(sp);
+                S.money += rew;
+                S.totalEarned += rew;
+                notify('💀 ' + sp.name + ' slain! +' + fmt(rew));
+            }
+
+            updateSpiritCard(id);
+            updateBattleStats();
+            updateHeader();
+        }
+
+        // battle respawn tick — called every 100ms with dt=0.1
+        let _battleOpen = false;
+        function battleTick(dt) {
+            if (!S.battleSpirits) return;
+            let changed = false;
+            S.battleSpirits.forEach(bsp => {
+                if (bsp.dead) {
+                    bsp.respawnTimer = Math.max(0, bsp.respawnTimer - dt);
+                    if (bsp.respawnTimer <= 0) {
+                        const sp = BATTLE_SPIRITS.find(s => s.id === bsp.id);
+                        bsp.dead = false;
+                        bsp.hp = sp ? sp.maxHp : 100;
+                        bsp.respawnTimer = 0;
+                    }
+                    changed = true;
+                }
+            });
+            if (document.getElementById('battleWorld').classList.contains('open')) {
+                if (changed) {
+                    BATTLE_SPIRITS.forEach(sp => updateSpiritCard(sp.id));
+                }
+                updateBattleStats();
+            }
+        }
+
+        document.getElementById('btnPrestige').addEventListener('click', openPrestigeModal);
+        document.getElementById('btnCancelPrestige').addEventListener('click', closePrestigeModal);
+        document.getElementById('btnConfirmPrestige').addEventListener('click', confirmPrestige);
+        document.getElementById('btnOpenBattle').addEventListener('click', openBattleWorld);
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                console.log('ServiceWorker registered', reg);
+                notify('Offline support enabled');
+            }).catch(err => {
+                console.warn('ServiceWorker registration failed', err);
+            });
+        }
+
+        window.addEventListener('online', () => notify('Online'));
+        window.addEventListener('offline', () => notify('Offline — using cached assets'));
+
+        (function init() {
+            const grid = document.getElementById('slotsGrid');
+            for (let i = 0; i < 10; i++) {
+                const d = document.createElement('div');
+                d.className = 'slot';
+                d.id = `slot-${i}`;
+                grid.appendChild(d);
+            }
+            // try to load saved game; if loaded, UI will reflect saved state
+            loadGame();
+
+            // apply prestige permanent multiplier on top of saved state
+            const _pd = getPrestigeData();
+            if (_pd.count > 0) {
+                const savedPrestigeMult = parseFloat(localStorage.getItem('infinity_applied_pmult') || '1');
+                const currentPrestigeMult = prestigeMult();
+                if (currentPrestigeMult !== savedPrestigeMult) {
+                    S.companyMult = S.companyMult / savedPrestigeMult * currentPrestigeMult;
+                    localStorage.setItem('infinity_applied_pmult', currentPrestigeMult);
+                }
+            }
+
+            // Always ensure battle state is valid after load
+            ensureBattleState();
+
+            // ensure there's an admin: first player to run becomes admin (creator)
+            if (!getAdmin()) setAdmin(S.playerName);
+
+            renderAllSlots();
+            renderUpgrades();
+            renderManagers();
+            renderInvestors();
+            updateHeader();
+
+            setInterval(() => { tick(); battleTick(0.1); updateHeader(); updatePrestigeButton(); }, 100);
+
+            setInterval(() => {
+                const rc = rollCost();
+                for (let i = 0; i < 10; i++) {
+                    const btn = document.getElementById(`sbtn-${i}`);
+                    if (btn) {
+                        btn.disabled = S.money < rc;
+                        const hasC = S.slots[i] !== null;
+                        btn.textContent = (hasC ? 'Reroll — ' : 'Roll — ') + fmt(rc);
+                    }
+                }
+                renderUpgrades();
+                renderManagers();
+                renderInvestors();
+                if (activeTab === 'stats') renderStats();
+            }, 400);
+
+            // autosave periodically and on close
+            setInterval(() => saveGame(), 5000);
+            window.addEventListener('beforeunload', () => saveGame());
+            // update leaderboard on start
+            updateLeaderboard();
+
+            // attempt to start background audio (loop already set on element)
+            try {
+                const bg = document.getElementById('bgAudio');
+                if (bg) { bg.loop = true; bg.play().catch(() => { }); }
+            } catch (e) { }
+        })();
+    </script>
+</body>
+
+</html>
