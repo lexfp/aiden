@@ -1,0 +1,505 @@
+/* ═══════════════════ SOLO LEVELING — STYLES ═══════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+  --clr-bg: #080610;
+  --clr-shadow: #9400D3;
+  --clr-purple-light: #b44fff;
+  --clr-system-accent: #3b82f6;
+  --clr-system-border: #22d3ee;
+  --clr-system-bg: #0a1628;
+  --clr-hp: #22c55e;
+  --clr-mp: #8b5cf6;
+  --clr-xp: #f59e0b;
+  --clr-boss: #ef4444;
+  --clr-text: #f0e8ff;
+  --clr-text-dim: #9488aa;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  font-family: 'Rajdhani', sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  cursor: default;
+  user-select: none;
+}
+
+canvas#game-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+}
+
+/* ── SCREENS ── */
+.game-screen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 10;
+}
+.game-screen.active { display: flex; }
+
+/* ── TITLE SCREEN ── */
+#title-screen {
+  background: transparent;
+  gap: 16px;
+}
+
+.title-logo {
+  font-size: clamp(48px, 8vw, 100px);
+  font-weight: 700;
+  letter-spacing: 12px;
+  background: linear-gradient(180deg, var(--clr-purple-light), var(--clr-shadow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 30px rgba(148, 0, 211, 0.5));
+  text-align: center;
+  animation: titlePulse 3s ease-in-out infinite;
+}
+@keyframes titlePulse {
+  0%, 100% { filter: drop-shadow(0 0 30px rgba(148,0,211,0.5)); }
+  50% { filter: drop-shadow(0 0 60px rgba(148,0,211,0.8)); }
+}
+
+.title-sub {
+  font-size: 16px;
+  color: var(--clr-text-dim);
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
+
+.title-controls {
+  font-size: 11px;
+  color: rgba(148,0,211,0.4);
+  letter-spacing: 2px;
+  text-align: center;
+  line-height: 1.8;
+  max-width: 500px;
+  margin-top: 20px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 12px 36px;
+  border: 2px solid var(--clr-shadow);
+  background: rgba(148, 0, 211, 0.12);
+  color: var(--clr-text);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.btn:hover {
+  background: rgba(148, 0, 211, 0.3);
+  box-shadow: 0 0 25px rgba(148, 0, 211, 0.4);
+  transform: translateY(-1px);
+}
+.btn:active { transform: translateY(1px); }
+
+.btn.secondary {
+  border-color: var(--clr-text-dim);
+  background: rgba(148, 136, 170, 0.08);
+  font-size: 12px;
+  padding: 8px 24px;
+}
+.btn.secondary:hover {
+  background: rgba(148, 136, 170, 0.15);
+  box-shadow: 0 0 15px rgba(148, 136, 170, 0.2);
+}
+.btn.danger {
+  border-color: var(--clr-boss);
+  background: rgba(239, 68, 68, 0.1);
+}
+.btn.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+.btn-row { display: flex; gap: 12px; }
+
+/* ── DUNGEON SELECT ── */
+#dungeon-select {
+  background: rgba(8, 6, 16, 0.92);
+  padding: 40px;
+}
+
+.ds-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: var(--clr-shadow);
+  margin-bottom: 8px;
+}
+
+.ds-subtitle {
+  font-size: 13px;
+  color: var(--clr-text-dim);
+  letter-spacing: 3px;
+  margin-bottom: 30px;
+}
+
+#dungeon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  max-width: 900px;
+  width: 100%;
+}
+
+.dungeon-card {
+  background: rgba(148, 0, 211, 0.06);
+  border: 1px solid rgba(148, 0, 211, 0.2);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+}
+.dungeon-card:hover:not(.locked) {
+  background: rgba(148, 0, 211, 0.15);
+  border-color: var(--clr-shadow);
+  box-shadow: 0 0 30px rgba(148, 0, 211, 0.2);
+  transform: translateY(-3px);
+}
+.dungeon-card.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.dungeon-card.cleared { border-color: var(--clr-hp); }
+
+.dc-rank {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+}
+.dc-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--clr-text);
+  margin-bottom: 8px;
+}
+.dc-info {
+  font-size: 11px;
+  color: var(--clr-text-dim);
+  letter-spacing: 1px;
+}
+.dc-reward {
+  font-size: 10px;
+  color: var(--clr-xp);
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
+.dc-lock {
+  font-size: 14px;
+  color: var(--clr-boss);
+  margin-top: 10px;
+  letter-spacing: 2px;
+}
+.dc-cleared {
+  font-size: 12px;
+  color: var(--clr-hp);
+  margin-top: 10px;
+  letter-spacing: 2px;
+}
+
+/* ── STAT ALLOCATION ── */
+#stat-screen {
+  background: rgba(8, 6, 16, 0.94);
+  gap: 16px;
+}
+
+.stat-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  color: var(--clr-system-border);
+}
+
+.stat-points-label {
+  font-size: 14px;
+  color: var(--clr-xp);
+  letter-spacing: 3px;
+}
+
+#stat-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 360px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(148, 0, 211, 0.06);
+  border: 1px solid rgba(148, 0, 211, 0.15);
+  padding: 10px 16px;
+}
+.sr-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--clr-shadow);
+  width: 50px;
+}
+.sr-desc {
+  font-size: 11px;
+  color: var(--clr-text-dim);
+  flex: 1;
+  letter-spacing: 1px;
+}
+.sr-val {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--clr-text);
+  width: 40px;
+  text-align: center;
+}
+.sr-btn {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  width: 34px;
+  height: 34px;
+  border: 2px solid var(--clr-shadow);
+  background: rgba(148, 0, 211, 0.15);
+  color: var(--clr-text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sr-btn:hover:not(:disabled) {
+  background: rgba(148, 0, 211, 0.4);
+  box-shadow: 0 0 15px rgba(148, 0, 211, 0.4);
+}
+.sr-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* ── LEVEL CLEAR ── */
+#level-clear-screen {
+  background: rgba(8, 6, 16, 0.92);
+  gap: 14px;
+}
+.lc-title {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: var(--clr-xp);
+  animation: titlePulse 2s ease-in-out infinite;
+}
+.lc-name {
+  font-size: 18px;
+  color: var(--clr-text-dim);
+  letter-spacing: 3px;
+}
+.lc-rewards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(148, 0, 211, 0.06);
+  border: 1px solid rgba(148, 0, 211, 0.15);
+  padding: 20px 30px;
+  min-width: 280px;
+  margin: 10px 0;
+}
+.lc-rewards div {
+  font-size: 15px;
+  letter-spacing: 2px;
+}
+.lc-xp { color: var(--clr-xp); }
+.lc-shadows { color: var(--clr-shadow); }
+.lc-stats { color: var(--clr-system-border); }
+.lc-kills { color: var(--clr-text-dim); font-size: 12px !important; }
+
+/* ── GAME OVER ── */
+#game-over-screen {
+  background: rgba(15, 0, 0, 0.9);
+  gap: 20px;
+}
+.go-title {
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: var(--clr-boss);
+  filter: drop-shadow(0 0 25px rgba(239, 68, 68, 0.5));
+}
+.go-subtitle {
+  font-size: 14px;
+  color: rgba(239, 68, 68, 0.6);
+  letter-spacing: 4px;
+}
+
+/* ── PAUSE ── */
+#pause-screen {
+  background: rgba(8, 6, 16, 0.8);
+  gap: 20px;
+  z-index: 15;
+}
+.pause-title {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 10px;
+  color: var(--clr-text-dim);
+}
+
+/* ── SYSTEM NOTIFICATION ── */
+#system-notif {
+  position: fixed;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 320px;
+  background: var(--clr-system-bg);
+  border: 2px solid var(--clr-system-border);
+  padding: 14px 28px;
+  z-index: 20;
+  text-align: center;
+  transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 40px rgba(34, 211, 238, 0.15);
+}
+#system-notif.sn-show { top: 60px; }
+#system-notif.sn-hide { top: -80px; }
+.sn-header {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  color: var(--clr-system-border);
+  margin-bottom: 4px;
+}
+.sn-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--clr-text);
+  letter-spacing: 2px;
+}
+
+/* ── BOSS ANNOUNCE ── */
+#boss-announce {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  text-align: center;
+  z-index: 18;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#boss-announce.ba-show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+.ba-label {
+  font-size: 14px;
+  letter-spacing: 6px;
+  color: var(--clr-boss);
+  margin-bottom: 6px;
+}
+.ba-name {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--clr-text);
+  filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.5));
+}
+
+/* ── ARISE NOTIFICATION ── */
+#arise-notif {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  z-index: 19;
+  pointer-events: none;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+#arise-notif.arise-show {
+  transform: translate(-50%, -50%) scale(1);
+}
+.arise-text {
+  font-size: 72px;
+  font-weight: 700;
+  letter-spacing: 20px;
+  color: var(--clr-shadow);
+  filter: drop-shadow(0 0 40px rgba(148, 0, 211, 0.8));
+  animation: arisePulse 0.8s ease-in-out infinite;
+}
+@keyframes arisePulse {
+  0%, 100% { text-shadow: 0 0 40px rgba(148,0,211,0.6); }
+  50% { text-shadow: 0 0 80px rgba(148,0,211,1); }
+}
+
+/* ── DAMAGE NUMBERS ── */
+#dmg-layer {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 12;
+}
+.dmg-number {
+  position: absolute;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 0 6px rgba(0,0,0,0.8);
+  animation: dmgFloat 0.8s ease-out forwards;
+  pointer-events: none;
+}
+.dmg-number.crit {
+  font-size: 26px;
+  color: var(--clr-xp);
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+}
+@keyframes dmgFloat {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-50px); opacity: 0; }
+}
+
+/* ── SAVE INDICATOR ── */
+#save-indicator {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--clr-hp);
+  opacity: 0;
+  z-index: 20;
+  transition: opacity 0.3s;
+}
+#save-indicator.si-show { opacity: 1; }
+
+/* ── DUNGEON SELECT BACK BUTTON ── */
+.ds-back {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.ds-stats {
+  font-size: 12px;
+  color: var(--clr-text-dim);
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+.ds-stats span { color: var(--clr-shadow); font-weight: 700; }

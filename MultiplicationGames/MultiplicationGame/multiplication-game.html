@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Times Table Games</title>
+  <link rel="icon" href="./multiplicationgame.avif">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --yellow: #FFD93D;
+      --orange: #FF6B35;
+      --pink: #FF4D8D;
+      --purple: #7B2FBE;
+      --blue: #4361EE;
+      --teal: #06D6A0;
+      --red: #EF233C;
+      --bg: #1A0533;
+      --card: #2D0F5B;
+      --card2: #3A1570;
+      --text: #FFFFFF;
+      --muted: rgba(255, 255, 255, 0.6);
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Stars background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 15%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 55%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 40% 25%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 70%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 70% 10%, rgba(255, 255, 255, 0.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 45%, rgba(255, 255, 255, 0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 80%, rgba(255, 255, 255, 0.9) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 85%, rgba(255, 255, 255, 0.7) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 60% 40%, rgba(255, 255, 255, 0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 35% 90%, rgba(255, 255, 255, 0.8) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .screen {
+      display: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    /* ========== HOME SCREEN ========== */
+    #home {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .logo {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(40px, 8vw, 72px);
+      background: linear-gradient(135deg, var(--yellow), var(--orange), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-align: center;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 4px 12px rgba(255, 107, 53, 0.4));
+    }
+
+    .logo-sub {
+      font-size: 16px;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 40px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .section-title {
+      font-family: 'Fredoka One', cursive;
+      font-size: 22px;
+      color: var(--yellow);
+      margin-bottom: 16px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    /* Times table grid */
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 40px;
+    }
+
+    .table-btn {
+      aspect-ratio: 1;
+      border: none;
+      border-radius: 14px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 22px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .table-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0);
+      transition: background 0.15s;
+    }
+
+    .table-btn:hover {
+      transform: scale(1.08);
+    }
+
+    .table-btn:hover::after {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .table-btn:active {
+      transform: scale(0.95);
+    }
+
+    .table-btn.selected {
+      box-shadow: 0 0 0 3px white, 0 0 20px rgba(255, 255, 255, 0.5);
+      transform: scale(1.1);
+    }
+
+    .t1 {
+      background: #FF6B9D;
+      color: white;
+    }
+
+    .t2 {
+      background: #FF8C42;
+      color: white;
+    }
+
+    .t3 {
+      background: #FFD93D;
+      color: #2D0F5B;
+    }
+
+    .t4 {
+      background: #06D6A0;
+      color: #1A0533;
+    }
+
+    .t5 {
+      background: #4CC9F0;
+      color: #1A0533;
+    }
+
+    .t6 {
+      background: #7B2FBE;
+      color: white;
+    }
+
+    .t7 {
+      background: #EF233C;
+      color: white;
+    }
+
+    .t8 {
+      background: #4361EE;
+      color: white;
+    }
+
+    .t9 {
+      background: #F72585;
+      color: white;
+    }
+
+    .t10 {
+      background: #3A86FF;
+      color: white;
+    }
+
+    .t11 {
+      background: #8338EC;
+      color: white;
+    }
+
+    .t12 {
+      background: #FB5607;
+      color: white;
+    }
+
+    /* Game cards */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    .game-card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.2s, border-color 0.2s, background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      left: -40%;
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .game-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--yellow);
+      background: var(--card2);
+    }
+
+    .game-card:active {
+      transform: scale(0.97);
+    }
+
+    .game-icon {
+      font-size: 44px;
+      display: block;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    }
+
+    .game-name {
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      color: var(--yellow);
+      margin-bottom: 4px;
+    }
+
+    .game-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .no-table-msg {
+      color: var(--orange);
+      font-size: 14px;
+      text-align: center;
+      margin-top: 16px;
+      font-weight: 700;
+      display: none;
+    }
+
+    /* ========== GAME SCREEN ========== */
+    #game {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 20px;
+    }
+
+    .game-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 600px;
+      margin-bottom: 24px;
+    }
+
+    .back-btn {
+      background: var(--card);
+      border: none;
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .back-btn:hover {
+      background: var(--card2);
+    }
+
+    .game-title-bar {
+      font-family: 'Fredoka One', cursive;
+      font-size: 24px;
+      color: var(--yellow);
+    }
+
+    .score-display {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 8px 16px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 18px;
+      color: var(--teal);
+    }
+
+    /* ========== QUIZ GAME ========== */
+    .question-box {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 32px 40px;
+      text-align: center;
+      margin-bottom: 24px;
+      width: 100%;
+      max-width: 500px;
+      border: 2px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .question-text {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(48px, 10vw, 80px);
+      color: white;
+      line-height: 1.1;
+    }
+
+    .question-text .op {
+      color: var(--yellow);
+      margin: 0 8px;
+    }
+
+    .question-text .q-mark {
+      color: var(--pink);
+    }
+
+    .answers-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .answer-btn {
+      background: var(--card2);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 32px;
+      padding: 20px;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s, border-color 0.15s;
+    }
+
+    .answer-btn:hover:not(:disabled) {
+      transform: scale(1.04);
+      background: #4D1E8A;
+      border-color: var(--yellow);
+    }
+
+    .answer-btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .answer-btn.correct {
+      background: #0B6E4F;
+      border-color: var(--teal);
+      animation: pulse-green 0.4s ease;
+    }
+
+    .answer-btn.wrong {
+      background: #8A0F2A;
+      border-color: var(--red);
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes pulse-green {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.06);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-8px);
+      }
+
+      75% {
+        transform: translateX(8px);
+      }
+    }
+
+    /* ========== SPEED GAME ========== */
+    .timer-ring {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 20px;
+      position: relative;
+    }
+
+    .timer-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .timer-ring .bg-circle {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 8;
+    }
+
+    .timer-ring .fg-circle {
+      fill: none;
+      stroke: var(--yellow);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 314;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 0.1s linear, stroke 0.3s;
+    }
+
+    .timer-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Fredoka One', cursive;
+      font-size: 36px;
+      color: var(--yellow);
+    }
+
+    .speed-input-area {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+      max-width: 400px;
+      margin-top: 20px;
+    }
+
+    .speed-input {
+      flex: 1;
+      background: var(--card2);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      color: white;
+      font-family: 'Fredoka One', cursive;
+      font-size: 32px;
+      padding: 14px 20px;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .speed-input:focus {
+      border-color: var(--yellow);
+    }
+
+    .speed-input.correct-flash {
+      border-color: var(--teal);
+      background: #0B4A36;
+    }
+
+    .speed-input.wrong-flash {
+      border-color: var(--red);
+      background: #5A0F1E;
+    }
+
+    .submit-btn {
+      background: var(--yellow);
+      border: none;
+      border-radius: 16px;
+      color: var(--bg);
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      padding: 14px 24px;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+
+    .submit-btn:hover {
+      opacity: 0.9;
+      transform: scale(1.04);
+    }
+
+    .submit-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* ========== BALLOON POP GAME ========== */
+    .balloon-area {
+      width: 100%;
+      max-width: 560px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 16px;
+      padding: 16px 8px 0;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .balloon {
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: sway 2s ease-in-out infinite alternate;
+      transition: transform 0.15s;
+    }
+
+    .balloon:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+
+    .balloon:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+
+    .balloon:nth-child(4) {
+      animation-delay: 0.9s;
+    }
+
+    @keyframes sway {
+      from {
+        transform: rotate(-4deg) translateY(0px);
+      }
+
+      to {
+        transform: rotate(4deg) translateY(-10px);
+      }
+    }
+
+    .balloon:hover {
+      filter: brightness(1.15);
+    }
+
+    .balloon:active {
+      transform: scale(0.92);
+    }
+
+    .balloon-body {
+      width: 90px;
+      height: 108px;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 26px;
+      position: relative;
+      box-shadow: inset -10px -10px 24px rgba(0, 0, 0, 0.25), inset 6px 6px 16px rgba(255, 255, 255, 0.2);
+    }
+
+    .balloon-tip {
+      width: 0;
+      height: 0;
+      border-left: 9px solid transparent;
+      border-right: 9px solid transparent;
+      border-top-width: 14px;
+      border-top-style: solid;
+      margin-top: -2px;
+    }
+
+    .balloon-string {
+      width: 1.5px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    .balloon-question {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(32px, 7vw, 52px);
+      text-align: center;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .balloon-question .op {
+      color: var(--yellow);
+    }
+
+    .balloon-question .q-mark {
+      color: var(--pink);
+    }
+
+    /* ========== MISSING NUMBER GAME ========== */
+    .missing-eq {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(36px, 8vw, 64px);
+      text-align: center;
+      color: white;
+      margin-bottom: 24px;
+      line-height: 1.3;
+    }
+
+    .missing-eq .op {
+      color: var(--yellow);
+    }
+
+    .missing-eq .eq {
+      color: var(--teal);
+    }
+
+    .missing-eq .blank {
+      display: inline-block;
+      width: 80px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 3px dashed var(--pink);
+      border-radius: 12px;
+      vertical-align: middle;
+      margin: 0 8px;
+    }
+
+    /* ========== RESULTS SCREEN ========== */
+    #results {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .result-emoji {
+      font-size: 80px;
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    .result-heading {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(32px, 7vw, 56px);
+      margin-bottom: 8px;
+    }
+
+    .result-score-big {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(48px, 10vw, 80px);
+      color: var(--yellow);
+      margin-bottom: 8px;
+    }
+
+    .result-sub {
+      font-size: 18px;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    .result-btns {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .big-btn {
+      background: var(--yellow);
+      border: none;
+      border-radius: 18px;
+      color: var(--bg);
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      padding: 16px 32px;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+
+    .big-btn.secondary {
+      background: var(--card2);
+      color: var(--yellow);
+      border: 2px solid var(--yellow);
+    }
+
+    .big-btn:hover {
+      opacity: 0.9;
+      transform: scale(1.04);
+    }
+
+    .big-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* Progress bar */
+    .progress-bar-wrap {
+      width: 100%;
+      max-width: 500px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 99px;
+      height: 8px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--purple), var(--pink));
+      transition: width 0.3s ease;
+    }
+
+    /* Streak indicator */
+    .streak-badge {
+      background: linear-gradient(135deg, var(--orange), var(--pink));
+      border-radius: 99px;
+      padding: 6px 16px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 16px;
+      margin-left: 8px;
+      display: inline-block;
+    }
+
+    /* Feedback message */
+    .feedback {
+      font-family: 'Fredoka One', cursive;
+      font-size: 22px;
+      height: 32px;
+      text-align: center;
+      margin-top: 12px;
+      transition: opacity 0.3s;
+    }
+
+    .feedback.correct {
+      color: var(--teal);
+    }
+
+    .feedback.wrong {
+      color: var(--red);
+    }
+
+    /* Speed stats row */
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 8px 16px;
+      font-family: 'Fredoka One', cursive;
+      font-size: 16px;
+    }
+
+    .stat-chip span {
+      color: var(--yellow);
+    }
+
+    /* Pop animation */
+    @keyframes pop-out {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+      }
+
+      100% {
+        transform: scale(0);
+        opacity: 0;
+      }
+    }
+
+    .popping {
+      animation: pop-out 0.3s ease forwards !important;
+      pointer-events: none;
+    }
+
+    /* Confetti particle */
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      top: -10px;
+      pointer-events: none;
+      z-index: 1000;
+      animation: confetti-fall linear forwards;
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* ========== ASTEROID BLASTER ========== */
+    .asteroid-arena {
+      width: 100%;
+      max-width: 560px;
+      height: 280px;
+      position: relative;
+      overflow: hidden;
+      background: rgba(0, 0, 10, 0.55);
+      border-radius: 20px;
+      border: 1px solid rgba(100, 150, 255, 0.2);
+      margin-bottom: 12px;
+    }
+
+    .asteroid {
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 23px;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: inset -6px -6px 16px rgba(0, 0, 0, 0.35), inset 4px 4px 12px rgba(255, 255, 255, 0.2);
+    }
+
+    .asteroid:hover {
+      filter: brightness(1.25);
+    }
+
+    .asteroid.ast-correct {
+      transition: transform 0.35s, opacity 0.35s;
+      transform: scale(1.6) !important;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .asteroid.ast-wrong {
+      outline: 4px solid #EF233C;
+    }
+
+    .lives-display {
+      font-size: 26px;
+      letter-spacing: 6px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .ast-q {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(28px, 6vw, 48px);
+      text-align: center;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .ast-q .op {
+      color: var(--yellow);
+    }
+
+    .ast-q .q-mark {
+      color: var(--pink);
+    }
+
+    /* ========== RACE TRACK ========== */
+    .race-track-area {
+      width: 100%;
+      max-width: 560px;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 20px;
+      padding: 20px 20px 12px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .race-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .race-emoji-label {
+      font-size: 30px;
+      width: 40px;
+      text-align: center;
+    }
+
+    .race-bar-bg {
+      flex: 1;
+      height: 42px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .race-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      font-size: 22px;
+      min-width: 46px;
+    }
+
+    .race-score-label {
+      font-family: 'Fredoka One', cursive;
+      font-size: 14px;
+      color: var(--muted);
+      width: 44px;
+      text-align: right;
+    }
+
+    .race-q {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(28px, 6vw, 46px);
+      text-align: center;
+      color: white;
+      margin-bottom: 16px;
+    }
+
+    .race-q .op {
+      color: var(--yellow);
+    }
+
+    .race-q .q-mark {
+      color: var(--pink);
+    }
+
+    /* ========== WHACK-A-MOLE ========== */
+    .mole-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      width: 100%;
+      max-width: 360px;
+      margin-bottom: 14px;
+    }
+
+    .mole-hole {
+      aspect-ratio: 1;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      transition: border-color 0.2s;
+    }
+
+    .mole-hole:hover {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .mole {
+      position: absolute;
+      bottom: -115%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 80%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka One', cursive;
+      font-size: 20px;
+      color: white;
+      transition: bottom 0.22s ease-out;
+      pointer-events: none;
+      box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    .mole.up {
+      bottom: 6%;
+    }
+
+    .mole-timer-wrap {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 10px;
+    }
+
+    .mole-timer-wrap svg {
+      transform: rotate(-90deg);
+    }
+
+    .mole-timer-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Fredoka One', cursive;
+      font-size: 26px;
+      color: var(--yellow);
+    }
+
+    .mole-q {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(28px, 6vw, 46px);
+      text-align: center;
+      color: white;
+      margin-bottom: 16px;
+    }
+
+    .mole-q .op {
+      color: var(--yellow);
+    }
+
+    .mole-q .q-mark {
+      color: var(--pink);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ====== HOME SCREEN ====== -->
+  <div id="home" class="screen active">
+    <div class="logo">Times Table<br>Games!</div>
+    <div class="logo-sub">Choose your table, then pick a game</div>
+
+    <div class="section-title">Pick Your Times Table</div>
+    <div class="table-grid">
+      <button class="table-btn t1" onclick="selectTable(1)">1</button>
+      <button class="table-btn t2" onclick="selectTable(2)">2</button>
+      <button class="table-btn t3" onclick="selectTable(3)">3</button>
+      <button class="table-btn t4" onclick="selectTable(4)">4</button>
+      <button class="table-btn t5" onclick="selectTable(5)">5</button>
+      <button class="table-btn t6" onclick="selectTable(6)">6</button>
+      <button class="table-btn t7" onclick="selectTable(7)">7</button>
+      <button class="table-btn t8" onclick="selectTable(8)">8</button>
+      <button class="table-btn t9" onclick="selectTable(9)">9</button>
+      <button class="table-btn t10" onclick="selectTable(10)">10</button>
+      <button class="table-btn t11" onclick="selectTable(11)">11</button>
+      <button class="table-btn t12" onclick="selectTable(12)">12</button>
+    </div>
+
+    <div class="section-title">Choose a Game</div>
+    <div class="games-grid">
+      <div class="game-card" onclick="startGame('quiz')">
+        <span class="game-icon">🧠</span>
+        <div class="game-name">Quiz Time</div>
+        <div class="game-desc">Pick the right answer from four choices</div>
+      </div>
+      <div class="game-card" onclick="startGame('speed')">
+        <span class="game-icon">⚡</span>
+        <div class="game-name">Speed Rush</div>
+        <div class="game-desc">Type answers fast before time runs out!</div>
+      </div>
+      <div class="game-card" onclick="startGame('balloon')">
+        <span class="game-icon">🎈</span>
+        <div class="game-name">Balloon Pop</div>
+        <div class="game-desc">Pop the balloon with the correct answer</div>
+      </div>
+      <div class="game-card" onclick="startGame('missing')">
+        <span class="game-icon">🔍</span>
+        <div class="game-name">Find the ?</div>
+        <div class="game-desc">Spot the missing number in the equation</div>
+      </div>
+      <div class="game-card" onclick="startGame('asteroid')">
+        <span class="game-icon">🚀</span>
+        <div class="game-name">Asteroid Blast</div>
+        <div class="game-desc">Shoot the asteroid with the right answer before it escapes!</div>
+      </div>
+      <div class="game-card" onclick="startGame('race')">
+        <span class="game-icon">🏎️</span>
+        <div class="game-name">Race Track</div>
+        <div class="game-desc">Answer correctly to zoom ahead — beat the CPU to the finish!</div>
+      </div>
+      <div class="game-card" onclick="startGame('mole')">
+        <span class="game-icon">🔨</span>
+        <div class="game-name">Whack-a-Mole</div>
+        <div class="game-desc">Whack the mole showing the correct answer. 45 seconds!</div>
+      </div>
+    </div>
+    <div class="no-table-msg" id="no-table-msg">⬆ Pick a times table first!</div>
+  </div>
+
+  <!-- ====== GAME SCREEN ====== -->
+  <div id="game" class="screen">
+    <div class="game-header">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+      <div class="game-title-bar" id="game-title-bar">Quiz Time</div>
+      <div class="score-display">⭐ <span id="score-num">0</span></div>
+    </div>
+
+    <div class="stats-row" id="stats-row">
+      <div class="stat-chip">Q <span id="q-num">1</span>/10</div>
+      <div class="stat-chip" id="streak-chip">Streak <span id="streak-num">0</span> 🔥</div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="prog-bar" style="width:0%"></div>
+    </div>
+
+    <!-- Quiz content -->
+    <div id="quiz-content">
+      <div class="question-box">
+        <div class="question-text" id="quiz-question">6 × 7 = ?</div>
+      </div>
+      <div class="answers-grid" id="quiz-answers"></div>
+      <div class="feedback" id="quiz-feedback"></div>
+    </div>
+
+    <!-- Speed content -->
+    <div id="speed-content"
+      style="display:none; width:100%; max-width:500px; align-items:center; flex-direction:column;">
+      <div class="timer-ring" id="timer-ring">
+        <svg viewBox="0 0 120 120" width="120" height="120">
+          <circle class="bg-circle" cx="60" cy="60" r="50" />
+          <circle class="fg-circle" id="timer-circle" cx="60" cy="60" r="50" />
+        </svg>
+        <div class="timer-text" id="timer-text">60</div>
+      </div>
+      <div class="question-box" style="padding: 20px 40px; margin-bottom: 12px;">
+        <div class="question-text" id="speed-question">4 × 8 = ?</div>
+      </div>
+      <div class="speed-input-area">
+        <input class="speed-input" type="number" id="speed-input" placeholder="?" autocomplete="off"
+          inputmode="numeric">
+        <button class="submit-btn" onclick="checkSpeed()">Go!</button>
+      </div>
+      <div class="feedback" id="speed-feedback"></div>
+    </div>
+
+    <!-- Balloon content -->
+    <div id="balloon-content"
+      style="display:none; width:100%; max-width:560px; align-items:center; flex-direction:column;">
+      <div class="balloon-question" id="balloon-question">3 × 6 = <span class="q-mark">?</span></div>
+      <div class="balloon-area" id="balloon-area"></div>
+      <div class="feedback" id="balloon-feedback"></div>
+    </div>
+
+    <!-- Missing number content -->
+    <div id="missing-content"
+      style="display:none; width:100%; max-width:500px; align-items:center; flex-direction:column;">
+      <div class="question-box">
+        <div class="missing-eq" id="missing-eq">? × 6 = 42</div>
+      </div>
+      <div class="answers-grid" id="missing-answers"></div>
+      <div class="feedback" id="missing-feedback"></div>
+    </div>
+
+    <!-- Asteroid Blaster content -->
+    <div id="asteroid-content"
+      style="display:none; width:100%; max-width:560px; align-items:center; flex-direction:column;">
+      <div class="lives-display" id="asteroid-lives">❤️❤️❤️</div>
+      <div class="ast-q" id="asteroid-q">6 <span class="op">×</span> 7 <span class="op">=</span> <span
+          class="q-mark">?</span></div>
+      <div class="asteroid-arena" id="asteroid-arena"></div>
+      <div class="feedback" id="asteroid-feedback"></div>
+    </div>
+
+    <!-- Race Track content -->
+    <div id="race-content"
+      style="display:none; width:100%; max-width:560px; align-items:center; flex-direction:column;">
+      <div class="race-track-area">
+        <div class="race-row">
+          <div class="race-emoji-label">🏎️</div>
+          <div class="race-bar-bg">
+            <div class="race-bar-fill" id="race-player-bar"
+              style="width:5%; background:linear-gradient(90deg,#4361EE,#7B2FBE);">🏎️</div>
+          </div>
+          <div class="race-score-label" id="race-player-pct">0/10</div>
+        </div>
+        <div class="race-row">
+          <div class="race-emoji-label">🤖</div>
+          <div class="race-bar-bg">
+            <div class="race-bar-fill" id="race-cpu-bar"
+              style="width:5%; background:linear-gradient(90deg,#EF233C,#FF8C42);">🤖</div>
+          </div>
+          <div class="race-score-label" id="race-cpu-pct">0/10</div>
+        </div>
+      </div>
+      <div class="race-q" id="race-question">3 <span class="op">×</span> 7 <span class="op">=</span> <span
+          class="q-mark">?</span></div>
+      <div class="answers-grid" id="race-answers"></div>
+      <div class="feedback" id="race-feedback"></div>
+    </div>
+
+    <!-- Whack-a-Mole content -->
+    <div id="mole-content"
+      style="display:none; width:100%; max-width:400px; align-items:center; flex-direction:column;">
+      <div class="mole-timer-wrap">
+        <svg viewBox="0 0 80 80" width="80" height="80">
+          <circle fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="7" cx="40" cy="40" r="34" />
+          <circle id="mole-timer-circle" fill="none" stroke="#FFD93D" stroke-width="7" stroke-linecap="round"
+            stroke-dasharray="214" stroke-dashoffset="0" cx="40" cy="40" r="34"
+            style="transition:stroke-dashoffset 0.9s linear, stroke 0.3s;" />
+        </svg>
+        <div class="mole-timer-text" id="mole-timer-text">45</div>
+      </div>
+      <div class="mole-q" id="mole-question">4 <span class="op">×</span> 6 <span class="op">=</span> <span
+          class="q-mark">?</span></div>
+      <div class="mole-grid" id="mole-grid"></div>
+      <div class="feedback" id="mole-feedback"></div>
+    </div>
+  </div>
+
+  <!-- ====== RESULTS SCREEN ====== -->
+  <div id="results" class="screen">
+    <span class="result-emoji" id="result-emoji">🎉</span>
+    <div class="result-heading" id="result-heading">Amazing!</div>
+    <div class="result-score-big" id="result-score">10/10</div>
+    <div class="result-sub" id="result-sub">You got every question right!</div>
+    <div class="result-btns">
+      <button class="big-btn" onclick="restartGame()">Play Again</button>
+      <button class="big-btn secondary" onclick="goHome()">Change Game</button>
+    </div>
+  </div>
+
+  <script>
+    let chosenTable = 0;
+    let currentGame = '';
+    let score = 0;
+    let questionNum = 0;
+    let totalQuestions = 10;
+    let streak = 0;
+    let correctAnswer = 0;
+    let speedTimer = null;
+    let timeLeft = 60;
+    let speedScore = 0;
+    let speedCorrect = 0;
+    let speedTotal = 0;
+    let answeredThisQ = false;
+
+    const balloonColors = [
+      { bg: '#FF6B9D', text: 'white' },
+      { bg: '#FF8C42', text: 'white' },
+      { bg: '#FFD93D', text: '#1A0533' },
+      { bg: '#06D6A0', text: '#1A0533' },
+      { bg: '#4CC9F0', text: '#1A0533' },
+      { bg: '#7B2FBE', text: 'white' },
+      { bg: '#4361EE', text: 'white' },
+      { bg: '#F72585', text: 'white' },
+    ];
+
+    function selectTable(n) {
+      chosenTable = n;
+      document.querySelectorAll('.table-btn').forEach(b => b.classList.remove('selected'));
+      document.querySelectorAll('.table-btn')[n - 1].classList.add('selected');
+      document.getElementById('no-table-msg').style.display = 'none';
+    }
+
+    function startGame(type) {
+      if (!chosenTable) {
+        document.getElementById('no-table-msg').style.display = 'block';
+        return;
+      }
+      currentGame = type;
+      score = 0;
+      questionNum = 0;
+      streak = 0;
+
+      const titles = { quiz: 'Quiz Time', speed: 'Speed Rush', balloon: 'Balloon Pop', missing: 'Find the ?' };
+      document.getElementById('game-title-bar').textContent = titles[type] + ' — ×' + chosenTable;
+      document.getElementById('score-num').textContent = '0';
+      document.getElementById('q-num').textContent = '1';
+      document.getElementById('streak-num').textContent = '0';
+      document.getElementById('prog-bar').style.width = '0%';
+
+      ['quiz-content', 'speed-content', 'balloon-content', 'missing-content'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+
+      showScreen('game');
+
+      if (type === 'quiz') {
+        document.getElementById('quiz-content').style.display = 'block';
+        document.getElementById('stats-row').style.display = 'flex';
+        nextQuiz();
+      } else if (type === 'speed') {
+        document.getElementById('speed-content').style.display = 'flex';
+        document.getElementById('stats-row').style.display = 'none';
+        startSpeed();
+      } else if (type === 'balloon') {
+        document.getElementById('balloon-content').style.display = 'flex';
+        document.getElementById('stats-row').style.display = 'flex';
+        nextBalloon();
+      } else if (type === 'missing') {
+        document.getElementById('missing-content').style.display = 'flex';
+        document.getElementById('stats-row').style.display = 'flex';
+        nextMissing();
+      } else if (type === 'asteroid') {
+        document.getElementById('asteroid-content').style.display = 'flex';
+        document.getElementById('stats-row').style.display = 'none';
+        startAsteroid();
+      } else if (type === 'race') {
+        document.getElementById('race-content').style.display = 'flex';
+        document.getElementById('stats-row').style.display = 'none';
+        startRace();
+      } else if (type === 'mole') {
+        document.getElementById('mole-content').style.display = 'flex';
+        document.getElementById('stats-row').style.display = 'none';
+        startMole();
+      }
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function goHome() {
+      if (speedTimer) clearInterval(speedTimer);
+      if (asteroidInterval) clearInterval(asteroidInterval);
+      if (raceCPUTimer) clearTimeout(raceCPUTimer);
+      if (moleTimer) clearInterval(moleTimer);
+      moleTimeouts.forEach(t => clearTimeout(t));
+      moleTimeouts = [];
+      showScreen('home');
+    }
+
+    function restartGame() { startGame(currentGame); }
+
+    function getRandMultiplier(exclude) {
+      let n;
+      do { n = Math.floor(Math.random() * 12) + 1; } while (n === exclude);
+      return n;
+    }
+
+    function updateProgress() {
+      document.getElementById('prog-bar').style.width = ((questionNum / totalQuestions) * 100) + '%';
+      document.getElementById('q-num').textContent = Math.min(questionNum + 1, totalQuestions);
+      document.getElementById('streak-num').textContent = streak;
+      document.getElementById('score-num').textContent = score;
+    }
+
+    function showResults(correct, total, bonus) {
+      showScreen('results');
+      const pct = Math.round((correct / total) * 100);
+      let emoji, heading, sub;
+      if (pct === 100) { emoji = '🏆'; heading = 'PERFECT!'; sub = 'You nailed every single one! Incredible!'; }
+      else if (pct >= 80) { emoji = '🎉'; heading = 'Awesome!'; sub = 'You really know your times tables!'; }
+      else if (pct >= 60) { emoji = '😊'; heading = 'Good job!'; sub = 'Keep practising and you\'ll smash it!'; }
+      else if (pct >= 40) { emoji = '💪'; heading = 'Keep going!'; sub = 'Practice makes perfect — try again!'; }
+      else { emoji = '🌟'; heading = 'Keep Trying!'; sub = 'Every expert was once a beginner!'; }
+      document.getElementById('result-emoji').textContent = emoji;
+      document.getElementById('result-heading').textContent = heading;
+      document.getElementById('result-score').textContent = bonus ? bonus : (correct + '/' + total);
+      document.getElementById('result-sub').textContent = sub;
+      if (pct >= 80) launchConfetti();
+    }
+
+    // ====== QUIZ GAME ======
+    function nextQuiz() {
+      if (questionNum >= totalQuestions) { showResults(score, totalQuestions); return; }
+      answeredThisQ = false;
+      const multiplier = Math.floor(Math.random() * 12) + 1;
+      correctAnswer = chosenTable * multiplier;
+      document.getElementById('quiz-question').innerHTML = chosenTable + ' <span class="op">×</span> ' + multiplier + ' <span class="op">=</span> <span class="q-mark">?</span>';
+
+      const wrong = generateWrongAnswers(correctAnswer, 3);
+      const opts = [correctAnswer, ...wrong].sort(() => Math.random() - 0.5);
+
+      const grid = document.getElementById('quiz-answers');
+      grid.innerHTML = '';
+      opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = opt;
+        btn.onclick = () => handleQuizAnswer(btn, opt);
+        grid.appendChild(btn);
+      });
+      document.getElementById('quiz-feedback').textContent = '';
+      document.getElementById('quiz-feedback').className = 'feedback';
+      updateProgress();
+    }
+
+    function handleQuizAnswer(btn, val) {
+      if (answeredThisQ) return;
+      answeredThisQ = true;
+      const btns = document.querySelectorAll('.answer-btn');
+      btns.forEach(b => b.disabled = true);
+
+      if (val === correctAnswer) {
+        btn.classList.add('correct');
+        score++; streak++;
+        document.getElementById('quiz-feedback').textContent = streak >= 3 ? '🔥 ' + streak + ' in a row!' : '✓ Correct!';
+        document.getElementById('quiz-feedback').className = 'feedback correct';
+      } else {
+        btn.classList.add('wrong');
+        streak = 0;
+        btns.forEach(b => { if (parseInt(b.textContent) === correctAnswer) b.classList.add('correct'); });
+        document.getElementById('quiz-feedback').textContent = '✗ It was ' + correctAnswer;
+        document.getElementById('quiz-feedback').className = 'feedback wrong';
+      }
+
+      questionNum++;
+      setTimeout(nextQuiz, 1100);
+    }
+
+    // ====== SPEED GAME ======
+    function startSpeed() {
+      timeLeft = 60;
+      speedScore = 0;
+      speedCorrect = 0;
+      speedTotal = 0;
+      document.getElementById('score-num').textContent = '0';
+      updateTimerRing();
+      nextSpeedQuestion();
+      document.getElementById('speed-input').focus();
+      document.getElementById('speed-input').onkeydown = (e) => { if (e.key === 'Enter') checkSpeed(); };
+
+      speedTimer = setInterval(() => {
+        timeLeft--;
+        updateTimerRing();
+        if (timeLeft <= 0) {
+          clearInterval(speedTimer);
+          showResults(speedCorrect, speedTotal || 1, speedCorrect + ' pts in 60s');
+        }
+      }, 1000);
+    }
+
+    let speedMultiplier = 0;
+
+    function nextSpeedQuestion() {
+      speedMultiplier = Math.floor(Math.random() * 12) + 1;
+      correctAnswer = chosenTable * speedMultiplier;
+      document.getElementById('speed-question').innerHTML = chosenTable + ' <span class="op">×</span> ' + speedMultiplier + ' <span class="op">=</span> <span class="q-mark">?</span>';
+      const inp = document.getElementById('speed-input');
+      inp.value = '';
+      inp.className = 'speed-input';
+      inp.focus();
+      document.getElementById('speed-feedback').textContent = '';
+    }
+
+    function checkSpeed() {
+      const inp = document.getElementById('speed-input');
+      const val = parseInt(inp.value);
+      if (isNaN(val)) return;
+      speedTotal++;
+      if (val === correctAnswer) {
+        speedCorrect++;
+        speedScore++;
+        score = speedScore;
+        inp.className = 'speed-input correct-flash';
+        document.getElementById('speed-feedback').textContent = '✓ +1';
+        document.getElementById('speed-feedback').className = 'feedback correct';
+        document.getElementById('score-num').textContent = score;
+      } else {
+        inp.className = 'speed-input wrong-flash';
+        document.getElementById('speed-feedback').textContent = '✗ Was ' + correctAnswer;
+        document.getElementById('speed-feedback').className = 'feedback wrong';
+      }
+      setTimeout(nextSpeedQuestion, 400);
+    }
+
+    function updateTimerRing() {
+      const circle = document.getElementById('timer-circle');
+      const txt = document.getElementById('timer-text');
+      const pct = timeLeft / 60;
+      const circumference = 314;
+      circle.style.strokeDashoffset = circumference * (1 - pct);
+      circle.style.stroke = timeLeft > 20 ? '#FFD93D' : timeLeft > 10 ? '#FF8C42' : '#EF233C';
+      txt.style.color = circle.style.stroke;
+      txt.textContent = timeLeft;
+    }
+
+    // ====== BALLOON GAME ======
+    let balloonCorrectId = -1;
+
+    function nextBalloon() {
+      if (questionNum >= totalQuestions) { showResults(score, totalQuestions); return; }
+      answeredThisQ = false;
+      const multiplier = Math.floor(Math.random() * 12) + 1;
+      correctAnswer = chosenTable * multiplier;
+      document.getElementById('balloon-question').innerHTML = chosenTable + ' <span class="op">×</span> ' + multiplier + ' <span class="q-mark">= ?</span>';
+
+      const wrong = generateWrongAnswers(correctAnswer, 3);
+      const answers = [correctAnswer, ...wrong].sort(() => Math.random() - 0.5);
+
+      const area = document.getElementById('balloon-area');
+      area.innerHTML = '';
+      document.getElementById('balloon-feedback').textContent = '';
+      document.getElementById('balloon-feedback').className = 'feedback';
+
+      answers.forEach((ans, i) => {
+        const col = balloonColors[i % balloonColors.length];
+        const balloon = document.createElement('div');
+        balloon.className = 'balloon';
+        balloon.innerHTML = `
+        <div class="balloon-body" style="background:${col.bg}; color:${col.text};">${ans}</div>
+        <div class="balloon-tip" style="border-top-color:${col.bg};"></div>
+        <div class="balloon-string"></div>
+      `;
+        balloon.addEventListener('click', () => handleBalloonPop(balloon, ans === correctAnswer, ans));
+        area.appendChild(balloon);
+      });
+
+      updateProgress();
+    }
+
+    function handleBalloonPop(balloon, isCorrect, val) {
+      if (answeredThisQ) return;
+      answeredThisQ = true;
+      balloon.classList.add('popping');
+
+      if (isCorrect) {
+        score++; streak++;
+        document.getElementById('balloon-feedback').textContent = streak >= 3 ? '🔥 ' + streak + ' streak!' : '🎈 Pop!';
+        document.getElementById('balloon-feedback').className = 'feedback correct';
+        document.getElementById('score-num').textContent = score;
+      } else {
+        streak = 0;
+        document.getElementById('balloon-feedback').textContent = '✗ The answer was ' + correctAnswer;
+        document.getElementById('balloon-feedback').className = 'feedback wrong';
+      }
+
+      questionNum++;
+      setTimeout(nextBalloon, 1000);
+    }
+
+    // ====== MISSING NUMBER GAME ======
+    let missingType = 0;
+    let missingA = 0, missingB = 0;
+
+    function nextMissing() {
+      if (questionNum >= totalQuestions) { showResults(score, totalQuestions); return; }
+      answeredThisQ = false;
+      const multiplier = Math.floor(Math.random() * 12) + 1;
+      correctAnswer = multiplier;
+      const product = chosenTable * multiplier;
+      missingType = Math.random() < 0.5 ? 0 : 1;
+
+      let eq;
+      if (missingType === 0) {
+        eq = '<span class="q-mark">?</span> <span class="op">×</span> ' + chosenTable + ' <span class="eq">=</span> ' + product;
+      } else {
+        eq = chosenTable + ' <span class="op">×</span> <span class="q-mark">?</span> <span class="eq">=</span> ' + product;
+      }
+      document.getElementById('missing-eq').innerHTML = eq;
+
+      const wrong = generateWrongAnswers(correctAnswer, 3, 1, 12);
+      const opts = [correctAnswer, ...wrong].sort(() => Math.random() - 0.5);
+
+      const grid = document.getElementById('missing-answers');
+      grid.innerHTML = '';
+      opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = opt;
+        btn.onclick = () => handleMissingAnswer(btn, opt);
+        grid.appendChild(btn);
+      });
+      document.getElementById('missing-feedback').textContent = '';
+      document.getElementById('missing-feedback').className = 'feedback';
+      updateProgress();
+    }
+
+    function handleMissingAnswer(btn, val) {
+      if (answeredThisQ) return;
+      answeredThisQ = true;
+      const btns = document.querySelectorAll('#missing-answers .answer-btn');
+      btns.forEach(b => b.disabled = true);
+
+      if (val === correctAnswer) {
+        btn.classList.add('correct');
+        score++; streak++;
+        document.getElementById('missing-feedback').textContent = streak >= 3 ? '🔥 ' + streak + ' in a row!' : '✓ Correct!';
+        document.getElementById('missing-feedback').className = 'feedback correct';
+      } else {
+        btn.classList.add('wrong');
+        streak = 0;
+        btns.forEach(b => { if (parseInt(b.textContent) === correctAnswer) b.classList.add('correct'); });
+        document.getElementById('missing-feedback').textContent = '✗ The answer was ' + correctAnswer;
+        document.getElementById('missing-feedback').className = 'feedback wrong';
+      }
+      document.getElementById('score-num').textContent = score;
+      questionNum++;
+      setTimeout(nextMissing, 1100);
+    }
+
+    // ====== ASTEROID BLASTER ======
+    let asteroidInterval = null;
+    let asteroidLives = 3;
+    let asteroidCorrect = 0;
+    let asteroidTotal = 0;
+
+    function startAsteroid() {
+      asteroidLives = 3;
+      asteroidCorrect = 0;
+      asteroidTotal = 0;
+      score = 0;
+      document.getElementById('score-num').textContent = '0';
+      updateAsteroidLives();
+      nextAsteroid();
+    }
+
+    function nextAsteroid() {
+      if (asteroidLives <= 0) return;
+      if (asteroidTotal >= 10) { showResults(asteroidCorrect, 10); return; }
+      if (asteroidInterval) clearInterval(asteroidInterval);
+      answeredThisQ = false;
+      asteroidTotal++;
+
+      const mult = Math.floor(Math.random() * 12) + 1;
+      correctAnswer = chosenTable * mult;
+      document.getElementById('asteroid-q').innerHTML =
+        chosenTable + ' <span class="op">×</span> ' + mult + ' <span class="op">=</span> <span class="q-mark">?</span>';
+
+      const wrong = generateWrongAnswers(correctAnswer, 3);
+      const answers = [correctAnswer, ...wrong].sort(() => Math.random() - 0.5);
+      const arena = document.getElementById('asteroid-arena');
+      arena.innerHTML = '';
+      document.getElementById('asteroid-feedback').textContent = '';
+      document.getElementById('asteroid-feedback').className = 'feedback';
+
+      const cols = ['#FF6B9D', '#FF8C42', '#4CC9F0', '#7B2FBE'];
+      const xPos = [6, 26, 51, 71];
+      answers.forEach((val, i) => {
+        const rock = document.createElement('div');
+        rock.className = 'asteroid';
+        rock.style.cssText = `left:${xPos[i]}%; top:-80px; background:${cols[i]};`;
+        rock.textContent = val;
+        rock.addEventListener('click', () => handleAsteroidHit(rock, val));
+        arena.appendChild(rock);
+      });
+
+      const speed = 0.55 + Math.floor(asteroidCorrect / 3) * 0.18;
+      asteroidInterval = setInterval(() => {
+        const rocks = arena.querySelectorAll('.asteroid:not(.ast-correct):not(.ast-wrong-hide)');
+        let escaped = false;
+        rocks.forEach(r => {
+          const t = parseFloat(r.style.top) + speed;
+          r.style.top = t + 'px';
+          if (t > 290) escaped = true;
+        });
+        if (escaped && !answeredThisQ) {
+          clearInterval(asteroidInterval);
+          answeredThisQ = true;
+          asteroidLives--;
+          updateAsteroidLives();
+          if (asteroidLives > 0) {
+            document.getElementById('asteroid-feedback').textContent = '💥 Too slow! It was ' + correctAnswer;
+            document.getElementById('asteroid-feedback').className = 'feedback wrong';
+            setTimeout(nextAsteroid, 1200);
+          }
+        }
+      }, 16);
+    }
+
+    function handleAsteroidHit(rock, val) {
+      if (answeredThisQ) return;
+      answeredThisQ = true;
+      clearInterval(asteroidInterval);
+      if (val === correctAnswer) {
+        asteroidCorrect++;
+        score++;
+        document.getElementById('score-num').textContent = score;
+        rock.classList.add('ast-correct');
+        document.getElementById('asteroid-feedback').textContent = '💥 Direct hit!';
+        document.getElementById('asteroid-feedback').className = 'feedback correct';
+      } else {
+        rock.classList.add('ast-wrong');
+        asteroidLives--;
+        updateAsteroidLives();
+        document.getElementById('asteroid-arena').querySelectorAll('.asteroid').forEach(r => {
+          if (parseInt(r.textContent) === correctAnswer) r.classList.add('ast-correct');
+        });
+        document.getElementById('asteroid-feedback').textContent = '✗ Wrong! It was ' + correctAnswer;
+        document.getElementById('asteroid-feedback').className = 'feedback wrong';
+      }
+      if (asteroidLives > 0) setTimeout(nextAsteroid, 1200);
+    }
+
+    function updateAsteroidLives() {
+      const hearts = '❤️'.repeat(Math.max(0, asteroidLives)) + '🖤'.repeat(Math.max(0, 3 - asteroidLives));
+      document.getElementById('asteroid-lives').textContent = hearts;
+      if (asteroidLives <= 0) {
+        clearInterval(asteroidInterval);
+        setTimeout(() => showResults(asteroidCorrect, asteroidTotal, asteroidCorrect + '/' + asteroidTotal + ' blasted!'), 800);
+      }
+    }
+
+    // ====== RACE TRACK ======
+    let racePlayerPos = 0;
+    let raceCPUPos = 0;
+    let raceCPUTimer = null;
+    let raceFinished = false;
+
+    function startRace() {
+      racePlayerPos = 0;
+      raceCPUPos = 0;
+      raceFinished = false;
+      score = 0;
+      document.getElementById('score-num').textContent = '0';
+      updateRaceBars();
+      nextRaceQuestion();
+      scheduleCPU();
+    }
+
+    function scheduleCPU() {
+      if (raceCPUTimer) clearTimeout(raceCPUTimer);
+      const delay = 4500 + Math.random() * 3000;
+      raceCPUTimer = setTimeout(() => {
+        if (!raceFinished) { cpuAdvance(); if (!raceFinished) scheduleCPU(); }
+      }, delay);
+    }
+
+    function cpuAdvance() {
+      raceCPUPos = Math.min(10, raceCPUPos + 1);
+      updateRaceBars();
+      if (raceCPUPos >= 10 && !raceFinished) {
+        raceFinished = true;
+        clearTimeout(raceCPUTimer);
+        setTimeout(() => showResults(racePlayerPos, 10, '🤖 CPU won! You got ' + racePlayerPos + '/10'), 600);
+      }
+    }
+
+    function nextRaceQuestion() {
+      if (raceFinished) return;
+      answeredThisQ = false;
+      const mult = Math.floor(Math.random() * 12) + 1;
+      correctAnswer = chosenTable * mult;
+      document.getElementById('race-question').innerHTML =
+        chosenTable + ' <span class="op">×</span> ' + mult + ' <span class="op">=</span> <span class="q-mark">?</span>';
+      const wrong = generateWrongAnswers(correctAnswer, 3);
+      const opts = [correctAnswer, ...wrong].sort(() => Math.random() - 0.5);
+      const grid = document.getElementById('race-answers');
+      grid.innerHTML = '';
+      opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = opt;
+        btn.onclick = () => handleRaceAnswer(btn, opt);
+        grid.appendChild(btn);
+      });
+      document.getElementById('race-feedback').textContent = '';
+      document.getElementById('race-feedback').className = 'feedback';
+    }
+
+    function handleRaceAnswer(btn, val) {
+      if (answeredThisQ || raceFinished) return;
+      answeredThisQ = true;
+      document.querySelectorAll('#race-answers .answer-btn').forEach(b => b.disabled = true);
+      if (val === correctAnswer) {
+        btn.classList.add('correct');
+        racePlayerPos = Math.min(10, racePlayerPos + 1);
+        score++;
+        document.getElementById('score-num').textContent = score;
+        document.getElementById('race-feedback').textContent = '🏎️ Zoom!';
+        document.getElementById('race-feedback').className = 'feedback correct';
+        updateRaceBars();
+        if (racePlayerPos >= 10) {
+          raceFinished = true;
+          clearTimeout(raceCPUTimer);
+          setTimeout(() => { showResults(10, 10, 'YOU WIN! 🏆'); launchConfetti(); }, 700);
+          return;
+        }
+      } else {
+        btn.classList.add('wrong');
+        document.querySelectorAll('#race-answers .answer-btn').forEach(b => { if (parseInt(b.textContent) === correctAnswer) b.classList.add('correct'); });
+        document.getElementById('race-feedback').textContent = '✗ CPU zooms ahead!';
+        document.getElementById('race-feedback').className = 'feedback wrong';
+        cpuAdvance();
+        if (raceFinished) return;
+        updateRaceBars();
+      }
+      setTimeout(nextRaceQuestion, 1100);
+    }
+
+    function updateRaceBars() {
+      const pp = Math.max(5, (racePlayerPos / 10) * 100);
+      const cp = Math.max(5, (raceCPUPos / 10) * 100);
+      document.getElementById('race-player-bar').style.width = pp + '%';
+      document.getElementById('race-cpu-bar').style.width = cp + '%';
+      document.getElementById('race-player-pct').textContent = racePlayerPos + '/10';
+      document.getElementById('race-cpu-pct').textContent = raceCPUPos + '/10';
+    }
+
+    // ====== WHACK-A-MOLE ======
+    let moleTimer = null;
+    let moleTimeLeft = 45;
+    let moleScore = 0;
+    let moleHits = 0;
+    let moleAnswers = [];
+    let moleTimeouts = [];
+
+    function startMole() {
+      moleScore = 0;
+      moleHits = 0;
+      moleTimeLeft = 45;
+      moleAnswers = new Array(9).fill(-1);
+      moleTimeouts = [];
+      score = 0;
+      document.getElementById('score-num').textContent = '0';
+      document.getElementById('mole-feedback').textContent = '';
+      buildMoleGrid();
+      nextMoleQuestion();
+      moleTimer = setInterval(() => {
+        moleTimeLeft--;
+        updateMoleTimer();
+        if (moleTimeLeft <= 0) {
+          clearInterval(moleTimer);
+          moleTimeouts.forEach(t => clearTimeout(t));
+          setTimeout(() => showResults(moleHits, Math.max(moleHits + 1, 1), moleHits + ' correct in 45s!'), 300);
+        }
+      }, 1000);
+    }
+
+    function buildMoleGrid() {
+      const grid = document.getElementById('mole-grid');
+      grid.innerHTML = '';
+      for (let i = 0; i < 9; i++) {
+        const hole = document.createElement('div');
+        hole.className = 'mole-hole';
+        hole.innerHTML = '<div class="mole" id="mole-' + i + '"></div>';
+        hole.addEventListener('click', () => handleMoleClick(i));
+        grid.appendChild(hole);
+      }
+    }
+
+    function nextMoleQuestion() {
+      if (moleTimeLeft <= 0) return;
+      answeredThisQ = false;
+      for (let i = 0; i < 9; i++) { moleAnswers[i] = -1; }
+
+      const mult = Math.floor(Math.random() * 12) + 1;
+      correctAnswer = chosenTable * mult;
+      document.getElementById('mole-question').innerHTML =
+        chosenTable + ' <span class="op">×</span> ' + mult + ' <span class="op">=</span> <span class="q-mark">?</span>';
+
+      const wrong = generateWrongAnswers(correctAnswer, 2);
+      const allAns = [correctAnswer, ...wrong];
+      const holes = shuffleArray([0, 1, 2, 3, 4, 5, 6, 7, 8]).slice(0, 3);
+      const moleCols = ['#FF6B9D', '#4CC9F0', '#FFD93D', '#06D6A0', '#7B2FBE', '#FF8C42'];
+
+      // Hide all moles first
+      for (let i = 0; i < 9; i++) {
+        const el = document.getElementById('mole-' + i);
+        if (el) { el.classList.remove('up'); el.textContent = ''; el.style.background = ''; }
+      }
+
+      holes.forEach((hIdx, i) => {
+        moleAnswers[hIdx] = allAns[i];
+        const t = setTimeout(() => {
+          if (moleTimeLeft <= 0) return;
+          const el = document.getElementById('mole-' + hIdx);
+          if (el) {
+            el.textContent = allAns[i];
+            el.style.background = moleCols[i * 2 % moleCols.length];
+            el.classList.add('up');
+          }
+        }, i * 150);
+        moleTimeouts.push(t);
+      });
+    }
+
+    function handleMoleClick(idx) {
+      if (moleAnswers[idx] === -1 || moleTimeLeft <= 0) return;
+      const val = moleAnswers[idx];
+      const el = document.getElementById('mole-' + idx);
+      if (val === correctAnswer) {
+        if (answeredThisQ) return;
+        answeredThisQ = true;
+        moleHits++;
+        moleScore++;
+        score++;
+        document.getElementById('score-num').textContent = score;
+        el.style.transform = 'translateX(-50%) scale(1.3)';
+        el.style.background = '#06D6A0';
+        document.getElementById('mole-feedback').textContent = '🔨 Whack!';
+        document.getElementById('mole-feedback').className = 'feedback correct';
+        setTimeout(() => {
+          if (el) { el.classList.remove('up'); el.textContent = ''; el.style.transform = ''; }
+          moleAnswers[idx] = -1;
+        }, 280);
+        setTimeout(nextMoleQuestion, 850);
+      } else {
+        el.style.background = '#EF233C';
+        moleScore++;
+        document.getElementById('mole-feedback').textContent = '✗ Wrong mole!';
+        document.getElementById('mole-feedback').className = 'feedback wrong';
+        setTimeout(() => { if (el && el.classList.contains('up')) el.style.background = moleCols[0]; }, 400);
+      }
+    }
+
+    function updateMoleTimer() {
+      document.getElementById('mole-timer-text').textContent = moleTimeLeft;
+      const circle = document.getElementById('mole-timer-circle');
+      const pct = moleTimeLeft / 45;
+      circle.style.strokeDashoffset = 214 * (1 - pct);
+      circle.style.stroke = moleTimeLeft > 15 ? '#FFD93D' : moleTimeLeft > 7 ? '#FF8C42' : '#EF233C';
+      document.getElementById('mole-timer-text').style.color = circle.style.stroke;
+    }
+
+    function shuffleArray(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    const moleCols = ['#FF6B9D', '#4CC9F0', '#FFD93D', '#06D6A0', '#7B2FBE', '#FF8C42'];
+
+    // ====== HELPERS ======
+    function generateWrongAnswers(correct, count, min, max) {
+      const wrongs = new Set();
+      while (wrongs.size < count) {
+        let w;
+        if (min !== undefined && max !== undefined) {
+          w = Math.floor(Math.random() * (max - min + 1)) + min;
+        } else {
+          const offset = (Math.floor(Math.random() * 5) + 1) * (Math.random() < 0.5 ? 1 : -1);
+          w = Math.max(1, correct + offset);
+        }
+        if (w !== correct) wrongs.add(w);
+      }
+      return [...wrongs];
+    }
+
+    function launchConfetti() {
+      const colors = ['#FFD93D', '#FF6B35', '#FF4D8D', '#06D6A0', '#4361EE', '#7B2FBE'];
+      for (let i = 0; i < 60; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+        piece.style.animationDelay = (Math.random() * 0.5) + 's';
+        piece.style.width = (8 + Math.random() * 8) + 'px';
+        piece.style.height = (8 + Math.random() * 8) + 'px';
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 4000);
+      }
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOLO LEVELING</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <canvas id="game-canvas"></canvas>
+
+  <!-- TITLE SCREEN -->
+  <div id="title-screen" class="game-screen">
+    <div class="title-logo">SOLO LEVELING</div>
+    <div class="title-sub">ARISE FROM THE SHADOWS</div>
+    <div class="btn-row">
+      <button class="btn" id="enter-btn">ENTER GATE</button>
+      <button class="btn" id="continue-btn" style="display:none;">CONTINUE</button>
+    </div>
+    <button class="btn secondary" id="new-game-btn" style="display:none;">NEW GAME</button>
+    <div class="title-controls">
+      WASD Move · Space Jump · Z Light · X Heavy · C Shadow Strike · Shift Dodge · ESC Pause
+    </div>
+  </div>
+
+  <!-- DUNGEON SELECT -->
+  <div id="dungeon-select" class="game-screen">
+    <div class="ds-title">SELECT GATE</div>
+    <div class="ds-subtitle" id="ds-player-info"></div>
+    <div class="ds-stats">
+      Level: <span id="ds-level">1</span> · Rank: <span id="ds-rank">E</span> · 
+      Shadows: <span id="ds-shadows">0</span>
+      <span id="ds-stat-points" style="color:var(--clr-xp);display:none;"> · Stat Points: <span id="ds-sp">0</span></span>
+    </div>
+    <div id="dungeon-grid"></div>
+    <div class="btn-row" style="margin-top:24px;">
+      <button class="btn secondary" onclick="showStatScreen()">STATS</button>
+      <button class="btn secondary" onclick="showTitleScreen()">BACK</button>
+    </div>
+  </div>
+
+  <!-- STAT ALLOCATION -->
+  <div id="stat-screen" class="game-screen">
+    <div class="stat-title">ALLOCATE STATS</div>
+    <div class="stat-points-label">STAT POINTS AVAILABLE: <span id="stat-points-avail">0</span></div>
+    <div id="stat-grid"></div>
+    <button class="btn" id="stat-confirm-btn" style="margin-top:16px;">CONFIRM</button>
+  </div>
+
+  <!-- LEVEL CLEAR -->
+  <div id="level-clear-screen" class="game-screen">
+    <div class="lc-title">DUNGEON CLEAR!</div>
+    <div class="lc-name"></div>
+    <div class="lc-rewards">
+      <div class="lc-xp"></div>
+      <div class="lc-shadows"></div>
+      <div class="lc-stats"></div>
+      <div class="lc-kills"></div>
+    </div>
+    <button class="btn" id="lc-continue-btn">CONTINUE</button>
+  </div>
+
+  <!-- GAME OVER -->
+  <div id="game-over-screen" class="game-screen">
+    <div class="go-title">YOU HAVE DIED</div>
+    <div class="go-subtitle">THE SHADOWS CONSUME ALL</div>
+    <div class="btn-row">
+      <button class="btn danger" id="retry-btn">RETRY</button>
+      <button class="btn secondary" id="go-back-btn">BACK TO GATES</button>
+    </div>
+  </div>
+
+  <!-- PAUSE -->
+  <div id="pause-screen" class="game-screen">
+    <div class="pause-title">PAUSE</div>
+    <div class="btn-row">
+      <button class="btn" id="pause-resume">RESUME</button>
+      <button class="btn secondary" id="pause-quit">QUIT</button>
+    </div>
+  </div>
+
+  <!-- SYSTEM NOTIFICATION -->
+  <div id="system-notif">
+    <div class="sn-header">SYSTEM</div>
+    <div class="sn-text"></div>
+  </div>
+
+  <!-- BOSS ANNOUNCE -->
+  <div id="boss-announce">
+    <div class="ba-label">BOSS APPEARED</div>
+    <div class="ba-name"></div>
+  </div>
+
+  <!-- ARISE NOTIFICATION -->
+  <div id="arise-notif">
+    <div class="arise-text">ARISE</div>
+  </div>
+
+  <!-- DAMAGE NUMBERS LAYER -->
+  <div id="dmg-layer"></div>
+
+  <!-- SAVE INDICATOR -->
+  <div id="save-indicator">✦ SAVED</div>
+
+  <!-- SCRIPTS -->
+  <script src="js/config.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/enemies.js"></script>
+  <script src="js/system.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
