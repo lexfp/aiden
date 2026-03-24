@@ -2097,33 +2097,33 @@
                 const cbMetal = phong(0x303030, 72, 0x565656);
                 const cbString = phong(0x252525, 5, 0x111111);
                 const cbBolt = phong(0x3a3a3a, 64, 0x666666);
-                addBox([.06, .078, .24], cbBlack, [0, -.005, -.15]);
-                addBox([.054, .032, .17], cbShell, [0, .04, -.23]);
-                addBox([.058, .135, .075], cbBlack, [0, -.1, -.025], [-.34, 0, 0]);
-                addBox([.052, .1, .08], cbShell, [0, -.08, .17], [-.2, 0, 0]);
+                addBox([.06, .078, .4], cbBlack, [0, -.01, -.12]);
+                addBox([.054, .042, .2], cbShell, [0, .04, -.2]);
+                addBox([.058, .14, .08], cbBlack, [0, -.1, -.02], [-.35, 0, 0]);
+                addBox([.052, .1, .12], cbShell, [0, -.09, .14], [-.2, 0, 0]);
                 addBox([.085, .095, .2], cbBlack, [0, 0, .04]);
-                addBox([.066, .05, .24], cbShell, [0, .026, .08]);
+                addBox([.066, .05, .3], cbShell, [0, .026, .08]);
                 addBox([.038, .022, .74], cbMetal, [0, .034, .12]);
-                addBox([.048, .036, .36], cbShell, [0, .022, .19]);
-                addRail(.22, [0, .071, .05]);
-                addBox([.025, .016, .18], cbShell, [0, .05, .17]);
-                addBox([.04, .035, .05], cbMetal, [0, .02, .31]);
-                addBox([.13, .024, .05], cbShell, [0, .02, .35]);
-                add(new THREE.TorusGeometry(.055, .008, 6, 16), cbMetal, [0, -.02, .47], [Math.PI / 2, 0, 0]);
-                addBox([.235, .022, .034], cbShell, [.15, .03, .37], [0, 0, .48]);
-                addBox([.235, .022, .034], cbShell, [-.15, .03, .37], [0, 0, -.48]);
-                addBox([.08, .018, .04], cbShell, [.07, .024, .33], [0, 0, .2]);
-                addBox([.08, .018, .04], cbShell, [-.07, .024, .33], [0, 0, -.2]);
-                addCyl(.016, .016, .016, 12, cbMetal, [.315, .03, .405], [0, 0, Math.PI / 2]);
-                addCyl(.016, .016, .016, 12, cbMetal, [-.315, .03, .405], [0, 0, Math.PI / 2]);
-                addBox([.002, .002, .35], cbString, [.162, .03, .205], [1.03, -.42, 0]);
-                addBox([.002, .002, .35], cbString, [-.162, .03, .205], [1.03, .42, 0]);
-                addBox([.002, .002, .11], cbString, [0, .03, .11]);
-                addCyl(.006, .006, .48, 6, cbBolt, [0, .045, .14], [Math.PI / 2, 0, 0]);
-                add(new THREE.ConeGeometry(.012, .06, 6), cbMetal, [0, .045, .42], [Math.PI / 2, 0, 0]);
+                addBox([.05, .04, .4], cbShell, [0, .02, .15]);
+                addRail(.25, [0, .075, .05]);
+                addBox([.07, .03, .05], cbMetal, [0, .02, .32]);
+                // Bow mechanism
+                add(new THREE.TorusGeometry(.055, .01, 10, 16), cbMetal, [0, -.02, .48], [Math.PI / 2, 0, 0]);
+                // Limbs
+                addBox([.28, .025, .035], cbShell, [.16, .03, .36], [0, 0, .45]);
+                addBox([.28, .025, .035], cbShell, [-.16, .03, .36], [0, 0, -.45]);
+                // Cams
+                addCyl(.02, .02, .02, 12, cbMetal, [.32, .03, .38], [0, 0, Math.PI / 2]);
+                addCyl(.02, .02, .02, 12, cbMetal, [-.32, .03, .38], [0, 0, Math.PI / 2]);
+                // Strings
+                addCyl(.004, .004, .38, 6, cbString, [.16, .03, .2], [1.0, -.4, 0]);
+                addCyl(.004, .004, .38, 6, cbString, [-.16, .03, .2], [1.0, .4, 0]);
+                addBox([.006, .006, .12], cbString, [0, .03, .08]);
+                addCyl(.008, .008, .5, 6, cbBolt, [0, .045, .15], [Math.PI / 2, 0, 0]);
+                add(new THREE.ConeGeometry(.012, .08, 6), cbMetal, [0, .045, .44], [Math.PI / 2, 0, 0]);
                 addBox([.02, .004, .04], cbBlack, [.012, .045, -.065], [0, 0, .4]);
                 addBox([.02, .004, .04], cbBlack, [-.012, .045, -.065], [0, 0, -.4]);
-                addScope(.2, [0, .095, .03], 0x0d0d0d);
+                addScope(.22, [0, .095, .04], 0x0a0a0a);
             };
 
             if (wdef.cat === 'pistol') {
