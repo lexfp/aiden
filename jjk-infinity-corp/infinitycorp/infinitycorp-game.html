@@ -1345,8 +1345,8 @@
                 your limits.</p>
             <div class="prestige-reward-box" id="prestigeRewardBox"></div>
             <p style="color:var(--danger);font-size:11px;margin-bottom:12px;line-height:1.5">
-                ⚠️ All money, slots, upgrades, and managers will be reset.<br>Only your kills and prestige multiplier
-                carry over.
+                ⚠️ Full reset: money, earned progress, slots, upgrades, managers, investors, codes, battle progress,
+                and kills.<br>Only your prestige tier and permanent income multiplier carry over.
             </p>
         </div>
         <div class="code-actions">
@@ -1363,7 +1363,6 @@
         <div class="header-right">
             <div class="active-boosts" id="activeBoosts"></div>
             <button id="btnOpenCode" class="btn-code" style="margin-right:8px">Redeem</button>
-            <button id="btnLeaderboard" class="btn-code" style="margin-right:8px">Leaderboard</button>
             <button id="btnPrestige" class="btn-code btn-prestige locked" style="margin-right:8px">♾ Prestige</button>
             <div class="money-wrap">
                 <div class="money-display" id="moneyDisplay">100 Cursed Spirits</div>
@@ -1380,16 +1379,6 @@
             <button class="btn-code" id="btnRedeem">Redeem</button>
         </div>
     </div>
-
-    <div class="code-modal" id="leaderboardModal" role="dialog" aria-modal="true">
-        <h3>Leaderboard</h3>
-        <div id="leaderboardList" style="max-height:300px;overflow:auto;margin-bottom:8px;color:var(--text)"></div>
-        <div class="code-actions">
-            <button class="btn-code secondary" id="btnCloseLeaderboard">Close</button>
-        </div>
-    </div>
-
-
 
     <div class="code-modal" id="nameModal" role="dialog" aria-modal="true">
         <h3>Player Name</h3>
@@ -1506,12 +1495,14 @@
             { id: 'cosmic_i', name: 'Cosmic Entity', icon: '✨', mult: 100, duration: 60, cooldown: 2700 },
         ];
 
+        const NUM_SLOTS = 18;
+
         const S = {
             money: 100,
             totalEarned: 0,
             totalRolls: 0,
             found: new Set(),
-            slots: Array(10).fill(null),
+            slots: Array(NUM_SLOTS).fill(null),
             upgrades: new Set(),
             redeemed: new Set(),
             playerName: localStorage.getItem('infinity_player') || ('Player' + (1000 + Math.floor(Math.random() * 9000))),
@@ -1583,6 +1574,14 @@
             return null;
         }
 
+        function clearGameSave() {
+            const past = 'Thu, 01 Jan 1970 00:00:00 GMT';
+            const p = window.location.pathname || '/';
+            const base = p.lastIndexOf('/') >= 0 ? p.substring(0, p.lastIndexOf('/') + 1) : '/';
+            document.cookie = `infinity_save=;expires=${past};path=/`;
+            document.cookie = `infinity_save=;expires=${past};path=${base}`;
+        }
+
         function saveGame() {
             try {
                 const state = {
@@ -1618,7 +1617,9 @@
                 S.money = state.money ?? S.money;
                 S.totalEarned = state.totalEarned ?? S.totalEarned;
                 S.totalRolls = state.totalRolls ?? S.totalRolls;
-                S.slots = (state.slots || Array(10).fill(null)).map(id => {
+                const rawSlots = state.slots || [];
+                S.slots = Array(NUM_SLOTS).fill(null).map((_, i) => {
+                    const id = rawSlots[i];
                     if (!id) return null;
                     const c = COMPANIES.find(x => x.id === id);
                     return c ? { ...c } : null;
@@ -1653,75 +1654,6 @@
             }
         }
 
-        // --- Leaderboard (localStorage) ---
-        function getLeaderboard() {
-            try {
-                const raw = localStorage.getItem('infinity_leaderboard') || '[]';
-                return JSON.parse(raw);
-            } catch (e) { return []; }
-        }
-        function setLeaderboard(lb) { localStorage.setItem('infinity_leaderboard', JSON.stringify(lb)); }
-
-        function updateLeaderboard() {
-            const lb = getLeaderboard();
-            // find existing entry for this player
-            const existing = lb.find(e => e.name === S.playerName);
-            if (existing) existing.money = Math.max(existing.money, S.money);
-            else lb.push({ name: S.playerName, money: S.money });
-            // sort desc and keep top 50
-            lb.sort((a, b) => b.money - a.money);
-            setLeaderboard(lb.slice(0, 50));
-        }
-
-        function openLeaderboard() {
-            const modal = document.getElementById('leaderboardModal');
-            const list = document.getElementById('leaderboardList');
-            const lb = getLeaderboard();
-            list.innerHTML = '';
-            if (!lb.length) {
-                list.innerHTML = '<div style="color:var(--text3)">No entries yet.</div>';
-                modal.classList.add('show');
-                return;
-            }
-            lb.forEach((e, i) => {
-                const row = document.createElement('div');
-                row.style.padding = '6px 4px';
-                row.style.borderBottom = '1px solid rgba(255,255,255,0.03)';
-                row.innerHTML = `<strong>#${i + 1}</strong> ${e.name} — ${fmt(e.money)}`;
-                if (getAdmin() && isAdmin() && e.name !== getAdmin()) {
-                    const btn = document.createElement('button');
-                    btn.className = 'btn-code';
-                    btn.style.marginLeft = '8px';
-                    btn.style.padding = '4px 8px';
-                    btn.style.fontSize = '11px';
-                    btn.textContent = 'Delete';
-                    btn.addEventListener('click', () => deletePlayer(e.name));
-                    row.appendChild(btn);
-                }
-                list.appendChild(row);
-            });
-            modal.classList.add('show');
-        }
-        function closeLeaderboard() { document.getElementById('leaderboardModal').classList.remove('show'); }
-
-        // --- Admin helpers ---
-        function getAdmin() { return localStorage.getItem('infinity_admin') || null; }
-        function setAdmin(name) { if (!name) localStorage.removeItem('infinity_admin'); else localStorage.setItem('infinity_admin', name); }
-        function isAdmin() { return getAdmin() && getAdmin() === S.playerName; }
-
-        function deletePlayer(name) {
-            if (!isAdmin()) { notify('Only the admin may delete players'); return; }
-            if (!name) return;
-            if (!confirm(`Delete player ${name} from leaderboard? This cannot be undone.`)) return;
-            try {
-                const lb = getLeaderboard();
-                const filtered = lb.filter(e => e.name !== name);
-                setLeaderboard(filtered);
-                notify(`Deleted ${name} from leaderboard`);
-                openLeaderboard();
-            } catch (e) { console.error(e); notify('Delete failed'); }
-        }
-
         // Music modal handlers
         function openMusicModal() { document.getElementById('musicModal').classList.add('show'); }
         function closeMusicModal() { document.getElementById('musicModal').classList.remove('show'); }
@@ -1732,23 +1664,8 @@
         function savePlayerName() {
             const v = (document.getElementById('nameInput').value || '').trim();
             if (!v) return notify('Enter a valid name');
-            const prev = S.playerName;
-            const prevAdmin = getAdmin();
-            if (prev && prev !== v) {
-                // remove old name entries from leaderboard
-                try {
-                    const lb = getLeaderboard();
-                    const filtered = lb.filter(e => e.name !== prev);
-                    setLeaderboard(filtered);
-                } catch (e) { }
-            }
             S.playerName = v;
             localStorage.setItem('infinity_player', S.playerName);
-            // if there is no admin yet, or the previous name was the admin, make the new name the admin
-            if (!prevAdmin) setAdmin(S.playerName);
-            else if (prevAdmin === prev) setAdmin(S.playerName);
-            // ensure leaderboard reflects new name
-            updateLeaderboard();
             saveGame();
             updateHeader();
             notify('Name saved');
@@ -1897,7 +1814,7 @@
 
             if (isInf) startParticles(i);
         }
-        function renderAllSlots() { for (let i = 0; i < 10; i++) renderSlot(i); }
+        function renderAllSlots() { for (let i = 0; i < NUM_SLOTS; i++) renderSlot(i); }
 
         function emptySlot(i) {
             if (i < 0 || i >= S.slots.length) return;
@@ -1982,7 +1899,7 @@
     <div class="stat-row"><span class="stat-lbl">Multiplier</span><span class="stat-val">${S.companyMult.toFixed(1)}×</span></div>
     <div class="stat-row"><span class="stat-lbl">Active Boost</span><span class="stat-val">${S.boostMult > 1 ? S.boostMult + '×' : 'None'}</span></div>
     <div class="panel-section">Empire</div>
-    <div class="stat-row"><span class="stat-lbl">Slots Filled</span><span class="stat-val">${filled}/10</span></div>
+    <div class="stat-row"><span class="stat-lbl">Slots Filled</span><span class="stat-val">${filled}/${NUM_SLOTS}</span></div>
     <div class="stat-row"><span class="stat-lbl">Total Rolls</span><span class="stat-val">${S.totalRolls.toLocaleString()}</span></div>
     <div class="stat-row"><span class="stat-lbl">Time Played</span><span class="stat-val">${fmtTime(elapsed)}</span></div>
     <div class="stat-row"><span class="stat-lbl">INFINITY Owned</span><span class="stat-val" style="color:#a78bfa">${hasInf ? '✦ YES!' : 'Not yet…'}</span></div>
@@ -2014,8 +1931,7 @@
                 wrap.appendChild(lbl);
             }
             const pnl = document.getElementById('playerNameLbl');
-            if (isAdmin()) pnl.innerHTML = `${S.playerName} <span style="color:var(--gold);font-weight:800;margin-left:6px;font-size:10px">ADMIN</span>`;
-            else pnl.textContent = S.playerName;
+            pnl.textContent = S.playerName;
         }
 
         function doRoll(i) {
@@ -2151,10 +2067,6 @@
         document.getElementById('btnCloseCode').addEventListener('click', closeCodeModal);
         document.getElementById('btnRedeem').addEventListener('click', () => redeemCodeRaw(document.getElementById('codeInput').value));
         document.getElementById('codeInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') redeemCodeRaw(e.target.value); });
-        document.getElementById('btnLeaderboard').addEventListener('click', () => { updateLeaderboard(); openLeaderboard(); });
-        document.getElementById('btnCloseLeaderboard').addEventListener('click', closeLeaderboard);
-
-
         // Name modal buttons
         // create name edit trigger on player name label
         document.addEventListener('click', (e) => {
@@ -2199,8 +2111,7 @@
                 <strong>Special Grade Exorcism Reward:</strong><br>
                 ✦ All income boosted by <strong style="color:#fbbf24;font-size:14px">×${nextMult.toLocaleString()}</strong> (permanent)<br>
                 ✦ Battle spirits drop <strong>×${d.count + 2}</strong> extra rewards<br>
-                ✦ Prestige count: <strong>${d.count} → ${d.count + 1}</strong><br>
-                ✦ Current kills carried over: <strong>${d.kills.toLocaleString()}</strong>
+                ✦ Prestige count: <strong>${d.count} → ${d.count + 1}</strong>
             `;
             document.getElementById('prestigeModal').classList.add('show');
         }
@@ -2209,10 +2120,10 @@
         function confirmPrestige() {
             const d = getPrestigeData();
             d.count++;
-            d.kills = (d.kills || 0) + (S.battleKills || 0);
+            d.kills = 0;
             setPrestigeData(d);
-            // clear save
-            setCookie('infinity_save', '', -1);
+            localStorage.removeItem('infinity_applied_pmult');
+            clearGameSave();
             notify('✦ SPECIAL GRADE EXORCISM COMPLETE — TRANSCENDENCE ACHIEVED ✦', 'inf');
             closePrestigeModal();
             setTimeout(() => location.reload(), 1800);
@@ -2443,7 +2354,7 @@
 
         (function init() {
             const grid = document.getElementById('slotsGrid');
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < NUM_SLOTS; i++) {
                 const d = document.createElement('div');
                 d.className = 'slot';
                 d.id = `slot-${i}`;
@@ -2466,9 +2377,6 @@
             // Always ensure battle state is valid after load
             ensureBattleState();
 
-            // ensure there's an admin: first player to run becomes admin (creator)
-            if (!getAdmin()) setAdmin(S.playerName);
-
             renderAllSlots();
             renderUpgrades();
             renderManagers();
@@ -2479,7 +2387,7 @@
 
             setInterval(() => {
                 const rc = rollCost();
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < NUM_SLOTS; i++) {
                     const btn = document.getElementById(`sbtn-${i}`);
                     if (btn) {
                         btn.disabled = S.money < rc;
@@ -2496,8 +2404,6 @@
             // autosave periodically and on close
             setInterval(() => saveGame(), 5000);
             window.addEventListener('beforeunload', () => saveGame());
-            // update leaderboard on start
-            updateLeaderboard();
 
             // attempt to start background audio (loop already set on element)
             try {
