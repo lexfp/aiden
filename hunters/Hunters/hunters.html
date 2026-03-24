@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1000,7 +1000,7 @@
         <div class="shop-wrap">
             <div class="shop-hdr">
                 <div class="shop-title">ARMORY</div>
-                <div class="shop-coins">💰 <span id="shop-coins-val">0</span></div>
+                <div class="shop-coins">ðŸ’° <span id="shop-coins-val">0</span></div>
             </div>
             <div class="cat-tabs" id="cat-tabs"></div>
             <div class="shop-grid" id="shop-grid"></div>
@@ -1015,19 +1015,19 @@
         <div class="lo-wrap">
             <div class="lo-slot" id="lo-primary">
                 <div class="lo-slot-title">PRIMARY</div>
-                <div class="lo-wep" id="lo-p-name">—</div>
+                <div class="lo-wep" id="lo-p-name">â€”</div>
                 <div class="lo-stats" id="lo-p-stats"></div>
                 <div class="lo-list" id="lo-p-list"></div>
             </div>
             <div class="lo-slot" id="lo-secondary">
                 <div class="lo-slot-title">SECONDARY</div>
-                <div class="lo-wep" id="lo-s-name">—</div>
+                <div class="lo-wep" id="lo-s-name">â€”</div>
                 <div class="lo-stats" id="lo-s-stats"></div>
                 <div class="lo-list" id="lo-s-list"></div>
             </div>
             <div class="lo-slot" id="lo-melee">
                 <div class="lo-slot-title">MELEE</div>
-                <div class="lo-wep" id="lo-m-name">—</div>
+                <div class="lo-wep" id="lo-m-name">â€”</div>
                 <div class="lo-stats" id="lo-m-stats"></div>
                 <div class="lo-list" id="lo-m-list"></div>
             </div>
@@ -1036,7 +1036,7 @@
     </div>
 
     <div id="s-over" class="screen">
-        <div id="res-title">—</div>
+        <div id="res-title">â€”</div>
         <div id="res-stats"></div>
         <button class="btn btn-p" onclick="G.showPreplay()">PLAY AGAIN</button>
         <button class="btn btn-s" onclick="G.showScreen('s-menu')">MAIN MENU</button>
@@ -1063,7 +1063,7 @@
             <div id="ammo-m">/ 17</div>
             <div id="wep-name">GLOCK 17</div>
         </div>
-        <div id="coins-d">💰 <span id="hud-coins">0</span></div>
+        <div id="coins-d">ðŸ’° <span id="hud-coins">0</span></div>
         <div id="match-d"><span id="bots-alive">0</span> ENEMIES</div>
         <div id="wave-d">WAVE 1</div>
         <div id="timer-d">2:00</div>
@@ -1162,31 +1162,31 @@
         // CHARACTER DEFINITIONS
         // ============================================================
         const CDEFS = [
-            { id: 'soldier', name: 'Soldier', icon: '🪖', desc: 'Balanced fighter', hp: 100, speed: 1.0, dmgMult: 1.0, price: 0 },
-            { id: 'scout', name: 'Scout', icon: '🏃', desc: '+Speed -HP', hp: 75, speed: 1.4, dmgMult: 0.9, price: 800 },
-            { id: 'tank', name: 'Tank', icon: '🛡️', desc: '+HP -Speed', hp: 160, speed: 0.7, dmgMult: 1.1, price: 1200 },
-            { id: 'marksman', name: 'Marksman', icon: '🎯', desc: '+Damage -HP', hp: 80, speed: 1.0, dmgMult: 1.4, price: 1500 },
-            { id: 'berserker', name: 'Berserker', icon: '😤', desc: 'Rage at low HP', hp: 110, speed: 1.1, dmgMult: 1.0, rage: true, price: 2200 },
+            { id: 'soldier', name: 'Soldier', icon: 'ðŸª–', desc: 'Balanced fighter', hp: 100, speed: 1.0, dmgMult: 1.0, price: 0 },
+            { id: 'scout', name: 'Scout', icon: 'ðŸƒ', desc: '+Speed -HP', hp: 75, speed: 1.4, dmgMult: 0.9, price: 800 },
+            { id: 'tank', name: 'Tank', icon: 'ðŸ›¡ï¸', desc: '+HP -Speed', hp: 160, speed: 0.7, dmgMult: 1.1, price: 1200 },
+            { id: 'marksman', name: 'Marksman', icon: 'ðŸŽ¯', desc: '+Damage -HP', hp: 80, speed: 1.0, dmgMult: 1.4, price: 1500 },
+            { id: 'berserker', name: 'Berserker', icon: 'ðŸ˜¤', desc: 'Rage at low HP', hp: 110, speed: 1.1, dmgMult: 1.0, rage: true, price: 2200 },
         ];
 
         // ============================================================
         // GAME MODE DEFINITIONS
         // ============================================================
         const GAME_MODES = [
-            { id: 'elimination', name: 'Elimination', icon: '☠️', desc: 'Kill all enemies' },
-            { id: 'survival', name: 'Survival', icon: '🌊', desc: 'Survive 5 waves' },
-            { id: 'timed', name: 'Timed Hunt', icon: '⏱️', desc: 'Most kills in 2 min' },
+            { id: 'elimination', name: 'Elimination', icon: 'â˜ ï¸', desc: 'Kill all enemies' },
+            { id: 'survival', name: 'Survival', icon: 'ðŸŒŠ', desc: 'Survive 5 waves' },
+            { id: 'timed', name: 'Timed Hunt', icon: 'â±ï¸', desc: 'Most kills in 2 min' },
         ];
 
         // ============================================================
         // POWERUP DEFINITIONS
         // ============================================================
         const POWERUP_TYPES = [
-            { id: 'health', icon: '❤️', color: 0xff4444, label: 'HEALTH PACK', apply(G) { G.playerHp = Math.min(G.playerMaxHp, G.playerHp + 40); G.updateHUD(); } },
-            { id: 'ammo', icon: '📦', color: 0xffcc44, label: 'AMMO CRATE', apply(G) { G.weapons.forEach(w => { if (w.cat !== 'melee') { w.curMag = w.mag; w.totalAmmo = w.mag * 3; } }); G.updateHUD(); } },
-            { id: 'speed', icon: '⚡', color: 0x44ffff, label: 'SPEED BOOST', apply(G) { G._speedBoost = 8; } },
-            { id: 'damage', icon: '🔥', color: 0xff8800, label: 'DAMAGE BOOST', apply(G) { G._dmgBoost = 8; } },
-            { id: 'shield', icon: '🛡', color: 0x4488ff, label: 'SHIELD', apply(G) { G.playerHp = Math.min(G.playerMaxHp + 50, G.playerHp + 50); G.playerMaxHp = Math.max(G.playerMaxHp, G.playerHp); G.updateHUD(); } },
+            { id: 'health', icon: 'â¤ï¸', color: 0xff4444, label: 'HEALTH PACK', apply(G) { G.playerHp = Math.min(G.playerMaxHp, G.playerHp + 40); G.updateHUD(); } },
+            { id: 'ammo', icon: 'ðŸ“¦', color: 0xffcc44, label: 'AMMO CRATE', apply(G) { G.weapons.forEach(w => { if (w.cat !== 'melee') { w.curMag = w.mag; w.totalAmmo = w.mag * 3; } }); G.updateHUD(); } },
+            { id: 'speed', icon: 'âš¡', color: 0x44ffff, label: 'SPEED BOOST', apply(G) { G._speedBoost = 8; } },
+            { id: 'damage', icon: 'ðŸ”¥', color: 0xff8800, label: 'DAMAGE BOOST', apply(G) { G._dmgBoost = 8; } },
+            { id: 'shield', icon: 'ðŸ›¡', color: 0x4488ff, label: 'SHIELD', apply(G) { G.playerHp = Math.min(G.playerMaxHp + 50, G.playerHp + 50); G.playerMaxHp = Math.max(G.playerMaxHp, G.playerHp); G.updateHUD(); } },
         ];
 
         // ============================================================
@@ -1194,7 +1194,7 @@
         // ============================================================
         const MDEFS = [
             {
-                id: 'arena', name: 'Combat Arena', icon: '🏟️', size: 'SMALL',
+                id: 'arena', name: 'Combat Arena', icon: 'ðŸŸï¸', size: 'SMALL',
                 floor: 0x1a1a2a, wall: 0x2a2244, accent: 0xff3366,
                 ambient: 0x221133, fog: [0x1a1a2a, .04],
                 botCount: 3,
@@ -1212,7 +1212,7 @@
                 playerSpawn: { x: 0, z: 11 },
             },
             {
-                id: 'warehouse', name: 'Warehouse', icon: '🏭', size: 'MEDIUM',
+                id: 'warehouse', name: 'Warehouse', icon: 'ðŸ­', size: 'MEDIUM',
                 floor: 0x1a1610, wall: 0x2a2014, accent: 0xff8800,
                 ambient: 0x221a10, fog: [0x1a1610, .025],
                 obstacles: [
@@ -1231,7 +1231,7 @@
                 playerSpawn: { x: 0, z: 0 },
             },
             {
-                id: 'rooftop', name: 'Rooftop', icon: '🏙️', size: 'MEDIUM',
+                id: 'rooftop', name: 'Rooftop', icon: 'ðŸ™ï¸', size: 'MEDIUM',
                 floor: 0x181820, wall: 0x222233, accent: 0x00ccff,
                 ambient: 0x101020, fog: [0x101522, .02],
                 obstacles: [
@@ -1251,7 +1251,7 @@
                 playerSpawn: { x: 0, z: 0 },
             },
             {
-                id: 'desert', name: 'Desert Ruins', icon: '🏜️', size: 'LARGE',
+                id: 'desert', name: 'Desert Ruins', icon: 'ðŸœï¸', size: 'LARGE',
                 floor: 0x3a2a10, wall: 0x4a3820, accent: 0xffaa00,
                 ambient: 0x302010, fog: [0x4a3820, .015],
                 obstacles: [
@@ -1271,7 +1271,7 @@
                 playerSpawn: { x: 0, z: 12 },
             },
             {
-                id: 'neon', name: 'Neon City', icon: '🌆', size: 'LARGE',
+                id: 'neon', name: 'Neon City', icon: 'ðŸŒ†', size: 'LARGE',
                 floor: 0x050510, wall: 0x0a0a20, accent: 0xff00ff,
                 ambient: 0x050515, fog: [0x050510, .018],
                 obstacles: [
@@ -1285,7 +1285,7 @@
                 playerSpawn: { x: 0, z: 0 },
             },
             {
-                id: 'bunker', name: 'Bunker', icon: '🏗️', size: 'SMALL',
+                id: 'bunker', name: 'Bunker', icon: 'ðŸ—ï¸', size: 'SMALL',
                 floor: 0x141410, wall: 0x1e1e16, accent: 0x88ff44,
                 ambient: 0x101008, fog: [0x141410, .07],
                 botCount: 3,
@@ -1307,7 +1307,7 @@
                 playerSpawn: { x: 0, z: 10 },
             },
             {
-                id: 'ice', name: 'Ice Field', icon: '❄️', size: 'LARGE',
+                id: 'ice', name: 'Ice Field', icon: 'â„ï¸', size: 'LARGE',
                 floor: 0x99bbdd, wall: 0xaaccee, accent: 0x00ffff,
                 ambient: 0x7799aa, fog: [0xaabbcc, .010],
                 botCount: 4,
@@ -1330,7 +1330,7 @@
                 playerSpawn: { x: 0, z: 14 },
             },
             {
-                id: 'temple', name: 'Ancient Temple', icon: '🏛️', size: 'LARGE',
+                id: 'temple', name: 'Ancient Temple', icon: 'ðŸ›ï¸', size: 'LARGE',
                 floor: 0x2a1e0a, wall: 0x3a2810, accent: 0xffcc44,
                 ambient: 0x1e1408, fog: [0x2a1a08, .014],
                 botCount: 4,
@@ -1354,7 +1354,7 @@
                 playerSpawn: { x: 5, z: -12 },
             },
             {
-                id: 'space', name: 'Space Station', icon: '🚀', size: 'MEDIUM',
+                id: 'space', name: 'Space Station', icon: 'ðŸš€', size: 'MEDIUM',
                 floor: 0x080818, wall: 0x101028, accent: 0x0088ff,
                 ambient: 0x040412, fog: [0x060616, .025],
                 botCount: 4,
@@ -1644,7 +1644,7 @@
                 }
             } else if (wdef.cat === 'rifle') {
                 if (wdef.id === 'p90' || wdef.id === 'vector') {
-                    // Bullpup SMG — compact, futuristic
+                    // Bullpup SMG â€” compact, futuristic
                     const body = new THREE.Mesh(new THREE.BoxGeometry(.06, .1, .38), mat);
                     const barrel = new THREE.Mesh(new THREE.BoxGeometry(.035, .035, .22), matDark);
                     barrel.position.set(0, .03, .3);
@@ -1862,7 +1862,7 @@
                 }
             } else { // special
                 if (wdef.id === 'rocket' || wdef.id === 'grenade_l') {
-                    // Rocket / grenade launcher — wide tube
+                    // Rocket / grenade launcher â€” wide tube
                     const tube = new THREE.Mesh(new THREE.CylinderGeometry(.055, .055, .7, 10), mat);
                     tube.rotation.x = Math.PI / 2;
                     const grip = new THREE.Mesh(new THREE.BoxGeometry(.05, .14, .08), matDark);
@@ -1871,7 +1871,7 @@
                     fin1.position.set(0, -.07, .2);
                     g.add(tube, grip, fin1);
                 } else if (wdef.id === 'flamethrower') {
-                    // Flamethrower — wide nozzle
+                    // Flamethrower â€” wide nozzle
                     const body = new THREE.Mesh(new THREE.BoxGeometry(.1, .1, .55), mat);
                     const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(.06, .03, .25, 8), new THREE.MeshLambertMaterial({ color: 0xcc4400 }));
                     nozzle.rotation.x = Math.PI / 2; nozzle.position.set(0, .02, .4);
@@ -1879,7 +1879,7 @@
                     tank.position.set(0, -.08, -.1);
                     g.add(body, nozzle, tank);
                 } else if (wdef.id === 'charge_rifle') {
-                    // Charge rifle — sleek with glowing coil
+                    // Charge rifle â€” sleek with glowing coil
                     const body = new THREE.Mesh(new THREE.BoxGeometry(.07, .09, .6), mat);
                     const barrel = new THREE.Mesh(new THREE.CylinderGeometry(.02, .02, .4, 8), new THREE.MeshLambertMaterial({ color: 0x002244 }));
                     barrel.rotation.x = Math.PI / 2; barrel.position.set(0, .03, .5);
@@ -1887,7 +1887,7 @@
                     coil.rotation.y = Math.PI / 2; coil.position.set(0, .02, .1);
                     g.add(body, barrel, coil);
                 } else if (wdef.id === 'laser_beam') {
-                    // Laser — thin sleek body
+                    // Laser â€” thin sleek body
                     const body = new THREE.Mesh(new THREE.BoxGeometry(.06, .08, .5), mat);
                     const emitter = new THREE.Mesh(new THREE.CylinderGeometry(.018, .03, .2, 8), new THREE.MeshLambertMaterial({ color: 0xff0044, emissive: new THREE.Color(0xff0044), emissiveIntensity: .8 }));
                     emitter.rotation.x = Math.PI / 2; emitter.position.set(0, .02, .38);
@@ -3024,7 +3024,7 @@
                     const c = document.createElement('div');
                     c.className = 'dcard' + (k === this.selDiff ? ' sel' : '');
                     c.style.borderColor = k === this.selDiff ? dColors[k] : 'rgba(255,255,255,.1)';
-                    c.innerHTML = `<div class="dcard-name" style="color:${dColors[k]}">${v.label}</div><div class="dcard-desc">×${v.reward} coins</div>`;
+                    c.innerHTML = `<div class="dcard-name" style="color:${dColors[k]}">${v.label}</div><div class="dcard-desc">Ã—${v.reward} coins</div>`;
                     c.onclick = () => { this.selDiff = k; this.buildPreplayUI(); };
                     dr.appendChild(c);
                 });
@@ -3046,7 +3046,7 @@
                     const sel = ch.id === this.selChar;
                     const c = document.createElement('div');
                     c.className = 'ccard' + (sel ? ' sel' : '');
-                    c.innerHTML = `<div class="ccard-icon">${ch.icon}</div><div class="ccard-name">${ch.name}</div><div class="ccard-desc">${ch.desc}</div><div class="ccard-price">${owned ? (sel ? '✓ SELECTED' : 'OWNED') : '💰 ' + ch.price}</div>`;
+                    c.innerHTML = `<div class="ccard-icon">${ch.icon}</div><div class="ccard-name">${ch.name}</div><div class="ccard-desc">${ch.desc}</div><div class="ccard-price">${owned ? (sel ? 'âœ“ SELECTED' : 'OWNED') : 'ðŸ’° ' + ch.price}</div>`;
                     c.onclick = () => {
                         if (!owned) {
                             if (save.coins >= ch.price) { save.coins -= ch.price; if (!save.ownedChars) save.ownedChars = ['soldier']; save.ownedChars.push(ch.id); writeSave(); this.selChar = ch.id; this.buildPreplayUI(); this.showNotif('Unlocked: ' + ch.name); }
@@ -3090,7 +3090,7 @@
                             <div class="stat-bar"><div class="stat-fill" style="width:${Math.round(ch.speed * 70)}%"></div></div>
                             <div class="wcard-stat">DMG MULT <b>${Math.round(ch.dmgMult * 100)}%</b></div>
                             <div class="wcard-stat" style="color:#888;font-size:9px;margin-top:4px">${ch.desc}</div>
-                            <div class="wcard-price ${ch.price === 0 ? 'free' : ''}">${ch.price === 0 ? 'FREE' : '💰 ' + ch.price}</div>
+                            <div class="wcard-price ${ch.price === 0 ? 'free' : ''}">${ch.price === 0 ? 'FREE' : 'ðŸ’° ' + ch.price}</div>
                             <div class="wcard-tag" style="color:${isSel ? '#ff9944' : owned ? '#66ff66' : '#888'}">${isSel ? 'SELECTED' : owned ? 'OWNED' : 'BUY'}</div>
                         `;
                         if (!owned) {
@@ -3133,7 +3133,7 @@
         <div class="wcard-stat">RPM <b>${w.rpm}</b></div>
         <div class="stat-bar"><div class="stat-fill" style="width:${Math.round(Math.min(100, w.rpm / 15))}%"></div></div>
         <div class="wcard-stat">RANGE <b>${w.range}m</b></div>
-        <div class="wcard-price ${w.price === 0 ? 'free' : ''}">${w.price === 0 ? 'FREE' : '💰 ' + w.price}</div>
+        <div class="wcard-price ${w.price === 0 ? 'free' : ''}">${w.price === 0 ? 'FREE' : 'ðŸ’° ' + w.price}</div>
         <div class="wcard-tag" style="color:${equipped ? '#ff9944' : owned ? '#66ff66' : '#888'}">${equipped ? 'EQUIPPED' : owned ? 'OWNED' : 'BUY'}</div>
       `;
                     if (!owned) {
@@ -3155,8 +3155,8 @@
                 slots.forEach(slot => {
                     const cur = save.loadout[slot.key];
                     const wdef = cur ? WDEFS.find(w => w.id === cur) : null;
-                    document.getElementById(slot.nameEl).textContent = wdef ? wdef.name : '—';
-                    document.getElementById(slot.statsEl).innerHTML = wdef ? `DMG ${wdef.dmg} · RPM ${wdef.rpm} · MAG ${wdef.mag === Infinity ? '∞' : wdef.mag}` : '';
+                    document.getElementById(slot.nameEl).textContent = wdef ? wdef.name : 'â€”';
+                    document.getElementById(slot.statsEl).innerHTML = wdef ? `DMG ${wdef.dmg} Â· RPM ${wdef.rpm} Â· MAG ${wdef.mag === Infinity ? 'âˆž' : wdef.mag}` : '';
                     const list = document.getElementById(slot.listEl);
                     list.innerHTML = '';
                     WDEFS.filter(slot.filter).forEach(w => {
@@ -3164,7 +3164,7 @@
                         const sel = cur === w.id;
                         const el = document.createElement('div');
                         el.className = 'lo-item' + (sel ? ' sel' : !owned ? ' lock' : '');
-                        el.textContent = w.name + (owned ? '' : ' 🔒');
+                        el.textContent = w.name + (owned ? '' : ' ðŸ”’');
                         if (owned) el.onclick = () => { save.loadout[slot.key] = w.id; writeSave(); this.buildLoadoutUI(); };
                         list.appendChild(el);
                     });
@@ -3470,6 +3470,8 @@
                 dir.applyQuaternion(camera.quaternion);
 
                 const ray = new THREE.Raycaster(camera.position.clone(), dir, 0, w.range || 200);
+                const wallHits = ray.intersectObjects(mapObstacleMeshes);
+                const wallDist = wallHits.length > 0 ? wallHits[0].distance : Infinity;
                 let hitBot = null, hitDist = Infinity;
                 this.bots.forEach(bot => {
                     if (!bot.alive) return;
@@ -3479,7 +3481,7 @@
                     if (proj < 0) return;
                     const closest = new THREE.Vector3().copy(camera.position).addScaledVector(dir, proj);
                     const dist = closest.distanceTo(new THREE.Vector3(bot.group.position.x, BOT_HEIGHT / 2 + bot.group.position.y, bot.group.position.z));
-                    if (dist < BOT_RADIUS * 2 && proj < hitDist) { hitDist = proj; hitBot = bot; }
+                    if (dist < BOT_RADIUS * 2 && proj < hitDist && proj < wallDist) { hitDist = proj; hitBot = bot; }
                 });
 
                 // Tracer color based on weapon type
@@ -3550,7 +3552,7 @@
                     this._killStreak = (this._killStreak || 0) + 1;
                     save.kills++;
                     playKill();
-                    const streakMsgs = { 3: '🔥 TRIPLE KILL!', 5: '⚡ KILLING SPREE!', 7: '☠️ RAMPAGE!', 10: '💀 UNSTOPPABLE!' };
+                    const streakMsgs = { 3: 'ðŸ”¥ TRIPLE KILL!', 5: 'âš¡ KILLING SPREE!', 7: 'â˜ ï¸ RAMPAGE!', 10: 'ðŸ’€ UNSTOPPABLE!' };
                     if (streakMsgs[this._killStreak]) this.showNotif(streakMsgs[this._killStreak], 2500);
                     this.addKillFeed('ELIMINATED');
                     const ki = document.getElementById('kill-ind');
@@ -3616,8 +3618,8 @@
             // ---- MOVEMENT ----
             updatePlayer(dt) {
                 // Boost timers
-                if (this._speedBoost > 0) { this._speedBoost -= dt; if (this._speedBoost <= 0) { this._speedBoost = 0; document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = '⚡ SPEED ' + Math.ceil(this._speedBoost) + 's'; } }
-                if (this._dmgBoost > 0) { this._dmgBoost -= dt; if (this._dmgBoost <= 0) { this._dmgBoost = 0; if (this._speedBoost <= 0) document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = '🔥 DAMAGE ' + Math.ceil(this._dmgBoost) + 's'; } }
+                if (this._speedBoost > 0) { this._speedBoost -= dt; if (this._speedBoost <= 0) { this._speedBoost = 0; document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = 'âš¡ SPEED ' + Math.ceil(this._speedBoost) + 's'; } }
+                if (this._dmgBoost > 0) { this._dmgBoost -= dt; if (this._dmgBoost <= 0) { this._dmgBoost = 0; if (this._speedBoost <= 0) document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = 'ðŸ”¥ DAMAGE ' + Math.ceil(this._dmgBoost) + 's'; } }
                 // Timed mode countdown
                 if (this.selMode === 'timed') {
                     this.matchTimer -= dt;
@@ -3844,8 +3846,8 @@
                 document.getElementById('hp-val').textContent = this.playerHp;
                 const w = this.weapons[this.wepIndex];
                 if (w) {
-                    document.getElementById('ammo-c').textContent = w.cat === 'melee' ? '∞' : (w.curMag || 0);
-                    document.getElementById('ammo-m').textContent = w.cat === 'melee' ? '' : `/ ${w.totalAmmo === Infinity ? '∞' : w.totalAmmo}`;
+                    document.getElementById('ammo-c').textContent = w.cat === 'melee' ? 'âˆž' : (w.curMag || 0);
+                    document.getElementById('ammo-m').textContent = w.cat === 'melee' ? '' : `/ ${w.totalAmmo === Infinity ? 'âˆž' : w.totalAmmo}`;
                     document.getElementById('wep-name').textContent = w.name.toUpperCase();
                 }
                 document.getElementById('hud-coins').textContent = save.coins;
@@ -3858,7 +3860,7 @@
                 // Rage indicator overrides boost display
                 if (this._charRage && this.playerHp < this.playerMaxHp * 0.3) {
                     document.getElementById('boost-d').style.color = '#ff4444';
-                    document.getElementById('boost-d').textContent = '😤 RAGE ACTIVE!';
+                    document.getElementById('boost-d').textContent = 'ðŸ˜¤ RAGE ACTIVE!';
                 } else if (this._speedBoost <= 0 && this._dmgBoost <= 0) {
                     document.getElementById('boost-d').textContent = '';
                 }
