@@ -90,6 +90,311 @@ function updatePlayer(dt) {
 function lerpA(a, b, t) { return a + (b - a) * t; }
 function sineEase(t) { return 0.5 - 0.5 * Math.cos(t * Math.PI); }
 
+/** Per-technique, per-move-index poses inspired by JJK anime/manga key frames. */
+function applyTechniqueAttackPose(g, sw, t, tid, midx, head, torso, hips, lAP, rAP, lEP, rEP, lLP, rLP, lKP, rKP) {
+  const H = (h, x, y, z) => { if (h) { h.rotation.x = x; h.rotation.y = y; h.rotation.z = z; } };
+
+  if (tid === 'limitless') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.5; rAP.rotation.z = -sw * 0.45; rAP.rotation.y = -sw * 0.15; }
+      if (rEP) rEP.rotation.x = -sw * 0.25;
+      if (lAP) { lAP.rotation.x = sw * 0.15; lAP.rotation.z = sw * 0.35; }
+      torso.rotation.x = -sw * 0.12; H(head, -sw * 0.08, 0, 0);
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 1.85; rAP.rotation.z = -sw * 0.08; rAP.rotation.y = -sw * 0.12; }
+      if (lAP) { lAP.rotation.x = -sw * 1.55; lAP.rotation.z = sw * 0.35; }
+      torso.rotation.x = sw * 0.12; torso.rotation.y = -sw * 0.22; H(head, sw * 0.05, sw * 0.1, 0);
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.55; rAP.rotation.z = sw * 0.25; rAP.rotation.y = sw * 0.55; }
+      if (lAP) { lAP.rotation.x = -sw * 1.55; lAP.rotation.z = -sw * 0.25; lAP.rotation.y = -sw * 0.55; }
+      if (rEP) rEP.rotation.x = -sw * 0.35; if (lEP) lEP.rotation.x = -sw * 0.35;
+      torso.rotation.x = -sw * 0.22; H(head, -sw * 0.12, 0, 0);
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 1.35; rAP.rotation.z = sw * 0.85; rAP.rotation.y = sw * 1.05; }
+      if (lAP) { lAP.rotation.x = -sw * 1.35; lAP.rotation.z = -sw * 0.85; lAP.rotation.y = -sw * 1.05; }
+      if (rEP) rEP.rotation.x = -sw * 1.45; if (lEP) lEP.rotation.x = -sw * 1.45;
+      torso.rotation.x = sw * 0.08;
+    }
+  } else if (tid === 'tenShadows') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.15; rAP.rotation.z = sw * 0.75; rAP.rotation.y = sw * 0.5; }
+      if (lAP) { lAP.rotation.x = -sw * 1.15; lAP.rotation.z = -sw * 0.75; lAP.rotation.y = -sw * 0.5; }
+      if (rEP) rEP.rotation.x = -sw * 1.45; if (lEP) lEP.rotation.x = -sw * 1.45;
+      torso.rotation.x = sw * 0.28; H(head, sw * 0.1, 0, 0);
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 2.4; rAP.rotation.z = -sw * 0.2; rAP.rotation.y = sw * 0.15; }
+      if (lAP) { lAP.rotation.x = sw * 0.35; lAP.rotation.z = sw * 0.2; }
+      if (rEP) rEP.rotation.x = -sw * 0.2;
+      torso.rotation.y = -sw * 0.35; H(head, -sw * 0.35, sw * 0.2, 0);
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 0.55; rAP.rotation.z = -sw * 1.15; }
+      if (lAP) { lAP.rotation.x = -sw * 0.55; lAP.rotation.z = sw * 1.15; }
+      torso.rotation.x = -sw * 0.35; H(head, -sw * 0.25, 0, 0);
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 0.45; rAP.rotation.z = -sw * 1.25; }
+      if (lAP) { lAP.rotation.x = -sw * 0.45; lAP.rotation.z = sw * 1.25; }
+      torso.rotation.x = -sw * 0.42; H(head, -sw * 0.32, 0, 0);
+    }
+  } else if (tid === 'strawDoll') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.65; rAP.rotation.z = -sw * 0.35; rAP.rotation.y = sw * 0.55; }
+      if (lAP) { lAP.rotation.x = -sw * 1.35; lAP.rotation.z = sw * 0.5; }
+      if (rEP) rEP.rotation.x = -sw * 0.5;
+      torso.rotation.y = sw * 0.4; H(head, 0, sw * 0.15, 0);
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 2.1; rAP.rotation.z = sw * 0.15; rAP.rotation.y = -sw * 0.2; }
+      if (lAP) { lAP.rotation.x = sw * 0.5; lAP.rotation.z = sw * 0.35; }
+      torso.rotation.x = -sw * 0.25; H(head, -sw * 0.35, 0, 0);
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.2; rAP.rotation.z = sw * 0.9; }
+      if (lAP) { lAP.rotation.x = -sw * 1.2; lAP.rotation.z = -sw * 0.9; }
+      torso.rotation.x = sw * 0.45; if (hips) hips.position.y = 1.05 + sw * 0.05;
+      H(head, sw * 0.2, 0, 0);
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 1.4; rAP.rotation.z = -sw * 1.1; }
+      if (lAP) { lAP.rotation.x = -sw * 1.4; lAP.rotation.z = sw * 1.1; }
+      torso.rotation.x = -sw * 0.3;
+    }
+  } else if (tid === 'bloodManip') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.35; rAP.rotation.z = -sw * 0.65; }
+      if (lAP) { lAP.rotation.x = sw * 0.55; lAP.rotation.z = sw * 0.45; }
+      torso.rotation.y = -sw * 0.35;
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 1.57; rAP.rotation.z = sw * 0.42; rAP.rotation.y = sw * 0.32; }
+      if (lAP) { lAP.rotation.x = -sw * 1.57; lAP.rotation.z = -sw * 0.42; lAP.rotation.y = -sw * 0.32; }
+      torso.rotation.x = sw * 0.22; if (hips) hips.position.y = 1.1 - sw * 0.1;
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.1; rAP.rotation.z = -sw * 1.0; }
+      if (lAP) { lAP.rotation.x = -sw * 1.1; lAP.rotation.z = sw * 1.0; }
+      torso.rotation.x = -sw * 0.15; H(head, sw * 0.12, 0, 0);
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 1.2; rAP.rotation.z = -sw * 0.85; }
+      if (lAP) { lAP.rotation.x = -sw * 1.2; lAP.rotation.z = sw * 0.85; }
+      torso.rotation.y = -sw * 0.4;
+    }
+  } else if (tid === 'disasterFlames') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 0.9; rAP.rotation.z = sw * 0.25; rAP.rotation.y = sw * 0.35; }
+      if (lAP) { lAP.rotation.x = sw * 0.55; }
+      torso.rotation.y = sw * 0.2;
+    } else if (midx === 1) {
+      if (lAP) { lAP.rotation.x = -sw * 1.57; lAP.rotation.z = sw * 0.22; }
+      if (rAP) { rAP.rotation.x = -sw * 1.57; rAP.rotation.z = -sw * 0.82; if (rEP) rEP.rotation.x = -sw * 1.55; }
+      torso.rotation.y = sw * 0.48; H(head, 0, -sw * 0.45, 0);
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 2.95; rAP.rotation.z = -sw * 0.32; }
+      if (lAP) { lAP.rotation.x = -sw * 2.95; lAP.rotation.z = sw * 0.32; }
+      torso.rotation.x = -sw * 0.42; H(head, -sw * 0.48, 0, 0);
+    } else {
+      if (rAP) rAP.rotation.x = -sw * 1.35; if (lAP) lAP.rotation.x = sw * 0.45;
+      torso.rotation.x = -sw * 0.25;
+    }
+  } else if (tid === 'boogieWoogie') {
+    const clap = midx <= 2 ? (1 + Math.sin(t * Math.PI * 3)) * 0.5 : 1;
+    if (midx <= 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.55 * clap; rAP.rotation.z = sw * 0.65; rAP.rotation.y = sw * 0.82; }
+      if (lAP) { lAP.rotation.x = -sw * 1.55 * clap; lAP.rotation.z = -sw * 0.65; lAP.rotation.y = -sw * 0.82; }
+      if (rEP) rEP.rotation.x = -sw * 1.05; if (lEP) lEP.rotation.x = -sw * 1.05;
+      torso.rotation.y = Math.sin(t * Math.PI * 6) * sw * 0.12;
+    } else {
+      if (rAP) rAP.rotation.x = -sw * 2; if (lAP) lAP.rotation.x = -sw * 2;
+      torso.rotation.y = Math.sin(t * Math.PI * 4) * 0.5;
+    }
+  } else if (tid === 'ratioTech') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.85; rAP.rotation.z = -sw * 0.55; rAP.rotation.y = -sw * 0.35; }
+      if (lAP) { lAP.rotation.x = sw * 0.65; lAP.rotation.z = sw * 0.4; }
+      torso.rotation.y = -sw * 0.45; H(head, 0, sw * 0.12, 0);
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 1.4; rAP.rotation.z = sw * 0.5; rAP.rotation.y = sw * 0.9; }
+      if (lAP) { lAP.rotation.x = -sw * 1.2; lAP.rotation.z = -sw * 0.55; }
+      torso.rotation.x = sw * 0.18;
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.25; rAP.rotation.z = -sw * 0.35; rAP.rotation.y = sw * 0.75; }
+      if (lAP) { lAP.rotation.x = -sw * 1.25; lAP.rotation.z = sw * 0.35; lAP.rotation.y = -sw * 0.75; }
+      torso.rotation.x = sw * 0.12; torso.rotation.y = sw * 0.22;
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 1.5; rAP.rotation.z = sw * 0.6; }
+      if (lAP) { lAP.rotation.x = -sw * 1.5; lAP.rotation.z = -sw * 0.6; }
+    }
+  } else if (tid === 'idleTransfig') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.75; rAP.rotation.z = -sw * 0.25; }
+      if (lAP) { lAP.rotation.x = sw * 0.45; }
+      torso.rotation.x = sw * 0.22;
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 1.45; rAP.rotation.z = sw * 0.55; rAP.rotation.y = sw * 0.35; }
+      if (lAP) { rAP.rotation.x = -sw * 1.45; lAP.rotation.z = -sw * 0.55; lAP.rotation.y = -sw * 0.35; }
+      torso.rotation.y = sw * 0.25;
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.6; rAP.rotation.z = sw * 0.4; }
+      if (lAP) { lAP.rotation.x = -sw * 1.6; lAP.rotation.z = -sw * 0.4; }
+      torso.rotation.x = sw * 0.35; if (hips) hips.position.y = 1.05 - sw * 0.08;
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 2.85; rAP.rotation.z = sw * 0.48; }
+      if (lAP) { lAP.rotation.x = -sw * 2.85; lAP.rotation.z = -sw * 0.48; }
+      if (rEP) rEP.rotation.x = -sw * 2.35; if (lEP) lEP.rotation.x = -sw * 2.35;
+      torso.rotation.x = sw * 0.55; torso.rotation.z = (Math.sin(t * 17) * 0.5) * sw * 0.25;
+    }
+  } else if (tid === 'divFist') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.9; rAP.rotation.z = -sw * 0.2; }
+      if (lAP) { lAP.rotation.x = sw * 0.55; }
+      torso.rotation.x = sw * 0.18; torso.rotation.y = sw * 0.28;
+    } else if (midx === 1) {
+      const ph = t < 0.45 ? t / 0.45 : (t - 0.45) / 0.55;
+      const w = t < 0.45 ? ph : Math.sin(ph * Math.PI);
+      if (t < 0.45) {
+        if (rAP) { rAP.rotation.x = w * 0.9; rAP.rotation.z = -w * 0.65; }
+        torso.rotation.x = -w * 0.28; torso.rotation.y = -w * 0.55;
+      } else {
+        if (rAP) { rAP.rotation.x = -w * 2.0; rAP.rotation.z = -w * 0.25; }
+        if (rEP) rEP.rotation.x = -w * 0.45;
+        torso.rotation.x = w * 0.32; torso.rotation.y = w * 0.62;
+      }
+      H(head, -sw * 0.08, 0, 0);
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.35; rAP.rotation.z = sw * 0.85; rAP.rotation.y = sw * 0.95; }
+      if (lAP) { lAP.rotation.x = sw * 0.35; lAP.rotation.z = -sw * 0.45; }
+      torso.rotation.y = sw * 0.55; H(head, 0, sw * 0.35, 0);
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 1.6; rAP.rotation.z = -sw * 0.5; }
+      if (lAP) { lAP.rotation.x = -sw * 1.6; lAP.rotation.z = sw * 0.5; }
+    }
+  } else if (tid === 'cursedSpeech') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 2.15; rAP.rotation.z = sw * 0.82; rAP.rotation.y = sw * 1.15; }
+      if (rEP) rEP.rotation.x = -sw * 1.95;
+      if (lAP) lAP.rotation.x = sw * 0.18;
+      torso.rotation.x = sw * 0.18; H(head, sw * 0.12, 0, 0);
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 2.35; rAP.rotation.z = sw * 0.55; rAP.rotation.y = sw * 1.35; }
+      if (lAP) { lAP.rotation.x = -sw * 1.1; lAP.rotation.z = -sw * 0.35; }
+      H(head, sw * 0.08, 0, sw * 0.06);
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 2.4; rAP.rotation.z = sw * 0.45; rAP.rotation.y = sw * 0.5; }
+      if (lAP) { lAP.rotation.x = -sw * 2.2; lAP.rotation.z = -sw * 0.45; lAP.rotation.y = -sw * 0.5; }
+      torso.rotation.x = sw * 0.25; H(head, sw * 0.15, 0, 0);
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 2.5; rAP.rotation.z = sw * 0.9; }
+      if (lAP) { lAP.rotation.x = sw * 0.25; }
+      H(head, sw * 0.2, 0, 0);
+    }
+  } else if (tid === 'thunderclap') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.75; rAP.rotation.z = -sw * 0.18; }
+      if (lAP) { lAP.rotation.x = sw * 0.45; lAP.rotation.z = sw * 0.35; }
+      torso.rotation.x = sw * 0.15;
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 2.05; rAP.rotation.z = -sw * 0.35; }
+      if (lAP) { lAP.rotation.x = sw * 0.75; }
+      if (rEP) rEP.rotation.x = -sw * 0.55;
+      torso.rotation.y = sw * 0.38; H(head, -sw * 0.1, 0, 0);
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.15; rAP.rotation.z = sw * 0.55; }
+      if (lAP) { lAP.rotation.x = -sw * 1.15; lAP.rotation.z = -sw * 0.55; }
+      torso.rotation.x = -sw * 0.12;
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 1.5; rAP.rotation.z = -sw * 0.4; }
+      if (lAP) { lAP.rotation.x = -sw * 1.5; lAP.rotation.z = sw * 0.4; }
+    }
+  } else if (tid === 'iceFormation') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.65; rAP.rotation.z = -sw * 0.12; rAP.rotation.y = -sw * 0.08; }
+      if (lAP) { lAP.rotation.x = sw * 0.4; }
+      torso.rotation.y = -sw * 0.22;
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 1.4; rAP.rotation.z = sw * 0.65; }
+      if (lAP) { lAP.rotation.x = -sw * 1.4; lAP.rotation.z = -sw * 0.65; }
+      torso.rotation.y = Math.sin(t * Math.PI * 8) * sw * 0.35;
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.8; rAP.rotation.z = -sw * 0.25; }
+      if (lAP) { lAP.rotation.x = -sw * 1.8; lAP.rotation.z = sw * 0.25; }
+      torso.rotation.x = sw * 0.28; if (lLP) lLP.rotation.x = -sw * 0.25; if (rLP) rLP.rotation.x = -sw * 0.25;
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 1.5; rAP.rotation.z = -sw * 1.0; }
+      if (lAP) { lAP.rotation.x = -sw * 1.5; lAP.rotation.z = sw * 1.0; }
+    }
+  } else if (tid === 'projSorcery') {
+    const stutter = (Math.floor(t * 12) % 2) * 0.12;
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 2.1 - stutter; rAP.rotation.z = -sw * 0.22; }
+      if (lAP) { lAP.rotation.x = sw * 0.35 + stutter; }
+      torso.rotation.y = sw * 0.42 + stutter;
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 1.75 - stutter * 2; rAP.rotation.z = -sw * 0.15; }
+      if (lAP) { lAP.rotation.x = sw * 0.55 + stutter; }
+      torso.rotation.y = Math.sin(t * Math.PI * 10) * sw * 0.25;
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.25; rAP.rotation.z = sw * 0.45; }
+      if (lAP) { lAP.rotation.x = -sw * 1.25; lAP.rotation.z = -sw * 0.45; }
+      torso.rotation.x = sw * 0.08; H(head, 0, sw * 0.22, 0);
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 1.45; rAP.rotation.z = -sw * 0.55; }
+      if (lAP) { lAP.rotation.x = -sw * 1.45; lAP.rotation.z = sw * 0.55; }
+    }
+  } else if (tid === 'graniteBlast') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.35; rAP.rotation.z = sw * 0.85; rAP.rotation.y = sw * 0.45; }
+      if (lAP) { lAP.rotation.x = sw * 0.55; }
+      torso.rotation.y = sw * 0.3;
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 1.55; rAP.rotation.z = -sw * 0.35; }
+      if (lAP) { lAP.rotation.x = sw * 0.65; lAP.rotation.z = sw * 0.4; }
+      torso.rotation.x = -sw * 0.18;
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 2.35; rAP.rotation.z = sw * 0.12; }
+      if (lAP) { lAP.rotation.x = -sw * 0.85; lAP.rotation.z = -sw * 0.55; }
+      torso.rotation.x = -sw * 0.35; H(head, -sw * 0.25, 0, 0);
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 1.2; rAP.rotation.z = -sw * 1.05; }
+      if (lAP) { lAP.rotation.x = -sw * 1.2; lAP.rotation.z = sw * 1.05; }
+    }
+  } else if (tid === 'rotTech') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.45; rAP.rotation.z = sw * 0.55; rAP.rotation.y = sw * 0.65; }
+      if (lAP) { lAP.rotation.x = sw * 0.35; }
+      H(head, sw * 0.1, 0, sw * 0.08);
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 1.65; rAP.rotation.z = -sw * 0.75; }
+      if (lAP) { lAP.rotation.x = sw * 0.85; lAP.rotation.z = sw * 0.35; }
+      torso.rotation.y = -sw * 0.55;
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.15; rAP.rotation.z = sw * 0.95; }
+      if (lAP) { lAP.rotation.x = -sw * 1.15; lAP.rotation.z = -sw * 0.95; }
+      torso.rotation.x = sw * 0.55; if (hips) hips.position.y = 1.0 + sw * 0.08;
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 1.6; rAP.rotation.z = -sw * 0.5; }
+      if (lAP) { lAP.rotation.x = -sw * 1.6; lAP.rotation.z = sw * 0.5; }
+    }
+  } else if (tid === 'puppet') {
+    if (midx === 0) {
+      if (rAP) { rAP.rotation.x = -sw * 1.7; rAP.rotation.z = -sw * 0.08; }
+      if (lAP) { lAP.rotation.x = -sw * 1.55; lAP.rotation.z = sw * 0.12; }
+      torso.rotation.x = sw * 0.12; torso.rotation.y = sw * 0.08;
+    } else if (midx === 1) {
+      if (rAP) { rAP.rotation.x = -sw * 2.2; rAP.rotation.z = sw * 0.25; }
+      if (lAP) { lAP.rotation.x = sw * 0.45; }
+      if (lLP) lLP.rotation.x = -sw * 0.55; if (rLP) rLP.rotation.x = -sw * 0.85;
+      torso.rotation.x = -sw * 0.35;
+    } else if (midx === 2) {
+      if (rAP) { rAP.rotation.x = -sw * 1.25; rAP.rotation.z = sw * 0.75; rAP.rotation.y = sw * 0.55; }
+      if (lAP) { lAP.rotation.x = -sw * 1.25; lAP.rotation.z = -sw * 0.75; lAP.rotation.y = -sw * 0.55; }
+      torso.rotation.y = sw * 0.45;
+    } else {
+      if (rAP) { rAP.rotation.x = -sw * 1.65; rAP.rotation.z = -sw * 0.35; }
+      if (lAP) { lAP.rotation.x = -sw * 1.65; lAP.rotation.z = sw * 0.35; }
+    }
+  } else {
+    if (rAP) { rAP.rotation.x = -sw * 1.5; rAP.rotation.z = -sw * 0.15; }
+    if (rEP) rEP.rotation.x = 0;
+    if (lAP) { lAP.rotation.x = sw * 0.6; lAP.rotation.z = sw * 0.3; }
+    if (lEP) lEP.rotation.x = -sw * 0.8;
+    torso.rotation.x = sw * 0.15; torso.rotation.y = -sw * 0.2; if (hips) hips.rotation.y = sw * 0.1;
+  }
+}
+
 function animPlayerModel(dt) {
   const g = player.group;
   const hips = g.getObjectByName('hips');
@@ -289,111 +594,7 @@ function animPlayerModel(dt) {
       const sw = Math.sin(t * Math.PI);
       const tid = playerTech ? playerTech.id : '';
       const midx = player.currentMoveIdx || 0;
-
-      if (tid === 'limitless') {
-        if (midx === 0) {
-           // Infinity: Hand raised casually, fingers out
-           if (rAP) { rAP.rotation.x = -sw * 1.5; rAP.rotation.z = -sw * 0.4; } 
-           if (rEP) rEP.rotation.x = -sw * 0.2;
-           if (lAP) lAP.rotation.x = sw * 0.2;
-           torso.rotation.x = -sw * 0.1;
-        } else if (midx === 1) {
-           // Blue: Arm extended forward, palm open (attraction)
-           if (rAP) { rAP.rotation.x = -sw * 1.8; rAP.rotation.z = -sw * 0.1; }
-           if (lAP) lAP.rotation.x = sw * 0.4;
-           torso.rotation.x = sw * 0.15; torso.rotation.y = -sw * 0.2;
-        } else if (midx === 2) {
-           // Red: Pointed fingers (Hollow Purple style windup)
-           if (rAP) { rAP.rotation.x = -sw * 1.6; rAP.rotation.z = sw * 0.2; rAP.rotation.y = sw * 0.5; }
-           if (lAP) { lAP.rotation.x = -sw * 1.6; lAP.rotation.z = -sw * 0.2; lAP.rotation.y = -sw * 0.5; }
-           torso.rotation.x = -sw * 0.2;
-        } else {
-           // Domain: Hands crossed
-           if (rAP) { rAP.rotation.x = -sw * 1.4; rAP.rotation.z = sw * 0.8; rAP.rotation.y = sw * 1.0; }
-           if (lAP) { lAP.rotation.x = -sw * 1.4; lAP.rotation.z = -sw * 0.8; lAP.rotation.y = -sw * 1.0; }
-           if (rEP) rEP.rotation.x = -sw * 1.5; if (lEP) lEP.rotation.x = -sw * 1.5;
-           torso.rotation.x = sw * 0.1;
-        }
-      } else if (tid === 'tenShadows') {
-        // Divine Dog (wolf hand sign)
-        if (midx === 0 || midx === 1) {
-           if (rAP) { rAP.rotation.x = -sw * 1.2; rAP.rotation.z = sw * 0.6; }
-           if (lAP) { lAP.rotation.x = -sw * 1.2; lAP.rotation.z = -sw * 0.6; }
-           if (rEP) rEP.rotation.x = -sw * 1.5; if (lEP) lEP.rotation.x = -sw * 1.5;
-           torso.rotation.x = sw * 0.3; // leaning forward aggressively
-        } else {
-           // Chimera shadow garden - arms wide open
-           if (rAP) { rAP.rotation.x = -sw * 0.5; rAP.rotation.z = -sw * 1.2; }
-           if (lAP) { lAP.rotation.x = -sw * 0.5; lAP.rotation.z = sw * 1.2; }
-           torso.rotation.x = -sw * 0.4; head.rotation.x = -sw * 0.3;
-        }
-      } else if (tid === 'bloodManip') {
-        // Piercing blood: Hands clapped together pointer forward
-        if (midx === 1) {
-           if (rAP) { rAP.rotation.x = -sw * 1.57; rAP.rotation.z = sw * 0.4; rAP.rotation.y = sw * 0.3; }
-           if (lAP) { lAP.rotation.x = -sw * 1.57; lAP.rotation.z = -sw * 0.4; lAP.rotation.y = -sw * 0.3; }
-           torso.rotation.x = sw * 0.2;
-           if (hips) hips.position.y = 1.1 - sw * 0.1; // lower stance
-        } else {
-           // generic sweep
-           if (rAP) { rAP.rotation.x = -sw * 1.2; rAP.rotation.z = -sw * 0.8; }
-           if (lAP) { lAP.rotation.x = -sw * 1.2; lAP.rotation.z = sw * 0.8; }
-           torso.rotation.y = -sw * 0.4;
-        }
-      } else if (tid === 'disasterFlames') {
-         // Flame arrow: drawing a bow
-         if (midx === 1) {
-            if (lAP) { lAP.rotation.x = -sw * 1.57; lAP.rotation.z = sw * 0.2; } // bow arm extended
-            if (rAP) { rAP.rotation.x = -sw * 1.57; rAP.rotation.z = -sw * 0.8; rEP.rotation.x = -sw * 1.5; } // draw string
-            torso.rotation.y = sw * 0.5; head.rotation.y = -sw * 0.5; // looking over shoulder
-         } else if (midx === 2) {
-            // Meteor: hands raised to sky
-            if (rAP) { rAP.rotation.x = -sw * 3.0; rAP.rotation.z = -sw * 0.3; }
-            if (lAP) { lAP.rotation.x = -sw * 3.0; lAP.rotation.z = sw * 0.3; }
-            torso.rotation.x = -sw * 0.4; head.rotation.x = -sw * 0.5;
-         } else {
-            // Ember insects
-            if (rAP) rAP.rotation.x = -sw * 1.4; if (lAP) lAP.rotation.x = sw * 0.4;
-         }
-      } else if (tid === 'boogieWoogie') {
-         // Clap!
-         if (midx <= 2) {
-            if (rAP) { rAP.rotation.x = -sw * 1.5; rAP.rotation.z = sw * 0.6; rAP.rotation.y = sw * 0.8; }
-            if (lAP) { lAP.rotation.x = -sw * 1.5; lAP.rotation.z = -sw * 0.6; lAP.rotation.y = -sw * 0.8; }
-            if (rEP) rEP.rotation.x = -sw * 1.0; if (lEP) lEP.rotation.x = -sw * 1.0;
-         } else {
-            // Domain swap dance
-            if (rAP) rAP.rotation.x = -sw * 2; if (lAP) lAP.rotation.x = -sw * 2;
-            torso.rotation.y = Math.sin(t * Math.PI * 4) * 0.5; // spinning
-         }
-      } else if (tid === 'cursedSpeech') {
-         // Hand near mouth (megaphone)
-         if (rAP) { rAP.rotation.x = -sw * 2.2; rAP.rotation.z = sw * 0.8; rAP.rotation.y = sw * 1.2; }
-         if (rEP) { rEP.rotation.x = -sw * 2.0; }
-         if (lAP) { lAP.rotation.x = sw * 0.2; }
-         torso.rotation.x = sw * 0.2; head.rotation.x = sw * 0.1;
-      } else if (tid === 'idleTransfig') {
-         // Crazy hand poses
-         if (midx === 3) {
-            // Hands grabbing face
-            if (rAP) { rAP.rotation.x = -sw * 3.0; rAP.rotation.z = sw * 0.5; }
-            if (lAP) { lAP.rotation.x = -sw * 3.0; lAP.rotation.z = -sw * 0.5; }
-            if (rEP) { rEP.rotation.x = -sw * 2.5; } if (lEP) { lEP.rotation.x = -sw * 2.5; }
-            torso.rotation.x = sw * 0.6; torso.rotation.z = (Math.random()-0.5) * sw * 0.4;
-         } else {
-            // Hand extending mutating
-            if (rAP) { rAP.rotation.x = -sw * 1.5; rAP.rotation.z = (Math.random()-0.5)*sw; }
-            if (lAP) { lAP.rotation.x = -sw * 1.5; lAP.rotation.z = (Math.random()-0.5)*sw; }
-         }
-      } else {
-         // Generic Technique moves
-         if (rAP) { rAP.rotation.x = -sw * 1.5; rAP.rotation.z = -sw * 0.15; }
-         if (rEP) { rEP.rotation.x = 0; }
-         if (lAP) { lAP.rotation.x = sw * 0.6; lAP.rotation.z = sw * 0.3; }
-         if (lEP) { lEP.rotation.x = -sw * 0.8; }
-         torso.rotation.x = sw * 0.15; torso.rotation.y = -sw * 0.2; hips.rotation.y = sw * 0.1;
-      }
-      
+      applyTechniqueAttackPose(g, sw, t, tid, midx, head, torso, hips, lAP, rAP, lEP, rEP, lLP, rLP, lKP, rKP);
       ['leftKnuckle', 'rightKnuckle'].forEach(n => { const k = g.getObjectByName(n); if (k) k.material.opacity = sw * 0.7; });
 
     } else {
