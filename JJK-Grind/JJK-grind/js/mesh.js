@@ -240,4 +240,6 @@
       torsoRef = torsoBone;
       headRef = headBone;
       hipsRef = hipsBone;
+
+      tryLoadGLTFPlayer();
     }

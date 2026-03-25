@@ -10,6 +10,7 @@
       currentAttackType: 'light', currentComboHit: 0,
       level: 1, xp: 0, xpToNext: 100, damageBonus: 1, inSafeZone: false, name: 'Sorcerer',
       statPoints: 0, stats: { hp: 0, dmg: 0, energy: 0, speed: 0 },
+      useGLTF: false, gltfRoot: null, gltfMixer: null, gltfActionIdle: null, gltfActionRun: null,
     };
     function getXpToNext(lvl) { return Math.floor(100 + lvl * 30); }
     function getLevelTitle(lvl) {

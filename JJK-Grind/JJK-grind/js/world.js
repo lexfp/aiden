@@ -30,6 +30,7 @@
     let sunLight, ambientLight;
 
     function buildWorld() {
+      if (typeof initPbrEnvironment === 'function') initPbrEnvironment(scene, renderer);
       ambientLight = new THREE.AmbientLight(0x111122, 0.6);
       scene.add(ambientLight);
       sunLight = new THREE.DirectionalLight(0x6666ff, 0.7);

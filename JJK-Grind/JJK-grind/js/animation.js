@@ -410,6 +410,33 @@ function animPlayerModel(dt) {
   const rKP = g.getObjectByName('rightLegKnee');
   const aura = g.getObjectByName('aura');
   const auraCore = g.getObjectByName('auraCore');
+
+  if (player.useGLTF && player.gltfMixer) {
+    if (player.hitStaggerTimer > 0) {
+      const stag = player.hitStaggerTimer / 0.3;
+      const recoil = Math.sin(stag * Math.PI) * 0.4;
+      if (player.gltfRoot) player.gltfRoot.rotation.x = -recoil * 0.35;
+      player.gltfMixer.update(dt);
+      return;
+    }
+    if (player.gltfRoot) player.gltfRoot.rotation.x = 0;
+    updateGlTFPlayerAnimations(dt);
+    const energyRatio = player.energy / player.maxEnergy;
+    const techCol = playerTech ? playerTech.hex : 0x8844ff;
+    if (aura) {
+      aura.material.color.setHex(techCol);
+      aura.material.opacity = energyRatio * 0.09 + Math.sin(elapsed * 3) * 0.035;
+      const spd = (keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD']) ? 1 : 0;
+      aura.scale.setScalar(1 + Math.sin(elapsed * 2.2) * 0.12 + spd * 0.08);
+    }
+    if (auraCore) {
+      auraCore.material.color.setHex(techCol);
+      auraCore.material.opacity = (energyRatio > 0.3 ? 0.08 : 0) + Math.sin(elapsed * 5) * 0.04;
+      auraCore.scale.setScalar(0.9 + Math.sin(elapsed * 4) * 0.2);
+    }
+    return;
+  }
+
   if (!hips || !torso) return;
 
   const moving = keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD'];

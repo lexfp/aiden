@@ -228,34 +228,50 @@
     </div>
   </div>
 
-  <!-- Three.js -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <!-- Three.js (module namespace + GLTF / RoomEnvironment — same pattern as official examples) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+    window.THREE = THREE;
+    window.GLTFLoader = GLTFLoader;
+    window.RoomEnvironment = RoomEnvironment;
+  </script>
 
   <!-- Game Scripts (order matters — globals are shared) -->
-  <script src="js/engine.js"></script>
-  <script src="js/avatar.js"></script>
-  <script src="js/techniques.js"></script>
-  <script src="js/roll.js"></script>
-  <script src="js/player.js"></script>
-  <script src="js/save.js"></script>
-  <script src="js/progression.js"></script>
-  <script src="js/world.js"></script>
-  <script src="js/domain.js"></script>
-  <script src="js/mesh.js"></script>
-  <script src="js/input.js"></script>
-  <script src="js/animation.js"></script>
-  <script src="js/combat.js"></script>
-  <script src="js/enemies.js"></script>
-  <script src="js/pvp.js"></script>
-  <script src="js/abilities.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/npcs.js"></script>
-  <script src="js/effects.js"></script>
-  <script src="js/vfx.js"></script>
-  <script src="js/loot.js"></script>
-  <script src="js/waves.js"></script>
-  <script src="js/screens.js"></script>
-  <script src="js/main.js"></script>
+  <script defer src="js/engine.js"></script>
+  <script defer src="js/avatar.js"></script>
+  <script defer src="js/techniques.js"></script>
+  <script defer src="js/roll.js"></script>
+  <script defer src="js/player.js"></script>
+  <script defer src="js/save.js"></script>
+  <script defer src="js/progression.js"></script>
+  <script defer src="js/world.js"></script>
+  <script defer src="js/domain.js"></script>
+  <script defer src="js/gltf-graphics.js"></script>
+  <script defer src="js/mesh.js"></script>
+  <script defer src="js/input.js"></script>
+  <script defer src="js/animation.js"></script>
+  <script defer src="js/combat.js"></script>
+  <script defer src="js/enemies.js"></script>
+  <script defer src="js/pvp.js"></script>
+  <script defer src="js/abilities.js"></script>
+  <script defer src="js/ui.js"></script>
+  <script defer src="js/npcs.js"></script>
+  <script defer src="js/effects.js"></script>
+  <script defer src="js/vfx.js"></script>
+  <script defer src="js/loot.js"></script>
+  <script defer src="js/waves.js"></script>
+  <script defer src="js/screens.js"></script>
+  <script defer src="js/main.js"></script>
 </body>
 
 </html>
