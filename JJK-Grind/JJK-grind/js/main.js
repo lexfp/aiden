@@ -59,6 +59,15 @@
         : `radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,0.55) 100%)`;
 
       floatingRocks.forEach(r => { r.position.y = r.userData.by + Math.sin(elapsed * r.userData.fs + r.userData.fo) * 1.5; r.rotation.y += dt * 0.22; r.rotation.x += dt * 0.08; });
+      if (window.parrotCameos && window.parrotCameos.length) {
+        window.parrotCameos.forEach((o) => {
+          if (o.userData.isParrotCameo) {
+            o.position.y = o.userData.baseY + Math.sin(elapsed * 2.2) * 0.35;
+            o.rotation.y += dt * 0.45;
+          }
+          if (o.userData.mixer) o.userData.mixer.update(dt);
+        });
+      }
       if (dustPts) { const dp = dustPts.geometry.attributes.position; for (let i = 0; i < DUST_CNT; i++) { dp.array[i * 3 + 1] += dt * 0.22; if (dp.array[i * 3 + 1] > 24) dp.array[i * 3 + 1] = 0; } dp.needsUpdate = true; }
       worldLights.forEach(({ light, base, phase }) => { light.intensity = base + Math.sin(elapsed * 1.5 + phase) * 0.6; });
 

@@ -113,6 +113,7 @@
       dustPts = new THREE.Points(dg, new THREE.PointsMaterial({ color: 0x6644aa, size: 0.12, transparent: true, opacity: 0.3 }));
       scene.add(dustPts);
       const DUST_CNT_ACT = 180;
+      if (typeof loadWorldGltfCameos === 'function') loadWorldGltfCameos();
     }
 
     function buildIslandDecor(isl) {
