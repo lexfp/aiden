@@ -1463,49 +1463,19 @@
 
             buildMesh() {
                 this.group = new THREE.Group();
-                this.useGLTF = false;
-                this.gltfMixer = null;
-                this.idleAction = null;
-                this.runAction = null;
-
-                const gltfBot = (typeof HuntersGL !== 'undefined' && HuntersGL.xbot && typeof SkeletonUtils !== 'undefined')
-                    ? HuntersGL.cloneXbotBot(this.color)
+                this.charObj = (typeof HuntersGL !== 'undefined' && HuntersGL.soldier)
+                    ? HuntersGL.cloneSoldier(this.color)
                     : null;
 
-                if (gltfBot) {
-                    this.useGLTF = true;
-                    this.group.add(gltfBot.root);
-                    this.gltfMixer = gltfBot.mixer;
-                    this.idleAction = gltfBot.idleAction;
-                    this.runAction = gltfBot.runAction;
-                    this.bodyMesh = null;
-                    this.headMesh = null;
-                    this.lArm = this.rArm = this.lLeg = this.rLeg = null;
+                if (this.charObj) {
+                    this.group.add(this.charObj.root);
                 } else {
+                    // Fallback to boxy bot
                     const bodyMat = new THREE.MeshLambertMaterial({ color: this.color });
-                    const headMat = new THREE.MeshLambertMaterial({ color: new THREE.Color(this.color).multiplyScalar(1.4) });
                     const body = new THREE.Mesh(new THREE.BoxGeometry(.7, 1.1, .35), bodyMat);
                     body.position.y = .55;
-                    const head = new THREE.Mesh(new THREE.BoxGeometry(.4, .4, .4), headMat);
-                    head.position.y = 1.3;
-                    const armMat = new THREE.MeshLambertMaterial({ color: new THREE.Color(this.color).multiplyScalar(.7) });
-                    const lArm = new THREE.Mesh(new THREE.BoxGeometry(.2, .7, .2), armMat);
-                    lArm.position.set(-.45, .5, 0);
-                    const rArm = new THREE.Mesh(new THREE.BoxGeometry(.2, .7, .2), armMat);
-                    rArm.position.set(.45, .5, 0);
-                    const legMat = new THREE.MeshLambertMaterial({ color: new THREE.Color(this.color).multiplyScalar(.5) });
-                    const lLeg = new THREE.Mesh(new THREE.BoxGeometry(.25, .8, .25), legMat);
-                    lLeg.position.set(-.2, -.4, 0);
-                    const rLeg = new THREE.Mesh(new THREE.BoxGeometry(.25, .8, .25), legMat);
-                    rLeg.position.set(.2, -.4, 0);
-
-                    this.group.add(body, head, lArm, rArm, lLeg, rLeg);
+                    this.group.add(body);
                     this.bodyMesh = body;
-                    this.headMesh = head;
-                    this.lArm = lArm;
-                    this.rArm = rArm;
-                    this.lLeg = lLeg;
-                    this.rLeg = rLeg;
                 }
 
                 this.group.position.copy(this.pos);
@@ -1595,8 +1565,16 @@
 
                     // Obstacle avoidance (slow penalty from status effects)
                     const slowMult = this.statusEffects.slow ? .35 : 1;
-                    const spd = (this.state === 'patrol' ? this.speed * .5 : this.speed) * slowMult;
+                    const spd = (this.state === 'patrol' ? this.speed * .4 : this.speed) * slowMult;
                     const step = spd * dt;
+                    
+                    // Update animation blending
+                    if (this.charObj) {
+                        const maxBaseSpeed = this.diff.speed || 3.0;
+                        const speedRatio = Math.min(1.0, spd / (maxBaseSpeed * 1.2));
+                        HuntersGL.updateBlending(this.charObj, speedRatio);
+                        this.charObj.mixer.update(dt);
+                    }
                     this.steerTimer -= dt;
 
                     let moved = false;
@@ -1678,7 +1656,7 @@
                 }
 
                 this.group.position.copy(this.pos);
-                this.group.position.y += Math.sin(t * 2.5) * .03;
+                if (!this.charObj) this.group.position.y += Math.sin(t * 2.5) * .03;
                 this.group.rotation.y = this.yaw;
                 this.hbSprite.material.rotation = 0;
             }
@@ -1739,6 +1717,10 @@
 
             die() {
                 this.alive = false;
+                // Stop animations
+                if (this.charObj && this.charObj.mixer) {
+                    this.charObj.mixer.stopAllAction();
+                }
                 // Death animation - fall over
                 const tween = (elapsed) => {
                     const t = Math.min(1, elapsed / 400);
@@ -2189,6 +2171,13 @@
                 this.playerVel.set(0, 0, 0);
                 camera.position.copy(this.playerPos);
                 camera.position.y = this.EYE_HEIGHT;
+
+                // Player character model (visible in shadows/reflections or if we add TPS)
+                if (this.playerChar) { scene.remove(this.playerChar.root); this.playerChar = null; }
+                if (typeof HuntersGL !== 'undefined' && HuntersGL.soldier) {
+                    this.playerChar = HuntersGL.cloneSoldier(0x88ccff);
+                    scene.add(this.playerChar.root);
+                }
 
                 // Build weapons array from loadout
                 this.weapons = [];
@@ -2673,6 +2662,19 @@
                 camera.rotation.y = this.playerYaw;
                 camera.rotation.x = this.playerPitch;
                 camera.rotation.z = this._strafeTilt || 0;
+
+                // Update player model
+                if (this.playerChar) {
+                    this.playerChar.root.position.copy(this.playerPos);
+                    this.playerChar.root.rotation.y = this.playerYaw + Math.PI;
+                    const moveSpeed = moveVel.length();
+                    const maxSpeed = speed || 1.0;
+                    const ratio = Math.min(1.0, moveSpeed / maxSpeed);
+                    HuntersGL.updateBlending(this.playerChar, ratio);
+                    this.playerChar.mixer.update(dt);
+                    // Hide if very close to camera to avoid clipping in FPS mode
+                    this.playerChar.root.visible = false; // Keep hidden for now in FPS, but exists for later
+                }
 
                 // Weapon kick
                 if (this._kick > 0) {

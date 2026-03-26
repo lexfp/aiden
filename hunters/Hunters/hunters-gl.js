@@ -1,11 +1,10 @@
 'use strict';
 /**
- * Hunters — GLTF city (LittlestTokyo) + skinned bots (Xbot), offline ./models/ with CDN fallback.
- * Same asset workflow as three.js examples (skinning / keyframes).
+ * Hunters — GLTF city (LittlestTokyo) + skinned Soldier (skinning/blending example), offline ./models/ with CDN fallback.
  */
 (function (global) {
     const GL = {
-        xbot: null,
+        soldier: null,
         city: null,
         cityRoot: null,
         clips: [],
@@ -58,10 +57,11 @@
                     if (pending <= 0) resolve();
                 }
 
+                // Load Soldier model (skinning blending example)
                 self.loadGltf(
-                    ['./models/Xbot.glb', 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/models/gltf/Xbot.glb'],
+                    ['./models/Soldier.glb', 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/models/gltf/Soldier.glb'],
                     function (gltf) {
-                        self.xbot = gltf;
+                        self.soldier = gltf;
                         self.clips = gltf.animations || [];
                         gltf.scene.traverse(function (o) {
                             if (o.isMesh) {
@@ -77,11 +77,12 @@
                         done();
                     },
                     function () {
-                        console.warn('HuntersGL: Xbot preload failed');
+                        console.warn('HuntersGL: Soldier preload failed');
                         done();
                     }
                 );
 
+                // Load LittlestTokyo model (keyframes example)
                 self.loadGltf(
                     ['./models/LittlestTokyo.glb', 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/models/gltf/LittlestTokyo.glb'],
                     function (gltf) {
@@ -104,23 +105,17 @@
             }
         },
 
-        /**
-         * @param {object} mdef — map definition; uses urbanGltf + bounds
-         * @param {THREE.Scene} scene
-         * @param {THREE.Mesh[]} mapCityMeshes — meshes appended for raycasts
-         * @param {THREE.Mesh} [floorMesh] — hidden when city visible
-         */
         applyCityForMap(mdef, scene, mapCityMeshes, floorMesh) {
             this.removeCity(scene);
             if (floorMesh) floorMesh.visible = true;
             if (!mdef || !mdef.urbanGltf || !this.city) return;
 
-            const THREE = global.THREE;
             const root = this.city.scene.clone(true);
             const b = mdef.bounds || 14;
+            // LittlestTokyo is very large, needs aggressive scaling down
             const scale = 0.012 * (b / 14);
             root.scale.setScalar(scale);
-            root.position.set(0, 0, 0);
+            root.position.set(0, 0, 0); 
             root.traverse(function (o) {
                 o.userData.isMap = true;
                 o.userData.isCityGltf = true;
@@ -135,16 +130,13 @@
                     mapCityMeshes.push(o);
                 }
             });
-            root.name = 'LittlestTokyo';
             scene.add(root);
             this.cityRoot = root;
             if (floorMesh) floorMesh.visible = false;
         },
 
         pickClip(keywords) {
-            const low = keywords.map(function (k) {
-                return k.toLowerCase();
-            });
+            const low = keywords.map(k => k.toLowerCase());
             for (let i = 0; i < this.clips.length; i++) {
                 const a = this.clips[i];
                 const n = (a.name || '').toLowerCase();
@@ -155,40 +147,85 @@
             return this.clips[0] || null;
         },
 
-        cloneXbotBot(colorHex) {
+        /**
+         * Clones the Soldier model and sets up the blending mixer.
+         * Based on webgl_animation_skinning_blending.
+         */
+        cloneSoldier(colorHex) {
             const THREE = global.THREE;
             const SU = global.SkeletonUtils;
-            if (!this.xbot || !SU) return null;
-            const clone = SU.clone(this.xbot.scene);
-            clone.scale.setScalar(0.02);
-            const tint = new THREE.Color(colorHex);
-            clone.traverse(function (o) {
-                if (o.isMesh) {
-                    o.castShadow = true;
-                    o.receiveShadow = true;
-                    const mats = Array.isArray(o.material) ? o.material : [o.material];
-                    for (let i = 0; i < mats.length; i++) {
-                        const m = mats[i];
-                        if (m && m.color) m.color = m.color.clone().lerp(tint, 0.22);
+            if (!this.soldier || !SU) return null;
+
+            const clone = SU.clone(this.soldier.scene);
+            clone.scale.setScalar(2.0); // Adjust scale to match hunters world
+            
+            // Tint if needed
+            if (colorHex !== undefined) {
+                const tint = new THREE.Color(colorHex);
+                clone.traverse(function (o) {
+                    if (o.isMesh) {
+                        const mats = Array.isArray(o.material) ? o.material : [o.material];
+                        for (let i = 0; i < mats.length; i++) {
+                            const m = mats[i];
+                            if (m && m.color) m.color = m.color.clone().lerp(tint, 0.15);
+                        }
                     }
+                });
+            }
+
+            const mixer = new THREE.AnimationMixer(clone);
+            const clips = this.soldier.animations;
+            
+            // Expected Soldier clips: 0:Idle, 1:Walk, 2:Run
+            const actions = {
+                idle: mixer.clipAction(clips[0] || this.pickClip(['idle'])),
+                walk: mixer.clipAction(clips[1] || this.pickClip(['walk'])),
+                run: mixer.clipAction(clips[2] || this.pickClip(['run']))
+            };
+
+            // Setup blending weights
+            Object.values(actions).forEach(a => {
+                if (a) {
+                    a.play();
+                    a.enabled = true;
+                    a.setEffectiveTimeScale(1.0);
+                    a.setEffectiveWeight(0);
                 }
             });
-            const mixer = new THREE.AnimationMixer(clone);
-            const idleClip = this.pickClip(['idle', 'neutral']) || this.clips[0];
-            const runClip = this.pickClip(['run', 'jog', 'walk', 'sprint']) || idleClip;
-            let idleAction = null;
-            let runAction = null;
-            if (idleClip) {
-                idleAction = mixer.clipAction(idleClip);
-                idleAction.play();
-            }
-            if (runClip) {
-                runAction = mixer.clipAction(runClip);
-                runAction.play();
-                runAction.weight = 0;
-            }
-            return { root: clone, mixer: mixer, idleAction: idleAction, runAction: runAction };
+            if (actions.idle) actions.idle.setEffectiveWeight(1.0);
+
+            return { root: clone, mixer: mixer, actions: actions };
         },
+
+        // Helper to update weights based on speed (0 to 1)
+        updateBlending(charObj, speedRatio) {
+            const actions = charObj.actions;
+            if (!actions) return;
+
+            // Simplified blending logic from example
+            const idle = actions.idle;
+            const walk = actions.walk;
+            const run = actions.run;
+
+            if (!idle || !walk || !run) return;
+
+            let idleW = 0, walkW = 0, runW = 0;
+            if (speedRatio < 0.1) {
+                idleW = 1;
+            } else if (speedRatio < 0.5) {
+                const alpha = (speedRatio - 0.1) / 0.4;
+                idleW = 1 - alpha;
+                walkW = alpha;
+            } else {
+                const alpha = (speedRatio - 0.5) / 0.5;
+                walkW = 1 - alpha;
+                runW = alpha;
+            }
+
+            idle.setEffectiveWeight(idleW);
+            walk.setEffectiveWeight(walkW);
+            run.setEffectiveWeight(runW);
+        }
     };
 
     global.HuntersGL = GL;
