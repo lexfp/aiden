@@ -458,26 +458,32 @@
         // ============================================================
         // THREE.JS SETUP
         // ============================================================
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-        renderer.setSize(innerWidth, innerHeight);
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.2;
-        document.body.appendChild(renderer.domElement);
-
-        const scene = new THREE.Scene();
-        if (typeof HuntersGL !== 'undefined') HuntersGL.initEnvironment(scene, renderer);
-        const camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, .05, 500);
-        camera.position.set(0, 1.7, 0);
-
-        window.addEventListener('resize', () => {
+        let renderer, scene, camera;
+        function setupThreeJS() {
+            if (renderer || !window.THREE) return;
+            const THREE = window.THREE;
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
             renderer.setSize(innerWidth, innerHeight);
-            camera.aspect = innerWidth / innerHeight;
-            camera.updateProjectionMatrix();
-        });
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            document.body.appendChild(renderer.domElement);
+
+            scene = new THREE.Scene();
+            if (typeof HuntersGL !== 'undefined') HuntersGL.initEnvironment(scene, renderer);
+            camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, .05, 500);
+            camera.position.set(0, 1.7, 0);
+
+            window.addEventListener('resize', () => {
+                renderer.setSize(innerWidth, innerHeight);
+                camera.aspect = innerWidth / innerHeight;
+                camera.updateProjectionMatrix();
+            });
+        }
+
 
         // ============================================================
         // PARTICLE SYSTEM
@@ -1876,7 +1882,7 @@
         // ============================================================
         // GAME STATE
         // ============================================================
-        const G = {
+        window.G = {
             state: 'menu',
             // Match state
             bots: [],
@@ -1937,6 +1943,8 @@
             PLAYER_RADIUS: .3,
 
             init() {
+                console.log('G.init() started');
+                setupThreeJS();
                 this.buildPreplayUI();
                 this.buildShopUI();
                 this.buildLoadoutUI();
@@ -1955,6 +1963,7 @@
             },
 
             showPreplay() {
+                console.log('G.showPreplay() called');
                 this.buildPreplayUI();
                 this.showScreen('s-preplay');
             },
@@ -2954,19 +2963,25 @@
         };
 
         // Init game
-        G._lastShot = 0;
-        G._kick = 0;
-        G._bobT = 0;
-        G._bobAmt = 0;
-        G._swingAnim = 0;
-        G._shopCat = 'all';
-        G._charDmgMult = 1.0;
-        G._charSpeedMult = 1.0;
-        G._charRage = false;
-        G.selChar = save.character || 'soldier';
-        G.selMode = 'elimination';
-        if (typeof HuntersGL !== 'undefined' && HuntersGL.preload) {
-            HuntersGL.preload().then(function () { G.init(); }).catch(function () { G.init(); });
+        window.G._lastShot = 0;
+        window.G._kick = 0;
+        window.G._bobT = 0;
+        window.G._bobAmt = 0;
+        window.G._swingAnim = 0;
+        window.G._shopCat = 'all';
+        window.G._charDmgMult = 1.0;
+        window.G._charSpeedMult = 1.0;
+        window.G._charRage = false;
+        window.G.selChar = save.character || 'soldier';
+        window.G.selMode = 'elimination';
+
+        if (typeof window.HuntersGL !== 'undefined' && window.HuntersGL.preload) {
+            console.log('Starting HuntersGL preload');
+            window.HuntersGL.preload().then(function () { console.log('Preload done'); window.G.init(); }).catch(function (e) { console.warn('Preload failed', e); window.G.init(); });
         } else {
-            G.init();
+            console.log('No HuntersGL, initing G directly');
+            window.G.init();
         }
+        console.log('G is defined on window');
+
+

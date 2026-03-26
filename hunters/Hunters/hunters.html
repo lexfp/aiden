@@ -1091,15 +1091,31 @@
       }
     }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
     <script type="module">
-    import * as THREE from 'three';
-    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-    import { SkeletonUtils } from 'three/addons/utils/SkeletonUtils.js';
-    window.THREE = THREE;
-    window.GLTFLoader = GLTFLoader;
-    window.RoomEnvironment = RoomEnvironment;
-    window.SkeletonUtils = SkeletonUtils;
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+        import { SkeletonUtils } from 'three/addons/utils/SkeletonUtils.js';
+        window.GLTFLoader = GLTFLoader;
+        window.RoomEnvironment = RoomEnvironment;
+        window.SkeletonUtils = SkeletonUtils;
+    </script>
+    <script>
+        // Minimal G fallback for UI responsiveness before full script loads
+        window.G = window.G || {
+            showScreen: function(id) {
+                console.log('UI: showing screen', id);
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                const el = document.getElementById(id);
+                if (el) el.classList.add('active');
+                if (id === 'hud' && !window.THREE) {
+                    alert('Three.js failed to load. 3D gameplay may not work on file:/// URLs, but menus should.');
+                }
+            },
+            showPreplay: function() { this.showScreen('s-preplay'); },
+            startMatch: function() { this.showScreen('hud'); },
+            init: function() { console.log('Minimal G initialized'); }
+        };
     </script>
     <script defer src="hunters-gl.js"></script>
     <script defer src="hunters-game.js"></script>
