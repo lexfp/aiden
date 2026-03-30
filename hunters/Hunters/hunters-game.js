@@ -1470,12 +1470,41 @@
                 if (this.charObj) {
                     this.group.add(this.charObj.root);
                 } else {
-                    // Fallback to boxy bot
+                    // Fallback to boxy bot with full body parts for animation
                     const bodyMat = new THREE.MeshLambertMaterial({ color: this.color });
                     const body = new THREE.Mesh(new THREE.BoxGeometry(.7, 1.1, .35), bodyMat);
                     body.position.y = .55;
                     this.group.add(body);
                     this.bodyMesh = body;
+
+                    const headMat = new THREE.MeshLambertMaterial({ color: 0xffccaa });
+                    const head = new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 8), headMat);
+                    head.position.y = 1.35;
+                    this.group.add(head);
+                    this.headMesh = head;
+
+                    const limbMat = new THREE.MeshLambertMaterial({ color: this.color });
+                    const armGeo = new THREE.BoxGeometry(.18, .6, .18);
+                    const lArm = new THREE.Mesh(armGeo, limbMat);
+                    lArm.position.set(-.5, .7, 0);
+                    this.group.add(lArm);
+                    this.lArm = lArm;
+
+                    const rArm = new THREE.Mesh(armGeo, limbMat);
+                    rArm.position.set(.5, .7, 0);
+                    this.group.add(rArm);
+                    this.rArm = rArm;
+
+                    const legGeo = new THREE.BoxGeometry(.2, .5, .2);
+                    const lLeg = new THREE.Mesh(legGeo, limbMat);
+                    lLeg.position.set(-.18, -.1, 0);
+                    this.group.add(lLeg);
+                    this.lLeg = lLeg;
+
+                    const rLeg = new THREE.Mesh(legGeo, limbMat);
+                    rLeg.position.set(.18, -.1, 0);
+                    this.group.add(rLeg);
+                    this.rLeg = rLeg;
                 }
 
                 this.group.position.copy(this.pos);

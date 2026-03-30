@@ -49,7 +49,11 @@
       updateNPCs(dt);
       if (abilQ.currentCD > 0) abilQ.currentCD -= dt;
       updateParticles(dt); updateSlashTrails(dt); updateHitFlashes(dt); updateDashTrails(dt); spawnEnergyPts();
-      updateBarsUI(); updateCDsUI(); updateEnemyHPBars(); updateTechUI(); updateMinimap(); updateCoinsUI();
+      updateBarsUI(); updateCDsUI();
+      if (!window._uiThrottle) window._uiThrottle = 0;
+      window._uiThrottle++;
+      if (window._uiThrottle % 3 === 0) { updateEnemyHPBars(); updateMinimap(); }
+      updateTechUI(); updateCoinsUI();
 
       // Low HP vignette
       const hp = player.health / player.maxHealth;
@@ -71,8 +75,7 @@
       if (dustPts) { const dp = dustPts.geometry.attributes.position; for (let i = 0; i < DUST_CNT; i++) { dp.array[i * 3 + 1] += dt * 0.22; if (dp.array[i * 3 + 1] > 24) dp.array[i * 3 + 1] = 0; } dp.needsUpdate = true; }
       worldLights.forEach(({ light, base, phase }) => { light.intensity = base + Math.sin(elapsed * 1.5 + phase) * 0.6; });
 
-      // Shrine orb bob
-      scene.traverse(obj => { if (obj.isMesh && obj.userData.isOrb) { obj.position.y = 2.2 + Math.sin(elapsed * 2) * 0.22; obj.material.opacity = 0.6 + Math.sin(elapsed * 3.5) * 0.18; obj.rotation.y += dt * 0.8; } });
+      // Shrine orb bob (removed scene.traverse — orbs tracked directly if added)
       renderer.render(scene, camera);
     }
     buildWorld();

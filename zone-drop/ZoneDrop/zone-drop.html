@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zone Drop — Battle Royale</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #111;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      overflow: hidden;
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    /* ── OVERLAY (LOBBY / DEAD / WIN) ──────────────────────────── */
+    #overlayScreen {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 100;
+      gap: 12px;
+    }
+    #overlayTitle {
+      font-size: 3rem; font-weight: 800;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #9b59b6, #3498db);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    #overlaySubtitle { font-size: 1.1rem; opacity: .7; }
+    #overlayStats { display: flex; gap: 20px; margin-top: 6px; }
+    .stat-row { font-size: 1rem; opacity: .8; }
+    #overlayBtn {
+      margin-top: 18px; padding: 14px 48px;
+      font-size: 1.1rem; font-weight: 700;
+      border: none; border-radius: 6px; cursor: pointer;
+      background: linear-gradient(135deg, #9b59b6, #3498db);
+      color: #fff; text-transform: uppercase;
+      transition: transform .15s, box-shadow .15s;
+    }
+    #overlayBtn:hover { transform: scale(1.05); box-shadow: 0 0 20px #9b59b688; }
+
+    /* ── HUD ───────────────────────────────────────────────────── */
+    #hud {
+      display: none;
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 50;
+    }
+
+    /* Crosshair */
+    #crosshair {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px; height: 24px;
+    }
+    #crosshair::before, #crosshair::after {
+      content: ''; position: absolute; background: rgba(255,255,255,.85);
+    }
+    #crosshair::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
+    #crosshair::after  { width: 100%; height: 2px; top: 50%; transform: translateY(-50%); }
+
+    /* Health / Shield bars (bottom-left) */
+    #healthPanel {
+      position: absolute; bottom: 20px; left: 20px;
+      width: 220px;
+    }
+    .bar-wrap {
+      height: 12px; background: #222; border-radius: 3px;
+      margin-bottom: 4px; overflow: hidden; position: relative;
+    }
+    .bar-wrap span {
+      position: absolute; right: 6px; top: -1px;
+      font-size: 10px; line-height: 12px; z-index: 1;
+    }
+    #hpBar { height: 100%; background: #27ae60; transition: width .2s; }
+    #shieldBar { height: 100%; background: #3498db; transition: width .2s; }
+
+    /* Resource counters */
+    #resourcePanel {
+      position: absolute; bottom: 56px; left: 20px;
+      display: flex; gap: 14px; font-size: .75rem; opacity: .8;
+    }
+    .res-item span:first-child { margin-right: 3px; }
+
+    /* Weapon slots (bottom-centre) */
+    #slotsPanel {
+      position: absolute; bottom: 18px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 6px;
+    }
+    .weapon-slot {
+      width: 68px; height: 56px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-size: .6rem; text-align: center;
+      transition: border-color .15s, background .15s;
+    }
+    .weapon-slot.active {
+      border-color: #9b59b6; background: rgba(155,89,182,0.18);
+    }
+    .slot-icon {
+      width: 28px; height: 6px; border-radius: 2px;
+      margin-bottom: 3px;
+    }
+    .slot-name { opacity: .75; }
+    .slot-ammo { font-size: .55rem; opacity: .5; }
+
+    /* Ammo (bottom-right) */
+    #ammoPanel {
+      position: absolute; bottom: 20px; right: 20px;
+      text-align: right;
+    }
+    #ammoMain { font-size: 1.6rem; font-weight: 700; }
+    #ammoReserve { font-size: .8rem; opacity: .5; }
+    #reloadText {
+      display: none; font-size: .85rem;
+      color: #e67e22; animation: pulse .8s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* Storm info (top-centre) */
+    #stormInfo {
+      position: absolute; top: 14px; left: 50%;
+      transform: translateX(-50%);
+      text-align: center; font-size: .75rem;
+      color: #9b59b6;
+    }
+    #stormTimer { font-size: 1.4rem; font-weight: 700; }
+
+    /* Player count (top-right) */
+    #alivePanel {
+      position: absolute; top: 14px; right: 20px;
+      font-size: .85rem; opacity: .8;
+    }
+
+    /* Minimap (top-left) */
+    #minimapWrap {
+      position: absolute; top: 14px; left: 14px;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px; overflow: hidden;
+    }
+
+    /* Build mode hint */
+    #buildMode {
+      display: none; position: absolute; top: 50%; left: 14px;
+      transform: translateY(-50%);
+      font-size: .8rem; color: #3498db;
+    }
+    #buildPieceHint {
+      display: none; position: absolute; top: calc(50% + 20px); left: 14px;
+      font-size: .65rem; opacity: .6;
+    }
+
+    /* Interact prompt */
+    #interactPrompt {
+      display: none;
+      position: absolute; top: 60%; left: 50%;
+      transform: translateX(-50%);
+      font-size: .9rem; color: #f0c050;
+      text-shadow: 0 0 6px #000;
+    }
+
+    /* Kill feed (top-right, below alive count) */
+    #killFeed {
+      position: absolute; top: 44px; right: 20px;
+      text-align: right;
+    }
+    .kill-entry {
+      font-size: .75rem; opacity: .9;
+      margin-bottom: 3px; color: #e74c3c;
+    }
+
+    /* Hit flash overlay */
+    #hitFlash {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 60;
+      transition: background .12s;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- OVERLAY (Lobby / End) -->
+  <div id="overlayScreen">
+    <div id="overlayTitle">ZONE DROP</div>
+    <div id="overlaySubtitle">Drop in. Loot. Survive.</div>
+    <div id="overlayStats"></div>
+    <button id="overlayBtn" onclick="window.onOverlayBtn && window.onOverlayBtn()">DEPLOY</button>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div id="crosshair"></div>
+
+    <!-- Health -->
+    <div id="healthPanel">
+      <div class="bar-wrap"><div id="shieldBar" style="width:0%"></div><span id="shieldText">0</span></div>
+      <div class="bar-wrap"><div id="hpBar" style="width:100%"></div><span id="hpText">100</span></div>
+    </div>
+
+    <!-- Resources -->
+    <div id="resourcePanel">
+      <div class="res-item"><span style="color:#d2a679">Wood</span> <span id="resWood">100</span></div>
+      <div class="res-item"><span style="color:#aaa">Stone</span> <span id="resStone">50</span></div>
+      <div class="res-item"><span style="color:#8899aa">Metal</span> <span id="resMetal">0</span></div>
+    </div>
+
+    <!-- Weapon Slots -->
+    <div id="slotsPanel">
+      <div class="weapon-slot" id="slot0"><div class="slot-icon" id="slotIcon0"></div><div class="slot-name" id="slotName0">EMPTY</div><div class="slot-ammo" id="slotAmmo0"></div></div>
+      <div class="weapon-slot" id="slot1"><div class="slot-icon" id="slotIcon1"></div><div class="slot-name" id="slotName1">EMPTY</div><div class="slot-ammo" id="slotAmmo1"></div></div>
+      <div class="weapon-slot" id="slot2"><div class="slot-icon" id="slotIcon2"></div><div class="slot-name" id="slotName2">EMPTY</div><div class="slot-ammo" id="slotAmmo2"></div></div>
+      <div class="weapon-slot" id="slot3"><div class="slot-icon" id="slotIcon3"></div><div class="slot-name" id="slotName3">EMPTY</div><div class="slot-ammo" id="slotAmmo3"></div></div>
+      <div class="weapon-slot" id="slot4"><div class="slot-icon" id="slotIcon4"></div><div class="slot-name" id="slotName4">EMPTY</div><div class="slot-ammo" id="slotAmmo4"></div></div>
+    </div>
+
+    <!-- Ammo -->
+    <div id="ammoPanel">
+      <div id="reloadText">RELOADING...</div>
+      <div id="ammoMain">--</div>
+      <div id="ammoReserve"></div>
+    </div>
+
+    <!-- Storm -->
+    <div id="stormInfo">
+      <div id="stormTimer">--:--</div>
+      <div id="stormPhase"></div>
+    </div>
+
+    <!-- Alive count -->
+    <div id="alivePanel">Alive: <span id="playerCount">20</span></div>
+
+    <!-- Minimap -->
+    <div id="minimapWrap">
+      <canvas id="minimapCanvas" width="120" height="120"></canvas>
+    </div>
+
+    <!-- Build mode -->
+    <div id="buildMode">BUILD MODE [F]</div>
+    <div id="buildPieceHint">1-Wall  2-Floor  3-Ramp  4-Roof  |  Q-Rotate  |  RClick-Exit</div>
+
+    <!-- Interact prompt -->
+    <div id="interactPrompt"></div>
+
+    <!-- Kill feed -->
+    <div id="killFeed"></div>
+  </div>
+
+  <!-- Hit flash -->
+  <div id="hitFlash"></div>
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
+
+  <!-- Game modules (order matters) -->
+  <script src="js/helpers.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/combat.js"></script>
+  <script src="js/building.js"></script>
+  <script src="js/loot.js"></script>
+  <script src="js/storm.js"></script>
+  <script src="js/bots.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+
+  <!-- Boot -->
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      window.game = new Game();
+    });
+  </script>
+</body>
+</html>

@@ -199,16 +199,17 @@
       }
     }
     // These specific large VFX create new geometries. We won't pool them extensively, but we replaced the PointLight.
+    const _cbGeo1 = new THREE.TorusGeometry(2.2, 0.22, 8, 32);
+    const _cbGeo2 = new THREE.TorusGeometry(3.5, 0.1, 6, 28);
+    const _cbTmpVec = new THREE.Vector3();
     function spawnCursedBurst(pos, rot) {
       const col = playerTech ? playerTech.hex : 0x8844ff;
-      const fw = new THREE.Vector3(-Math.sin(rot), 0, -Math.cos(rot));
-      const rgGeometry = new THREE.TorusGeometry(2.2, 0.22, 8, 32);
-      const rg = getTorusMesh(col, 0.9, rgGeometry);
+      const fw = _cbTmpVec.set(-Math.sin(rot), 0, -Math.cos(rot));
+      const rg = getTorusMesh(col, 0.9, _cbGeo1);
       rg.position.copy(pos).add(new THREE.Vector3(0, 1.6, 0)).addScaledVector(fw, 2.2); rg.rotation.set(Math.PI / 2, 0, 0); rg.scale.set(1,1,1);
       hitFlashes.push({ mesh: rg, lifetime: 0.65, maxLifetime: 0.65, baseScale: 1, isSphere: false });
-      
-      const rg2Geometry = new THREE.TorusGeometry(3.5, 0.1, 6, 28);
-      const rg2 = getTorusMesh(col, 0.5, rg2Geometry);
+
+      const rg2 = getTorusMesh(col, 0.5, _cbGeo2);
       rg2.position.copy(pos).add(new THREE.Vector3(0, 1.6, 0)).addScaledVector(fw, 2); rg2.rotation.set(Math.PI / 2, 0, 0); rg2.scale.set(1,1,1);
       hitFlashes.push({ mesh: rg2, lifetime: 0.45, maxLifetime: 0.45, baseScale: 1, isSphere: false });
       
@@ -220,12 +221,13 @@
       for (let i = 0; i < 35; i++) { const d = fw.clone().multiplyScalar(3 + Math.random() * 9); d.x += (Math.random() - 0.5) * 7; d.y += Math.random() * 6; d.z += (Math.random() - 0.5) * 7; spawnParticle(pos.clone().add(new THREE.Vector3(0, 1.6, 0)), d, col, 0.1 + Math.random() * 0.22, 0.5 + Math.random() * 0.6); }
       getLight(pos.clone().add(new THREE.Vector3(0, 2.2, 0)), col, 12, 25, 350);
     }
-    function spawnTechFX(pos, color, range, type) { 
-      if (type === 'burst' || type === 'wave') { 
-        const mGeometry = new THREE.TorusGeometry(Math.min(range * 0.5, 5), 0.22, 8, 32);
-        const m = getTorusMesh(color, 0.9, mGeometry);
-        m.position.copy(pos); m.rotation.set(Math.PI / 2, 0, 0); m.scale.set(1,1,1);
-        hitFlashes.push({ mesh: m, lifetime: 0.5, maxLifetime: 0.5, baseScale: 1, isSphere: false }); 
+    const _techFxGeo = new THREE.TorusGeometry(1, 0.22, 8, 32);
+    function spawnTechFX(pos, color, range, type) {
+      if (type === 'burst' || type === 'wave') {
+        const m = getTorusMesh(color, 0.9, _techFxGeo);
+        const _tfxScale = Math.min(range * 0.5, 5);
+        m.position.copy(pos); m.rotation.set(Math.PI / 2, 0, 0); m.scale.setScalar(_tfxScale);
+        hitFlashes.push({ mesh: m, lifetime: 0.5, maxLifetime: 0.5, baseScale: _tfxScale, isSphere: false }); 
       } 
       if (type === 'ring' || type === 'wave') { 
         const m = getPlaneMesh(color, 0.3);
