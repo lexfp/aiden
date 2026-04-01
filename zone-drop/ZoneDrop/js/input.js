@@ -93,5 +93,96 @@ class InputManager {
     this.mouseX = 0;
     this.mouseY = 0;
     this.scrollDelta = 0;
+    this.joyLookX = 0;
+    this.joyLookY = 0;
+  }
+
+  // ── Mobile touch controls ──────────────────────────────────────────────────
+  _bindTouch() {
+    // Show mobile UI
+    document.querySelectorAll('.joystick-zone, .mobile-btn').forEach(el => {
+      el.style.display = 'block';
+    });
+
+    // On mobile, skip pointer-lock and treat as always "locked" for camera
+    this.locked = true;
+
+    const self = this;
+
+    // --- Joystick logic ---
+    this._setupJoystick('joystickLeft', 'knobLeft', (nx, ny) => {
+      self.joyMoveX = nx;
+      self.joyMoveY = ny;
+    }, () => {
+      self.joyMoveX = 0;
+      self.joyMoveY = 0;
+    });
+
+    this._setupJoystick('joystickRight', 'knobRight', (nx, ny) => {
+      // Map to mouse-like deltas each frame
+      self.joyLookX += nx * 8;
+      self.joyLookY += ny * 8;
+    }, () => {});
+
+    // --- Action buttons ---
+    const fireBtn = document.getElementById('mobileFireBtn');
+    fireBtn.addEventListener('touchstart', e => { e.preventDefault(); self.mouseLeft = true; self._leftJust = true; });
+    fireBtn.addEventListener('touchend',   e => { e.preventDefault(); self.mouseLeft = false; });
+
+    const jumpBtn = document.getElementById('mobileJumpBtn');
+    jumpBtn.addEventListener('touchstart', e => { e.preventDefault(); self._justPressed['Space'] = true; self.keys['Space'] = true; });
+    jumpBtn.addEventListener('touchend',   e => { e.preventDefault(); self.keys['Space'] = false; });
+
+    const reloadBtn = document.getElementById('mobileReloadBtn');
+    reloadBtn.addEventListener('touchstart', e => { e.preventDefault(); self._justPressed['KeyR'] = true; });
+
+    const interactBtn = document.getElementById('mobileInteractBtn');
+    interactBtn.addEventListener('touchstart', e => { e.preventDefault(); self._justPressed['KeyE'] = true; });
+  }
+
+  _setupJoystick(zoneId, knobId, onMove, onEnd) {
+    const zone = document.getElementById(zoneId);
+    const knob = document.getElementById(knobId);
+    let touchId = null;
+    const maxR = 45; // max knob travel in px
+
+    zone.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const t = e.changedTouches[0];
+      touchId = t.identifier;
+      _update(t);
+    });
+
+    zone.addEventListener('touchmove', e => {
+      e.preventDefault();
+      for (const t of e.changedTouches) {
+        if (t.identifier === touchId) { _update(t); break; }
+      }
+    });
+
+    const endHandler = e => {
+      for (const t of e.changedTouches) {
+        if (t.identifier === touchId) {
+          touchId = null;
+          knob.style.transform = 'translate(-50%, -50%)';
+          onEnd();
+          break;
+        }
+      }
+    };
+    zone.addEventListener('touchend', endHandler);
+    zone.addEventListener('touchcancel', endHandler);
+
+    function _update(touch) {
+      const rect = zone.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top  + rect.height / 2;
+      let dx = touch.clientX - cx;
+      let dy = touch.clientY - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist > maxR) { dx = dx / dist * maxR; dy = dy / dist * maxR; }
+      knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      onMove(dx / maxR, dy / maxR);
+    }
   }
 }

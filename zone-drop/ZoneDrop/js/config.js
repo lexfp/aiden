@@ -86,6 +86,7 @@ const CFG = {
 
   LOOT: {
     CHESTS: 30,
+    WEAPON_CRATES: 15, // special crates that always contain weapons
     FLOOR_LOOT: 45,
     INTERACT_DIST: 3.2,
     RARITY_WEIGHTS: { common: 45, uncommon: 30, rare: 15, epic: 8, legendary: 2 },

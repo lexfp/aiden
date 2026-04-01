@@ -216,10 +216,12 @@ class PlayerSystem {
   _handleInput(dt) {
     const inp = this.input;
 
-    // Camera look
+    // Camera look (mouse + mobile right joystick)
     if (inp.locked) {
-      this.camYaw   -= inp.mouseX * CFG.PLAYER.MOUSE_SENS;
-      this.camPitch -= inp.mouseY * CFG.PLAYER.MOUSE_SENS;
+      const lookX = inp.mouseX + inp.joyLookX;
+      const lookY = inp.mouseY + inp.joyLookY;
+      this.camYaw   -= lookX * CFG.PLAYER.MOUSE_SENS;
+      this.camPitch -= lookY * CFG.PLAYER.MOUSE_SENS;
       this.camPitch  = clamp(this.camPitch, CFG.PLAYER.CAM_PITCH_MIN, CFG.PLAYER.CAM_PITCH_MAX);
     }
 
@@ -259,6 +261,10 @@ class PlayerSystem {
       if (inp.keys['KeyS']) mz += 1;
       if (inp.keys['KeyA']) mx -= 1;
       if (inp.keys['KeyD']) mx += 1;
+
+      // Merge mobile joystick input
+      mx += inp.joyMoveX;
+      mz += inp.joyMoveY;
 
       const len = Math.sqrt(mx * mx + mz * mz);
       if (len > 0) { mx /= len; mz /= len; }
