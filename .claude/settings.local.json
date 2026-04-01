@@ -7,7 +7,9 @@
       "WebFetch(domain:cdn.jsdelivr.net)",
       "Bash(cd:*)",
       "Skill(update-config)",
-      "Bash(ls -1d /c/Users/aiden/Documents/Code/Aiden/aiden/*/)"
+      "Bash(ls -1d /c/Users/aiden/Documents/Code/Aiden/aiden/*/)",
+      "Bash(npm install:*)",
+      "Bash(timeout 3 node server.js)"
     ]
   }
 }

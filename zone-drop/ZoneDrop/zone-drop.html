@@ -235,6 +235,11 @@
     <div id="overlayTitle">ZONE DROP</div>
     <div id="overlaySubtitle">Drop in. Loot. Survive.</div>
     <div id="overlayStats"></div>
+    <input id="nameInput" type="text" placeholder="Enter your name" maxlength="20"
+      style="padding:10px 20px; font-size:1rem; border:1px solid rgba(255,255,255,0.2);
+      border-radius:6px; background:rgba(255,255,255,0.08); color:#fff; text-align:center;
+      width:220px; outline:none;">
+    <div id="onlineCount" style="font-size:.8rem; opacity:.6;"></div>
     <button id="overlayBtn">DEPLOY</button>
   </div>
 
@@ -352,7 +357,7 @@
     const scripts = [
       'js/helpers.js','js/config.js','js/input.js','js/world.js',
       'js/player.js','js/combat.js','js/building.js','js/loot.js',
-      'js/storm.js','js/bots.js','js/ui.js','js/game.js'
+      'js/storm.js','js/network.js','js/ui.js','js/game.js'
     ];
     for (const src of scripts) {
       await new Promise((resolve, reject) => {

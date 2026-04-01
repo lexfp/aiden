@@ -4,10 +4,10 @@
 // =============================================================================
 
 class UISystem {
-  constructor(player, storm, botManager) {
-    this.player     = player;
-    this.storm      = storm;
-    this.botManager = botManager;
+  constructor(player, storm, network) {
+    this.player  = player;
+    this.storm   = storm;
+    this.network = network;
 
     // Kill feed: [{ text, timer }]
     this._killFeed = [];
@@ -142,7 +142,7 @@ class UISystem {
 
   // ── Player count ─────────────────────────────────────────────────────────
   _updatePlayerCount() {
-    const alive = this.botManager.aliveCount() + (this.player.alive ? 1 : 0);
+    const alive = this.network.aliveCount() + (this.player.alive ? 1 : 0);
     this._setText('playerCount', alive);
   }
 
@@ -201,14 +201,14 @@ class UISystem {
     ctx.lineWidth   = 1.5;
     ctx.stroke();
 
-    // Bots (red dots)
+    // Remote players (red dots)
     ctx.fillStyle = '#e74c3c';
-    this.botManager.bots.forEach(b => {
-      if (!b.alive) return;
-      const bx = cx + b.position.x * scale;
-      const by = cy + b.position.z * scale;
+    for (const [, rp] of this.network.remotePlayers) {
+      if (!rp.state || rp.state.alive === false) continue;
+      const bx = cx + rp.mesh.position.x * scale;
+      const by = cy + rp.mesh.position.z * scale;
       ctx.beginPath(); ctx.arc(bx, by, 2, 0, Math.PI * 2); ctx.fill();
-    });
+    }
 
     // Player (blue dot, larger)
     const px = cx + this.player.position.x * scale;

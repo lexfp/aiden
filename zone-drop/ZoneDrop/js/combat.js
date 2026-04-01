@@ -19,7 +19,7 @@ class CombatSystem {
     this._tracers = [];
 
     // References set externally after construction
-    this.botManager   = null; // set by Game
+    this.network      = null; // set by Game (NetworkManager)
     this.lootSystem   = null; // set by Game (for harvesting resource nodes)
     this.onKillFeed   = null; // callback(killerName, victimName)
   }
@@ -78,10 +78,8 @@ class CombatSystem {
 
     // Collect all hittable objects
     const targets = [...this.world.getCollidables()];
-    if (this.botManager) {
-      this.botManager.bots.forEach(b => {
-        if (b.alive && b.hitbox) targets.push(b.hitbox);
-      });
+    if (this.network) {
+      targets.push(...this.network.getHitboxes());
     }
     // Don't hit the player's own mesh
     const hits = this._raycaster.intersectObjects(targets, false);
@@ -92,15 +90,13 @@ class CombatSystem {
       hitPoint = h.point.clone();
 
       const ud = h.object.userData;
-      if (ud.type === 'bot' && ownerTag === 'player') {
-        // Headshot: hit.point.y > botY + 1.1 → 1.5× damage
-        const botY = ud.bot.position.y;
-        const hs = h.point.y > botY + 0.9 ? 1.5 : 1.0;
-        ud.bot.takeDamage(def.damage * hs);
-        if (!ud.bot.alive) {
-          this.player.kills++;
-          if (this.onKillFeed) this.onKillFeed('You', ud.bot.name);
-        }
+      if (ud.type === 'remotePlayer' && ownerTag === 'player') {
+        // Hit a real player — send damage through network
+        const hitY = h.point.y;
+        const playerY = h.object.position.y;
+        const headshot = hitY > playerY + 0.9;
+        const dmg = def.damage * (headshot ? 1.5 : 1.0);
+        this.network.sendHit(ud.playerId, dmg, headshot);
         spawnSpark(this.scene, hitPoint, 0xff4444);
       } else if (ud.type === 'resource' && ownerTag === 'player') {
         // Harvest resource node with melee/shots
@@ -122,31 +118,11 @@ class CombatSystem {
 
     // Draw tracer line
     this._addTracer(origin, hitPoint, def.color || 0xffff88);
-  }
 
-  // ── Bot shooting (called by BotSystem) ───────────────────────────────────
-  fireBotShot(origin, direction, def, bot) {
-    // Bots use simplified hitscan with accuracy check
-    const dir = direction.clone();
-    const accuracy = 0.07;
-    dir.x += (Math.random() - 0.5) * accuracy;
-    dir.y += (Math.random() - 0.5) * accuracy * 0.5;
-    dir.z += (Math.random() - 0.5) * accuracy;
-    dir.normalize();
-
-    this._raycaster.set(origin, dir);
-    this._raycaster.far = def.range || 500;
-    const targets = [this.player.group]; // bots only target player
-    const hits = this._raycaster.intersectObjects(targets, true);
-    if (hits.length > 0) {
-      this.player.takeDamage(def.damage);
-      spawnSpark(this.scene, hits[0].point, 0xff8800);
+    // Broadcast shot to other players
+    if (ownerTag === 'player' && this.network) {
+      this.network.sendShoot(origin, direction, def.color || 0xffff88, hitPoint);
     }
-
-    const hitPt = hits.length > 0
-      ? hits[0].point.clone()
-      : origin.clone().addScaledVector(dir, def.range || 300);
-    this._addTracer(origin, hitPt, 0xff6600);
   }
 
   // ── Projectile (rocket / grenade) ─────────────────────────────────────────
@@ -186,23 +162,16 @@ class CombatSystem {
         return false;
       }
 
-      // Check target collision
-      if (p.ownerTag === 'player') {
-        this.botManager && this.botManager.bots.forEach(b => {
-          if (!b.alive) return;
-          const d = p.mesh.position.distanceTo(b.mesh.position);
+      // Check target collision (remote players)
+      if (p.ownerTag === 'player' && this.network) {
+        for (const hb of this.network.getHitboxes()) {
+          const d = p.mesh.position.distanceTo(hb.position);
           if (d < 1.5) {
             this._explode(p.mesh.position, p.damage, p.splashR, p.ownerTag);
             this.scene.remove(p.mesh);
-            p.life = p.maxLife; // mark for removal
+            p.life = p.maxLife;
+            break;
           }
-        });
-      } else {
-        const d = p.mesh.position.distanceTo(this.player.position);
-        if (d < 1.5) {
-          this._explode(p.mesh.position, p.damage, p.splashR, p.ownerTag);
-          this.scene.remove(p.mesh);
-          p.life = p.maxLife;
         }
       }
       return p.life < p.maxLife;
@@ -211,19 +180,15 @@ class CombatSystem {
 
   _explode(pos, damage, radius, ownerTag) {
     spawnSpark(this.scene, pos, 0xff6600);
-    // Splash damage
-    if (ownerTag === 'player' && this.botManager) {
-      this.botManager.bots.forEach(b => {
-        if (!b.alive) return;
-        const d = pos.distanceTo(b.mesh.position);
+    // Splash damage to remote players
+    if (ownerTag === 'player' && this.network) {
+      for (const hb of this.network.getHitboxes()) {
+        const d = pos.distanceTo(hb.position);
         if (d < radius) {
-          b.takeDamage(damage * (1 - d / radius));
-          if (!b.alive) { this.player.kills++; if (this.onKillFeed) this.onKillFeed('You', b.name); }
+          const splashDmg = damage * (1 - d / radius);
+          this.network.sendHit(hb.userData.playerId, splashDmg, false);
         }
-      });
-    } else if (ownerTag !== 'player') {
-      const d = pos.distanceTo(this.player.position);
-      if (d < radius) this.player.takeDamage(damage * (1 - d / radius));
+      }
     }
   }
 

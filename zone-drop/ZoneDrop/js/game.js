@@ -103,16 +103,22 @@ class Game {
     // Storm
     this.storm    = new StormSystem(this.scene);
 
-    // Bots (combat needed for firing)
-    this.botMgr   = new BotManager(this.scene, this.combat);
-    this.combat.botManager = this.botMgr;
+    // Network (replaces bots — real players!)
+    this.network  = new NetworkManager(this.scene, this.combat);
+    this.combat.network = this.network;
 
-    // UI
-    this.ui = new UISystem(this.player, this.storm, this.botMgr);
+    // UI (pass network instead of botManager)
+    this.ui = new UISystem(this.player, this.storm, this.network);
 
-    // Kill feed hook
+    // Kill feed hooks
     this.combat.onKillFeed = (killer, victim) => {
       this.ui.addKill(killer, victim);
+    };
+    this.network.onKillFeed = (killer, victim) => {
+      this.ui.addKill(killer, victim);
+    };
+    this.network.onDamage = (amount, fromName, headshot) => {
+      this.player.takeDamage(amount);
     };
   }
 
@@ -155,17 +161,10 @@ class Game {
     this.combat._tracers.forEach(t => this.scene.remove(t.line));
     this.combat._tracers = [];
 
-    // Reset bots (remove old + re-spawn)
-    this.botMgr.bots.forEach(b => {
-      this.scene.remove(b.mesh);
-      this.scene.remove(b.hitbox);
-    });
-    this.botMgr.bots = [];
-    const names = ['Shadow','Viper','Blaze','Echo','Storm','Raven','Frost','Ember',
-                   'Spike','Comet','Drift','Nova','Titan','Ghost','Lynx','Cipher','Razor','Pulse','Nexus'];
-    for (let i = 0; i < CFG.BOTS.COUNT; i++) {
-      const sp = randSpawn(30, CFG.MAP.HALF - 20);
-      this.botMgr.bots.push(new Bot(this.scene, sp.x, sp.z, names[i] || 'Bot' + i, this.combat));
+    // Connect to multiplayer server
+    const playerName = document.getElementById('nameInput').value.trim() || 'Player';
+    if (!this.network.connected) {
+      this.network.connect(playerName);
     }
 
     // Reset loot (remove existing, re-spawn)
@@ -211,8 +210,8 @@ class Game {
     this.combat.update(dt);
     this.building.update(dt);
     this.loot.update(dt);
-    this.storm.update(dt, this.botMgr.bots, this.player);
-    this.botMgr.update(dt, this.player, this.storm);
+    this.storm.update(dt, [], this.player); // no bots, only real players
+    this.network.update(dt, this.player);
     this.ui.update(dt);
 
     this._checkEndConditions();
@@ -226,13 +225,9 @@ class Game {
       this.ui.hideHUD();
       this.ui.showOverlay();
       document.exitPointerLock();
-    } else if (this.botMgr.aliveCount() === 0) {
-      this.state = 'WIN';
-      this.ui.setOverlay('VICTORY!', '#1 — Storm Zone Champion', 'PLAY AGAIN',
-        { elapsed: this.elapsed });
-      this.ui.hideHUD();
-      this.ui.showOverlay();
-      document.exitPointerLock();
+    } else if (this.network.aliveCount() === 0 && this.network.connected && this.elapsed > 5) {
+      // Win if all other players are eliminated (only if others have joined)
+      // Don't trigger immediately — give time for players to connect
     }
   }
 }
