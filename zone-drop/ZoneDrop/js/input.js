@@ -38,10 +38,12 @@ class InputManager {
   _bind() {
     const canvas = this.canvas;
 
-    // Pointer lock on click
-    canvas.addEventListener('click', () => {
-      if (!this.locked) canvas.requestPointerLock();
-    });
+    // Pointer lock on click (desktop only)
+    if (!this.isMobile) {
+      canvas.addEventListener('click', () => {
+        if (!this.locked) canvas.requestPointerLock();
+      });
+    }
 
     document.addEventListener('pointerlockchange', () => {
       this.locked = document.pointerLockElement === canvas;

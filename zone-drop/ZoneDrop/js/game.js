@@ -69,7 +69,17 @@ class Game {
     // Generate environment map from sky for PBR reflections
     const pmrem = new THREE.PMREMGenerator(this.renderer);
     pmrem.compileEquirectangularShader();
-    const envRT = pmrem.fromScene(sky);
+    const tmpScene = new THREE.Scene();
+    const tmpSky = new Sky();
+    tmpSky.scale.setScalar(10000);
+    tmpScene.add(tmpSky);
+    const tmpUniforms = tmpSky.material.uniforms;
+    tmpUniforms['turbidity'].value = uniforms['turbidity'].value;
+    tmpUniforms['rayleigh'].value = uniforms['rayleigh'].value;
+    tmpUniforms['mieCoefficient'].value = uniforms['mieCoefficient'].value;
+    tmpUniforms['mieDirectionalG'].value = uniforms['mieDirectionalG'].value;
+    tmpUniforms['sunPosition'].value.copy(sunPos);
+    const envRT = pmrem.fromScene(tmpScene);
     this.scene.environment = envRT.texture;
     this.scene.background  = envRT.texture;
     pmrem.dispose();
@@ -173,9 +183,11 @@ class Game {
     this.ui.hideOverlay();
     this.ui.showHUD();
 
-    // Request pointer lock (promise-based in modern browsers)
-    const lockResult = document.getElementById('gameCanvas').requestPointerLock();
-    if (lockResult instanceof Promise) lockResult.catch(() => {});
+    // Request pointer lock (skip on mobile — joystick handles camera)
+    if (!this.input.isMobile) {
+      const lockResult = document.getElementById('gameCanvas').requestPointerLock();
+      if (lockResult instanceof Promise) lockResult.catch(() => {});
+    }
   }
 
   // ── Game loop ─────────────────────────────────────────────────────────────
