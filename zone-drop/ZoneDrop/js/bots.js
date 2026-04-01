@@ -196,9 +196,17 @@ class Bot {
       this.mesh.rotation.y = Math.atan2(moveX, moveZ);
     }
 
-    // Bob animation: simple leg bob
-    const bob = Math.sin(Date.now() * 0.006) * 0.06;
-    this.mesh.position.y = this.position.y + bob;
+    // Animation
+    const mixer = this.mesh.userData.mixer;
+    if (mixer) {
+      mixer.update(dt);
+      const moving = Math.abs(moveX) + Math.abs(moveZ) > 0.01;
+      setCharacterAnim(this.mesh, moving ? 'Run' : 'Idle');
+    } else {
+      // Fallback bob animation for box characters
+      const bob = Math.sin(Date.now() * 0.006) * 0.06;
+      this.mesh.position.y = this.position.y + bob;
+    }
   }
 
   _shoot(player) {

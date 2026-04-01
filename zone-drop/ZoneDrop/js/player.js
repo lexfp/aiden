@@ -196,6 +196,21 @@ class PlayerSystem {
     this._applyPhysics(dt);
     this._updateReload(dt);
     this._updateCamera();
+    this._updateAnimation(dt);
+  }
+
+  _updateAnimation(dt) {
+    const mixer = this.group.userData.mixer;
+    if (!mixer) return;
+    mixer.update(dt);
+
+    // Choose animation based on movement
+    const speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.z * this.velocity.z);
+    if (speed > 1) {
+      setCharacterAnim(this.group, this.sprinting ? 'Run' : 'Run');
+    } else {
+      setCharacterAnim(this.group, 'Idle');
+    }
   }
 
   _handleInput(dt) {

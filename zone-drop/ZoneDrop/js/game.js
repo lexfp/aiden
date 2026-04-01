@@ -12,7 +12,6 @@ class Game {
     this._initRenderer();
     this._initScene();
     this._initSystems();
-    this._hookUI();
 
     this._clock = new THREE.Clock();
     this._loop();
@@ -24,7 +23,10 @@ class Game {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.shadowMap.enabled = false;
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 0.6;
 
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -35,13 +37,42 @@ class Game {
 
   _initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(CFG.WORLD.SKY_COLOR);
-    this.scene.fog = new THREE.Fog(CFG.WORLD.FOG_COLOR, CFG.WORLD.FOG_NEAR, CFG.WORLD.FOG_FAR);
+    this.scene.fog = new THREE.Fog(0xc8ddf0, 150, 550);
 
     this.camera = new THREE.PerspectiveCamera(
       70, window.innerWidth / window.innerHeight, 0.1, 900
     );
     this.camera.position.set(0, 15, 20);
+
+    // Procedural sky
+    this._initSky();
+  }
+
+  _initSky() {
+    const sky = new Sky();
+    sky.scale.setScalar(10000);
+    this.scene.add(sky);
+
+    const uniforms = sky.material.uniforms;
+    uniforms['turbidity'].value = 10;
+    uniforms['rayleigh'].value = 2;
+    uniforms['mieCoefficient'].value = 0.005;
+    uniforms['mieDirectionalG'].value = 0.8;
+
+    // Sun position
+    const sunPos = new THREE.Vector3();
+    const phi   = THREE.MathUtils.degToRad(90 - 28);
+    const theta = THREE.MathUtils.degToRad(200);
+    sunPos.setFromSphericalCoords(1, phi, theta);
+    uniforms['sunPosition'].value.copy(sunPos);
+
+    // Generate environment map from sky for PBR reflections
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    pmrem.compileEquirectangularShader();
+    const envRT = pmrem.fromScene(sky);
+    this.scene.environment = envRT.texture;
+    this.scene.background  = envRT.texture;
+    pmrem.dispose();
   }
 
   _initSystems() {
@@ -75,44 +106,49 @@ class Game {
     };
   }
 
-  // ── UI wiring ─────────────────────────────────────────────────────────────
-  _hookUI() {
-    // Lobby deploy button
-    window.onOverlayBtn = () => {
-      if (this.state === 'LOBBY' || this.state === 'DEAD' || this.state === 'WIN') {
-        this._startMatch();
-      }
-    };
-  }
-
   // ── Match lifecycle ────────────────────────────────────────────────────────
   _startMatch() {
     // Reset player
     this.player.position.set(rand(-80, 80), 10, rand(-80, 80));
     this.player.velocity.set(0, 0, 0);
-    this.player.hp     = CFG.PLAYER.MAX_HP;
-    this.player.shield = 0;
-    this.player.alive  = true;
-    this.player.kills  = 0;
+    this.player.hp            = CFG.PLAYER.MAX_HP;
+    this.player.shield        = 0;
+    this.player.alive         = true;
+    this.player.kills         = 0;
+    this.player.buildMode     = false;
+    this.player.crouching     = false;
+    this.player.sprinting     = false;
+    this.player.onGround      = false;
+    this.player._reloading    = false;
+    this.player._reloadTimer  = 0;
+    this.player._shotCooldown = 0;
+    this.player._damageCooldown = 0;
     this.player.weapons.fill(null);
     this.player.ammo = { light: 60, heavy: 30, sniper: 10, rocket: 2 };
     this.player.resources = { wood: 100, stone: 50, metal: 0 };
     this.player.currentSlot = 0;
-    this.player._giveWeapon_called = false;
     this.player.giveWeapon('blast_rifle');
 
     // Reset storm
-    this.storm.phaseIndex   = 0;
-    this.storm.phaseTimer   = 0;
-    this.storm.shrinking    = false;
+    this.storm.phaseIndex    = 0;
+    this.storm.phaseTimer    = 0;
+    this.storm.shrinking     = false;
     this.storm.currentRadius = CFG.STORM.START_RADIUS;
-    this.storm.damagePerSec = 0;
-    this.storm._damageTick  = 0;
+    this.storm.damagePerSec  = 0;
+    this.storm._damageTick   = 0;
     this.storm._startWait();
+    this.storm._rebuildRing();
+
+    // Clear lingering projectiles / tracers from previous match
+    this.combat._projectiles.forEach(p => this.scene.remove(p.mesh));
+    this.combat._projectiles = [];
+    this.combat._tracers.forEach(t => this.scene.remove(t.line));
+    this.combat._tracers = [];
 
     // Reset bots (remove old + re-spawn)
     this.botMgr.bots.forEach(b => {
-      if (b.alive) { this.scene.remove(b.mesh); this.scene.remove(b.hitbox); }
+      this.scene.remove(b.mesh);
+      this.scene.remove(b.hitbox);
     });
     this.botMgr.bots = [];
     const names = ['Shadow','Viper','Blaze','Echo','Storm','Raven','Frost','Ember',
@@ -137,8 +173,9 @@ class Game {
     this.ui.hideOverlay();
     this.ui.showHUD();
 
-    // Request pointer lock
-    document.getElementById('gameCanvas').requestPointerLock();
+    // Request pointer lock (promise-based in modern browsers)
+    const lockResult = document.getElementById('gameCanvas').requestPointerLock();
+    if (lockResult instanceof Promise) lockResult.catch(() => {});
   }
 
   // ── Game loop ─────────────────────────────────────────────────────────────

@@ -62,8 +62,74 @@ function hexStr(n) {
   return '#' + n.toString(16).padStart(6, '0');
 }
 
-// Build a simple capsule-like character group (body box + head sphere + leg stubs)
+// Build a character mesh — uses the Soldier GLB model if available, else falls
+// back to the old box capsule.  The returned group always carries:
+//   .userData.mixer   — AnimationMixer (null for fallback)
+//   .userData.actions — { Idle, Walk, Run } AnimationActions (empty for fallback)
+//   .userData.currentAction — name of the playing clip
 function makeCharacterMesh(bodyColor) {
+  if (window.SOLDIER_MODEL && window.SOLDIER_ANIMATIONS) {
+    return _cloneSoldier(bodyColor);
+  }
+  return _makeBoxCharacter(bodyColor);
+}
+
+function _cloneSoldier(bodyColor) {
+  const clone = SkeletonUtils.clone(window.SOLDIER_MODEL);
+
+  // The Soldier model is ~1.8 units tall with feet at y = 0.
+  // Existing code places the group at terrainH + 0.9 (centre-mass).
+  // Shift the model down so feet align with y = -0.9 of the group.
+  clone.position.y = -0.9;
+
+  // Tint materials
+  const tint = new THREE.Color(bodyColor);
+  clone.traverse(child => {
+    if (child.isMesh) {
+      child.material = child.material.clone();
+      child.material.color.lerp(tint, 0.45);
+      child.castShadow = true;
+      child.frustumCulled = false;
+    }
+  });
+
+  // Wrapper group so existing position maths remain unchanged
+  const wrapper = new THREE.Group();
+  wrapper.add(clone);
+
+  // Animation
+  const mixer   = new THREE.AnimationMixer(clone);
+  const actions  = {};
+  for (const clip of window.SOLDIER_ANIMATIONS) {
+    actions[clip.name] = mixer.clipAction(clip);
+  }
+
+  // Start idle
+  const startName = actions['Idle'] ? 'Idle' : Object.keys(actions)[0];
+  if (startName && actions[startName]) actions[startName].play();
+
+  wrapper.userData.mixer         = mixer;
+  wrapper.userData.actions       = actions;
+  wrapper.userData.currentAction = startName || '';
+
+  return wrapper;
+}
+
+// Cross-fade to a new animation clip by name
+function setCharacterAnim(group, name) {
+  const ud = group.userData;
+  if (!ud.mixer || !ud.actions[name] || ud.currentAction === name) return;
+
+  const prev = ud.actions[ud.currentAction];
+  const next = ud.actions[name];
+
+  if (prev) prev.fadeOut(0.2);
+  next.reset().fadeIn(0.2).play();
+  ud.currentAction = name;
+}
+
+// Fallback box character (original implementation)
+function _makeBoxCharacter(bodyColor) {
   const g = new THREE.Group();
 
   const body = new THREE.Mesh(
@@ -82,7 +148,6 @@ function makeCharacterMesh(bodyColor) {
   head.castShadow = true;
   g.add(head);
 
-  // Legs
   const legGeo = new THREE.BoxGeometry(0.25, 0.6, 0.25);
   const legMat = new THREE.MeshLambertMaterial({ color: bodyColor });
   [-0.2, 0.2].forEach(ox => {
@@ -91,6 +156,11 @@ function makeCharacterMesh(bodyColor) {
     leg.castShadow = true;
     g.add(leg);
   });
+
+  // Compat stubs
+  g.userData.mixer = null;
+  g.userData.actions = {};
+  g.userData.currentAction = '';
 
   return g;
 }

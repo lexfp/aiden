@@ -24,7 +24,15 @@ class InputManager {
 
     this.locked = false;
 
+    // Mobile joystick state (analog, -1..1)
+    this.joyMoveX = 0;
+    this.joyMoveY = 0;
+    this.joyLookX = 0;
+    this.joyLookY = 0;
+    this.isMobile = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
     this._bind();
+    if (this.isMobile) this._bindTouch();
   }
 
   _bind() {

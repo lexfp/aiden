@@ -19,13 +19,23 @@ class WorldSystem {
   // ── Lighting ──────────────────────────────────────────────────────────────
   _buildLights() {
     const s = this.scene;
-    const hemi = new THREE.HemisphereLight(0x87CEEB, 0x4a7c59, 0.8);
+    const hemi = new THREE.HemisphereLight(0x87CEEB, 0x4a7c59, 0.4);
     s.add(hemi);
 
-    const sun = new THREE.DirectionalLight(0xfff5e0, 1.2);
+    const sun = new THREE.DirectionalLight(0xfff5e0, 2.0);
     sun.position.set(200, 300, 100);
-    sun.castShadow = false; // shadows too expensive without a GPU hint
+    sun.castShadow = true;
+    sun.shadow.mapSize.width  = 2048;
+    sun.shadow.mapSize.height = 2048;
+    sun.shadow.camera.left   = -120;
+    sun.shadow.camera.right  =  120;
+    sun.shadow.camera.top    =  120;
+    sun.shadow.camera.bottom = -120;
+    sun.shadow.camera.near   = 50;
+    sun.shadow.camera.far    = 600;
+    sun.shadow.bias = -0.0005;
     s.add(sun);
+    this.sun = sun;
   }
 
   // ── Terrain ───────────────────────────────────────────────────────────────
@@ -45,7 +55,11 @@ class WorldSystem {
     pos.needsUpdate = true;
     geo.computeVertexNormals();
 
-    const mat = new THREE.MeshLambertMaterial({ color: CFG.WORLD.GROUND_COLOR });
+    const mat = new THREE.MeshStandardMaterial({
+      color: CFG.WORLD.GROUND_COLOR,
+      roughness: 0.9,
+      metalness: 0.0,
+    });
     this.terrainMesh = new THREE.Mesh(geo, mat);
     this.terrainMesh.rotation.x = -Math.PI / 2;
     this.terrainMesh.receiveShadow = true;
@@ -77,18 +91,22 @@ class WorldSystem {
       // Trunk
       const trunk = new THREE.Mesh(
         new THREE.CylinderGeometry(0.25 * scale, 0.35 * scale, 2 * scale, 7),
-        new THREE.MeshLambertMaterial({ color: 0x6B4226 })
+        new THREE.MeshStandardMaterial({ color: 0x6B4226, roughness: 0.85, metalness: 0.0 })
       );
       trunk.position.y = scale;
+      trunk.castShadow = true;
+      trunk.receiveShadow = true;
       group.add(trunk);
 
       // Canopy (two overlapping spheres for bulk)
       [0, 1.2 * scale].forEach(yo => {
         const canopy = new THREE.Mesh(
           new THREE.SphereGeometry(1.4 * scale - yo * 0.2, 7, 6),
-          new THREE.MeshLambertMaterial({ color: 0x2d6a2d })
+          new THREE.MeshStandardMaterial({ color: 0x2d6a2d, roughness: 0.75, metalness: 0.0 })
         );
         canopy.position.y = 2.5 * scale + yo;
+        canopy.castShadow = true;
+        canopy.receiveShadow = true;
         group.add(canopy);
       });
 
@@ -125,8 +143,10 @@ class WorldSystem {
       for (let j = 0; j < 3; j++) {
         const rock = new THREE.Mesh(
           new THREE.DodecahedronGeometry(0.6 * scale, 0),
-          new THREE.MeshLambertMaterial({ color: 0x888888 })
+          new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.7, metalness: 0.15 })
         );
+        rock.castShadow = true;
+        rock.receiveShadow = true;
         rock.position.set(
           (Math.random() - 0.5) * 0.6 * scale,
           j * 0.3 * scale,
@@ -172,10 +192,12 @@ class WorldSystem {
     const W = rand(10, 16), D = rand(8, 14), H = rand(4, 6);
 
     // Walls
-    const wallMat = new THREE.MeshLambertMaterial({ color: 0xd4b483 });
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0xd4b483, roughness: 0.8, metalness: 0.0 });
     const wallGeo = new THREE.BoxGeometry(W, H, D);
     const wall = new THREE.Mesh(wallGeo, wallMat);
     wall.position.set(cx, baseY + H / 2, cz);
+    wall.castShadow = true;
+    wall.receiveShadow = true;
     wall.userData.type = 'structure';
     wall.userData.hp = 500;
     wall.userData.maxHp = 500;
@@ -183,17 +205,19 @@ class WorldSystem {
     this.collidables.push(wall);
 
     // Roof
-    const roofMat = new THREE.MeshLambertMaterial({ color: 0x8B3A3A });
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0x8B3A3A, roughness: 0.6, metalness: 0.1 });
     const roof = new THREE.Mesh(
       new THREE.CylinderGeometry(0.1, W * 0.72, H * 0.6, 4),
       roofMat
     );
     roof.position.set(cx, baseY + H + H * 0.3, cz);
+    roof.castShadow = true;
+    roof.receiveShadow = true;
     roof.rotation.y = Math.PI / 4;
     this.scene.add(roof);
 
     // Floor pad
-    const floorMat = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.9, metalness: 0.0 });
     const floor = new THREE.Mesh(
       new THREE.BoxGeometry(W + 0.5, 0.3, D + 0.5),
       floorMat
