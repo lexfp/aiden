@@ -196,7 +196,9 @@ class LootSystem {
     // Show interact prompt
     const prompt = document.getElementById('interactPrompt');
     if (nearest && prompt) {
-      const label = nearest.type === 'chest' ? 'Open Chest' : this._itemLabel(nearest.item);
+      const label = nearest.type === 'chest' ? 'Open Chest'
+                  : nearest.type === 'weaponCrate' ? 'Open Weapon Crate'
+                  : this._itemLabel(nearest.item);
       prompt.textContent = '[E] ' + label;
       prompt.style.display = 'block';
     } else if (prompt) {
@@ -207,6 +209,8 @@ class LootSystem {
     if (nearest && this.player.input.justPressed('KeyE')) {
       if (nearest.type === 'chest') {
         this._openChest(nearest);
+      } else if (nearest.type === 'weaponCrate') {
+        this._openWeaponCrate(nearest);
       } else {
         this._pickup(nearest);
       }
@@ -235,8 +239,23 @@ class LootSystem {
       this._applyItem(item);
     }
     this._removeEntity(ent);
-    // Visual pop
     spawnSpark(this.scene, ent.mesh.position.clone(), 0xffdd44);
+  }
+
+  _openWeaponCrate(ent) {
+    // Always drops 1-2 weapons, plus ammo
+    const weaponKeys = Object.keys(CFG.WEAPONS);
+    const count = 1 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++) {
+      const id = weaponKeys[Math.floor(Math.random() * weaponKeys.length)];
+      this._applyItem({ type: 'weapon', id, rarity: CFG.WEAPONS[id].rarity });
+    }
+    // Bonus ammo
+    const ammos = ['light', 'heavy', 'sniper'];
+    const at = ammos[Math.floor(Math.random() * ammos.length)];
+    this._applyItem({ type: 'ammo', ammoType: at, amount: at === 'sniper' ? 10 : 60 });
+    this._removeEntity(ent);
+    spawnSpark(this.scene, ent.mesh.position.clone(), 0xff4444);
   }
 
   _pickup(ent) {
