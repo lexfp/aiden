@@ -326,10 +326,12 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
     import { Sky } from 'three/addons/objects/Sky.js';
+    import { Timer } from 'three/addons/misc/Timer.js';
 
     window.THREE = THREE;
     window.SkeletonUtils = SkeletonUtils;
     window.Sky = Sky;
+    window.Timer = Timer;
 
     // Pre-load the Soldier model
     const subtitle = document.getElementById('overlaySubtitle');

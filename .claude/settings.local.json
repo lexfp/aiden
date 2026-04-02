@@ -9,7 +9,11 @@
       "Skill(update-config)",
       "Bash(ls -1d /c/Users/aiden/Documents/Code/Aiden/aiden/*/)",
       "Bash(npm install:*)",
-      "Bash(timeout 3 node server.js)"
+      "Bash(timeout 3 node server.js)",
+      "Bash(wc -l /c/Users/aiden_hkxjvjx/Documents/Code/Aiden/aiden/JJK-Grind/JJK-grind/js/*.js)",
+      "Bash(wc:*)",
+      "Bash(grep -E \"\\\\.\\(txt|md|json|config|yaml|yml\\)$\")",
+      "Bash(powershell.exe:*)"
     ]
   }
 }

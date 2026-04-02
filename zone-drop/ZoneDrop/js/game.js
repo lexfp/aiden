@@ -13,7 +13,8 @@ class Game {
     this._initScene();
     this._initSystems();
 
-    this._clock = new THREE.Clock();
+    this._timer = new window.Timer();
+    this._timer.connect(document);
     this._loop();
   }
 
@@ -26,7 +27,7 @@ class Game {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.6;
+    this.renderer.toneMappingExposure = 1.0;
 
     window.addEventListener('resize', () => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -54,17 +55,14 @@ class Game {
     this.scene.add(sky);
 
     const uniforms = sky.material.uniforms;
-    uniforms['turbidity'].value = 10;
-    uniforms['rayleigh'].value = 2;
+    uniforms['turbidity'].value = 0;
+    uniforms['rayleigh'].value = 3;
     uniforms['mieCoefficient'].value = 0.005;
-    uniforms['mieDirectionalG'].value = 0.8;
-
-    // Sun position
-    const sunPos = new THREE.Vector3();
-    const phi   = THREE.MathUtils.degToRad(90 - 28);
-    const theta = THREE.MathUtils.degToRad(200);
-    sunPos.setFromSphericalCoords(1, phi, theta);
-    uniforms['sunPosition'].value.copy(sunPos);
+    uniforms['mieDirectionalG'].value = 0.7;
+    uniforms['cloudElevation'] = { value: 1 }; // from the example
+    
+    // Sun position from example: (-0.8, 0.19, 0.56)
+    uniforms['sunPosition'].value.set(-0.8, 0.19, 0.56);
 
     // Generate environment map from sky for PBR reflections
     const pmrem = new THREE.PMREMGenerator(this.renderer);
@@ -78,7 +76,7 @@ class Game {
     tmpUniforms['rayleigh'].value = uniforms['rayleigh'].value;
     tmpUniforms['mieCoefficient'].value = uniforms['mieCoefficient'].value;
     tmpUniforms['mieDirectionalG'].value = uniforms['mieDirectionalG'].value;
-    tmpUniforms['sunPosition'].value.copy(sunPos);
+    tmpUniforms['sunPosition'].value.set(-0.8, 0.19, 0.56);
     const envRT = pmrem.fromScene(tmpScene);
     this.scene.environment = envRT.texture;
     this.scene.background  = envRT.texture;
@@ -192,7 +190,8 @@ class Game {
   // ── Game loop ─────────────────────────────────────────────────────────────
   _loop() {
     requestAnimationFrame(() => this._loop());
-    const dt = Math.min(this._clock.getDelta(), 0.05); // cap at 50 ms
+    this._timer.update();
+    const dt = Math.min(this._timer.getDelta(), 0.05); // cap at 50 ms
 
     if (this.state === 'PLAYING') {
       this._updatePlaying(dt);

@@ -81,6 +81,10 @@ function _cloneSoldier(bodyColor) {
   // Existing code places the group at terrainH + 0.9 (centre-mass).
   // Shift the model down so feet align with y = -0.9 of the group.
   clone.position.y = -0.9;
+  
+  // Rotate the Soldier model 180 degrees so its front aligns with the +Z direction
+  // (which is the forward direction in player movement math).
+  clone.rotation.y = Math.PI;
 
   // Tint materials
   const tint = new THREE.Color(bodyColor);

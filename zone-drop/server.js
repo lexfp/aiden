@@ -23,15 +23,15 @@ const MIME = {
   '.ico':  'image/x-icon',
 };
 
-const STATIC_ROOT = path.join(__dirname, 'ZoneDrop');
+const STATIC_ROOT = path.join(__dirname, '..');
 
 const server = http.createServer((req, res) => {
   let urlPath = req.url.split('?')[0];
-  if (urlPath === '/') urlPath = '/zone-drop.html';
+  if (urlPath === '/') urlPath = '/index.html';
 
   const filePath = path.join(STATIC_ROOT, urlPath);
-  // Prevent directory traversal
-  if (!filePath.startsWith(STATIC_ROOT)) {
+  // Prevent directory traversal and block sensitive paths
+  if (!filePath.startsWith(STATIC_ROOT) || urlPath.includes('/.claude')) {
     res.writeHead(403); res.end(); return;
   }
 

@@ -23,8 +23,18 @@ class NetworkManager {
 
   // ── Connect ────────────────────────────────────────────────────────────────
   connect(playerName) {
-    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-    const url = protocol + '://' + location.host;
+    // --- MULTIPLAYER DEPLOYMENT ---
+    // Once you deploy to Render.com, paste your new 'wss://...' URL here:
+    const SERVER_URL = ''; 
+
+    let url;
+    if (SERVER_URL) {
+      url = SERVER_URL;
+    } else {
+      const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+      url = protocol + '://' + location.host;
+    }
+
     this.ws = new WebSocket(url);
     this._playerName = playerName;
 
