@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository. After making any changes, always remember to update the claude.md file
 
 ## Project Overview
 
-A personal game portfolio hosted at **aiden.rivi.us** containing 7+ browser-based games. All games are vanilla JavaScript with no build step. The only server-side component is the Zone Drop multiplayer WebSocket server.
+A personal game portfolio hosted at **aiden.rivi.us** containing 7+ browser-based games. All games are vanilla JavaScript with no build step. The only server-side component is the Zone Drop multiplayer WebSocket server. Only ever make changes when you are 95% sure that it will work.
 
 ## Running the Project
 
