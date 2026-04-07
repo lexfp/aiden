@@ -1492,6 +1492,8 @@
                 this.burstTimer = 0;
                 this.isSummon = false;
                 this.summonCount = 0;
+                this.domainUsed = false;    // Domain Expansion: one trigger per bot
+                this._domainSummon = false; // true if spawned by Megumi domain
 
                 // Assign a random weapon (ranged only, not melee, not legendary)
                 const botWeps = WDEFS.filter(w => w.cat !== 'melee' && w.price <= 4200);
@@ -1614,6 +1616,12 @@
                 this.abilityCooldown = Math.max(0, this.abilityCooldown - dt);
                 if (this.abilityCooldown <= 0 && this.state !== 'patrol') {
                     this.useAbility(playerPos);
+                }
+
+                // Domain Expansion trigger: fires once when bot HP drops below 30%
+                if (window.G && window.G.domainManager && !this.domainUsed &&
+                    this.hp > 0 && (this.hp / this.maxHp) < 0.30) {
+                    window.G.domainManager.tryActivate(this);
                 }
                 if (this.shieldActive) {
                     this.shieldTimer -= dt;
