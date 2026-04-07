@@ -1,174 +1,176 @@
-Implement these instruction in step by step in case of internet disconnection.
-Implement these intructions in the "Hunters" game
+You are a senior game engineer working on an existing Three.js game.
+
 The project already includes:
-- Player movement and animation (third-person)
-- Enemy AI system
-- Raycasting shooting system
-- Health and damage system
-- Modular code structure
+- Player movement and animation
+- Enemy AI with multiple character types
+- Shooting (cursed energy attack)
+- Health and damage systems
+- JJK-inspired enemy ability system
 
 Your task:
-Refactor and extend the game into a FULL JJK-inspired character system with many unique enemy types and abilities.
+Implement a FULL "Domain Expansion" system inspired by JJK.
 
 IMPORTANT:
 - DO NOT rewrite the project
-- ONLY modify and extend existing systems
-- Preserve all current functionality
-- Keep code clean, modular, and scalable
+- Extend existing systems only
+- Keep everything modular and performant
 
 -------------------------------------
 
 GOAL:
-Create a scalable character system that supports MANY different enemy types with unique stats and abilities.
+Add powerful area-based abilities ("Domain Expansions") that temporarily change gameplay rules, visuals, and combat behavior.
 
 -------------------------------------
 
-1. CHARACTER CONFIG SYSTEM (REQUIRED)
+1. DOMAIN SYSTEM CORE
 
-Create a centralized configuration object:
+Create a DomainManager system:
 
-const CHARACTER_TYPES = {
-  gojo: { health: 120, speed: 1.2, color: 0x88ccff, ability: "shield" },
-  sukuna: { health: 200, speed: 1.0, color: 0xff4444, ability: "slash" },
-  nanami: { health: 140, speed: 1.0, color: 0xffdd88, ability: "critical" },
-  mahito: { health: 100, speed: 1.3, color: 0xaa66ff, ability: "dodge" },
-  megumi: { health: 130, speed: 1.1, color: 0x3333ff, ability: "summon" },
-  yuji: { health: 150, speed: 1.2, color: 0xff8888, ability: "burst" },
-  yuta: { health: 160, speed: 1.1, color: 0xffffff, ability: "energy" },
-  toji: { health: 170, speed: 1.4, color: 0x222222, ability: "rush" },
-  geto: { health: 150, speed: 1.0, color: 0x5500aa, ability: "projectile" }
-};
+- Tracks active domains
+- Handles:
+  - activation
+  - duration
+  - effects
+  - cleanup
 
--------------------------------------
-
-2. ENEMY CLASS REFACTOR
-
-Modify the Enemy class to:
-- Accept a "type" parameter
-- Load stats from CHARACTER_TYPES
-- Assign:
-  - health
-  - speed
-  - ability
-  - visual material
-
-Ensure each enemy has:
-- Independent animation mixer
-- Independent state (idle, chasing, dead)
+Each domain should have:
+- type
+- radius
+- duration
+- owner (enemy or player)
+- active state
 
 -------------------------------------
 
-3. ABILITY SYSTEM (CORE FEATURE)
+2. DOMAIN TYPES (REQUIRED)
 
-Implement a structured ability system:
+Implement the following domains:
 
-Each enemy must have:
-- abilityType
-- cooldownTimer
-- useAbility() method
+GOJO — "Infinite Void"
+- Effect:
+  - All enemies inside are frozen/slowed heavily
+  - Player gains advantage
+- Visual:
+  - Blue/purple overlay
+  - Slight blur or glow effect
 
-Implement abilities:
+SUKUNA — "Malevolent Shrine"
+- Effect:
+  - Continuous damage to player inside area
+  - Increased enemy aggression
+- Visual:
+  - Red/dark aura
+  - Pulsing effect
 
-- shield (Gojo):
-  temporary invulnerability
+MAHITO — "Self-Embodiment of Perfection"
+- Effect:
+  - Player movement becomes unstable (random offsets or jitter)
+  - Increased enemy dodge rate
+- Visual:
+  - Distorted or warped screen effect
 
-- slash (Sukuna):
-  short-range AoE damage
-
-- critical (Nanami):
-  occasional high-damage attack
-
-- dodge (Mahito):
-  chance to ignore incoming damage
-
-- summon (Megumi):
-  spawn small helper enemies
-
-- burst (Yuji):
-  temporary speed + damage boost
-
-- energy (Yuta):
-  ranged energy attack
-
-- rush (Toji):
-  fast dash toward player
-
-- projectile (Geto):
-  slow powerful ranged attack
-
-All abilities must:
-- Have cooldowns
-- Be triggered in update loop
-- Not break existing systems
+MEGUMI — "Chimera Shadow Garden"
+- Effect:
+  - Spawns multiple shadow enemies over time
+- Visual:
+  - Dark ground tint
+  - Shadow particles
 
 -------------------------------------
 
-4. DAMAGE SYSTEM EXTENSION
+3. ACTIVATION SYSTEM
 
-Modify damage handling to support:
-- Damage blocking (shield)
-- Damage avoidance (dodge)
-- Ability-based modifiers
+- Domains trigger:
+  - Automatically when enemy health is low OR
+  - Random cooldown-based trigger
 
--------------------------------------
-
-5. ENEMY SPAWNING SYSTEM
-
-Refactor spawning to:
-- Randomly choose types from CHARACTER_TYPES
-- Spawn a mix of enemies
-
-Example:
-const types = Object.keys(CHARACTER_TYPES);
+- Only one domain active at a time (simplify system)
 
 -------------------------------------
 
-6. VISUAL DIFFERENTIATION
+4. AREA EFFECT SYSTEM
 
-Apply per-type visuals:
-- Different colors
-- Optional emissive glow for strong enemies
-- Slight scale differences
+- Use distance checks:
+  if (distanceToPlayer < domain.radius)
 
--------------------------------------
-
-7. PLAYER WEAPON REFACTOR
-
-Rename shooting system to:
-- "Cursed Energy Attack"
-
-Optional:
-- Slight visual variation in shots
+- Apply effects ONLY inside domain
 
 -------------------------------------
 
-8. PERFORMANCE + STABILITY
+5. GAMEPLAY RULE MODIFIERS
 
-- Limit max enemies (10–20)
-- Avoid memory leaks
-- Ensure animation mixers are handled correctly
+Implement temporary rule overrides:
+
+Examples:
+- Movement speed multiplier
+- Damage multiplier
+- Disable shooting (optional for certain domains)
+- AI aggression boost
+
+These must:
+- Activate on domain start
+- Reset on domain end
 
 -------------------------------------
 
-OUTPUT FORMAT:
+6. VISUAL SYSTEM
 
-- Show ONLY modified or new code
-- Clearly indicate where changes go
-- Use clear section labels
-- Ensure code is directly usable
+Add screen-space effects:
+
+- Fullscreen overlay (HTML/CSS or shader)
+- Color tint based on domain type
+- Optional:
+  - screen shake
+  - vignette
+  - pulse animation
 
 -------------------------------------
 
-FINAL REQUIREMENTS:
+7. UPDATE LOOP
 
-- Multiple enemy types spawn
-- Each has unique behavior
-- Abilities function correctly
-- No regression in movement, shooting, or animations
-- Code is clean and extensible
+Each frame:
+- Update domain timer
+- Apply effects
+- Remove domain when duration ends
 
-Apply the changes now.
+-------------------------------------
 
-Make sure that when you start a match, there is no black-screen and test everything thouroughly and don't make any changes util you are 95% sure they will work
+8. CLEANUP (VERY IMPORTANT)
 
-Once you are done IMPORTANT!!! PUSH ALL changes
+When domain ends:
+- Restore ALL modified values:
+  - player speed
+  - enemy behavior
+  - visuals
+- Remove overlays/effects
+
+-------------------------------------
+
+9. STRUCTURE
+
+Create:
+- DomainManager class
+- Domain class or config object
+
+Keep code modular and separate from Enemy class
+
+-------------------------------------
+
+OUTPUT REQUIREMENTS:
+
+- Show ONLY new code and modifications
+- Clearly label where to insert
+- Do NOT rewrite full project
+
+-------------------------------------
+
+FINAL CHECK:
+
+- Domains activate correctly
+- Effects apply only inside area
+- Visual effects appear
+- Rules change temporarily
+- Everything resets cleanly
+- No performance issues
+
+Apply changes now.

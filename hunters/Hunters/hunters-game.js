@@ -88,9 +88,9 @@
         // GAME MODE DEFINITIONS
         // ============================================================
         const GAME_MODES = [
-            { id: 'elimination', name: 'Elimination', icon: 'â˜ ï¸', desc: 'Kill all enemies' },
-            { id: 'survival', name: 'Survival', icon: 'ðŸŒŠ', desc: 'Survive 5 waves' },
-            { id: 'timed', name: 'Timed Hunt', icon: 'â±ï¸', desc: 'Most kills in 2 min' },
+            { id: 'elimination', name: 'Extermination', icon: 'â˜ ï¸', desc: 'Eliminate all cursed spirits' },
+            { id: 'survival', name: 'Domain Siege', icon: 'ðŸŒŠ', desc: 'Survive 5 waves of curses' },
+            { id: 'timed', name: 'Cursed Hunt', icon: 'â±ï¸', desc: 'Most exorcisms in 2 min' },
         ];
 
         // ============================================================
@@ -125,7 +125,7 @@
         // ============================================================
         const MDEFS = [
             {
-                id: 'arena', name: 'Combat Arena', icon: 'ðŸŸï¸', size: 'SMALL',
+                id: 'arena', name: 'Jujutsu High', icon: 'ðŸŸï¸', size: 'SMALL',
                 floor: 0x1a1a2a, wall: 0x2a2244, accent: 0xff3366,
                 ambient: 0x221133, fog: [0x1a1a2a, .04],
                 botCount: 3,
@@ -143,7 +143,7 @@
                 playerSpawn: { x: 0, z: 11 },
             },
             {
-                id: 'warehouse', name: 'Warehouse', icon: 'ðŸ­', size: 'MEDIUM',
+                id: 'warehouse', name: 'Zenin Estate', icon: 'ðŸ­', size: 'MEDIUM',
                 floor: 0x1a1610, wall: 0x2a2014, accent: 0xff8800,
                 ambient: 0x221a10, fog: [0x1a1610, .025],
                 obstacles: [
@@ -162,7 +162,7 @@
                 playerSpawn: { x: 0, z: 0 },
             },
             {
-                id: 'rooftop', name: 'Rooftop', icon: 'ðŸ™ï¸', size: 'MEDIUM',
+                id: 'rooftop', name: 'Shibuya', icon: 'ðŸ™ï¸', size: 'MEDIUM',
                 urbanGltf: true,
                 floor: 0x181820, wall: 0x222233, accent: 0x00ccff,
                 ambient: 0x101020, fog: [0x101522, .02],
@@ -183,7 +183,7 @@
                 playerSpawn: { x: 0, z: 0 },
             },
             {
-                id: 'desert', name: 'Desert Ruins', icon: 'ðŸœï¸', size: 'LARGE',
+                id: 'desert', name: 'Cursed Tomb', icon: 'ðŸœï¸', size: 'LARGE',
                 floor: 0x3a2a10, wall: 0x4a3820, accent: 0xffaa00,
                 ambient: 0x302010, fog: [0x4a3820, .015],
                 obstacles: [
@@ -203,7 +203,7 @@
                 playerSpawn: { x: 0, z: 12 },
             },
             {
-                id: 'neon', name: 'Neon City', icon: 'ðŸŒ†', size: 'LARGE',
+                id: 'neon', name: 'Tokyo Colony', icon: 'ðŸŒ†', size: 'LARGE',
                 urbanGltf: true,
                 floor: 0x050510, wall: 0x0a0a20, accent: 0xff00ff,
                 ambient: 0x050515, fog: [0x050510, .018],
@@ -218,7 +218,7 @@
                 playerSpawn: { x: 0, z: 0 },
             },
             {
-                id: 'bunker', name: 'Bunker', icon: 'ðŸ—ï¸', size: 'SMALL',
+                id: 'bunker', name: 'Culling Game', icon: 'ðŸ—ï¸', size: 'SMALL',
                 floor: 0x141410, wall: 0x1e1e16, accent: 0x88ff44,
                 ambient: 0x101008, fog: [0x141410, .07],
                 botCount: 3,
@@ -240,7 +240,7 @@
                 playerSpawn: { x: 0, z: 10 },
             },
             {
-                id: 'ice', name: 'Ice Field', icon: 'â„ï¸', size: 'LARGE',
+                id: 'ice', name: 'Frost Domain', icon: 'â„ï¸', size: 'LARGE',
                 floor: 0x99bbdd, wall: 0xaaccee, accent: 0x00ffff,
                 ambient: 0x7799aa, fog: [0xaabbcc, .010],
                 botCount: 4,
@@ -263,7 +263,7 @@
                 playerSpawn: { x: 0, z: 14 },
             },
             {
-                id: 'temple', name: 'Ancient Temple', icon: 'ðŸ›ï¸', size: 'LARGE',
+                id: 'temple', name: 'Cursed Shrine', icon: 'ðŸ›ï¸', size: 'LARGE',
                 floor: 0x2a1e0a, wall: 0x3a2810, accent: 0xffcc44,
                 ambient: 0x1e1408, fog: [0x2a1a08, .014],
                 botCount: 4,
@@ -287,7 +287,7 @@
                 playerSpawn: { x: 5, z: -12 },
             },
             {
-                id: 'space', name: 'Space Station', icon: 'ðŸš€', size: 'MEDIUM',
+                id: 'space', name: 'Void Realm', icon: 'ðŸš€', size: 'MEDIUM',
                 floor: 0x080818, wall: 0x101028, accent: 0x0088ff,
                 ambient: 0x040412, fog: [0x060616, .025],
                 botCount: 4,
@@ -2407,6 +2407,12 @@
 
             // ---- MATCH ----
             startMatch() {
+                // Ensure Three.js is initialized before starting
+                if (!renderer) setupThreeJS();
+                if (!camera || !scene || !renderer) {
+                    this.showNotif('CURSED ENERGY UNAVAILABLE — RELOAD PAGE', 4000);
+                    return;
+                }
                 this.matchKills = 0;
                 this.matchDmgDealt = 0;
                 this._killStreak = 0;
@@ -2536,7 +2542,7 @@
                     this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), waveDiff, this.bots.length, jjkType));
                 }
                 document.getElementById('wave-d').textContent = 'WAVE ' + this.waveNum;
-                this.showNotif('WAVE ' + this.waveNum + ' - ' + waveSize + ' ENEMIES!', 2500);
+                this.showNotif('WAVE ' + this.waveNum + ' - ' + waveSize + ' CURSED SPIRITS!', 2500);
             },
 
             updateWeaponModel() {
@@ -2596,13 +2602,13 @@
 
                 const title = document.getElementById('res-title');
                 const isWin = won || this.selMode === 'timed';
-                title.textContent = quit ? 'QUIT' : isWin ? 'VICTORY' : 'DEFEAT';
+                title.textContent = quit ? 'RETREAT' : isWin ? 'DOMAIN EXPANDED' : 'CURSED SPIRIT WINS';
                 title.className = isWin ? 'r-win' : 'r-loss';
                 document.getElementById('res-stats').innerHTML = `
-      ${extraInfo}Eliminations: ${this.matchKills}<br>
-      Damage Dealt: ${this.matchDmgDealt}<br>
-      Coins Earned: +${coins}<br>
-      Total Coins: ${save.coins}
+      ${extraInfo}Cursed Spirits Exorcised: ${this.matchKills}<br>
+      Cursed Energy Output: ${this.matchDmgDealt}<br>
+      Grade Points Earned: +${coins}<br>
+      Total Grade Points: ${save.coins}
     `;
                 this.showScreen('s-over');
             },

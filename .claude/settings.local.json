@@ -13,7 +13,9 @@
       "Bash(wc -l /c/Users/aiden_hkxjvjx/Documents/Code/Aiden/aiden/JJK-Grind/JJK-grind/js/*.js)",
       "Bash(wc:*)",
       "Bash(grep -E \"\\\\.\\(txt|md|json|config|yaml|yml\\)$\")",
-      "Bash(powershell.exe:*)"
+      "Bash(powershell.exe:*)",
+      "Bash(node -e \"require\\('fs'\\).readFileSync\\('C:/Users/aiden_hkxjvjx/Documents/Code/Aiden/aiden/hunters/Hunters/hunters-game.js', 'utf8'\\)\")",
+      "Bash(node:*)"
     ]
   }
 }

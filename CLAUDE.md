@@ -36,7 +36,7 @@ Each game lives in its own top-level directory and is a self-contained HTML/CSS/
 | Zone Drop | `zone-drop/ZoneDrop/zone-drop.html` | Three.js 3D | Multiplayer battle royale with building/looting/storm |
 | Solo Level | `solo-level/Solo-Level/solo-leveling.html` | Canvas 2D | Dungeon crawler with rank progression |
 | JJK Arena | `JJK-arena/JJK-Arena/jjk-fighter.html` | Canvas 2D | 1v1 fighting game |
-| Hunters | `hunters/Hunters/hunters.html` | Canvas 2D | Hunter progression fighting game |
+| Hunters | `hunters/Hunters/hunters.html` | Three.js 3D | JJK-themed FPS with cursed energy combat, domain selection, cursed armory |
 | Infinity Corp | `jjk-infinity-corp/infinitycorp/infinitycorp-game.html` | DOM | Idle empire builder (has PWA service worker) |
 | Multiplication Game | `MultiplicationGames/MultiplicationGame/multiplication-game.html` | DOM | Educational math game |
 | JJK Clicker | `JJK-Clicker/` | DOM | Chrome extension (Manifest V3) |
