@@ -1,6 +1,174 @@
-Follow these steps in order so that in case of losing connection you can pick off where you left
-1. you started the zone-drop game but never finished use ./game.txt to finish it.
-2. create link for zone drop in the root index.html like the rest of the games.
-3. in the hunters game, there is a blackscreen error when a match is started. fix that.
-4. in jjk-grind the lag is unbearable. fix that.
-5. IMPORTANT: DO NOT SKIP once you are done, push all changes
+Implement these instruction in step by step in case of internet disconnection.
+Implement these intructions in the "Hunters" game
+The project already includes:
+- Player movement and animation (third-person)
+- Enemy AI system
+- Raycasting shooting system
+- Health and damage system
+- Modular code structure
+
+Your task:
+Refactor and extend the game into a FULL JJK-inspired character system with many unique enemy types and abilities.
+
+IMPORTANT:
+- DO NOT rewrite the project
+- ONLY modify and extend existing systems
+- Preserve all current functionality
+- Keep code clean, modular, and scalable
+
+-------------------------------------
+
+GOAL:
+Create a scalable character system that supports MANY different enemy types with unique stats and abilities.
+
+-------------------------------------
+
+1. CHARACTER CONFIG SYSTEM (REQUIRED)
+
+Create a centralized configuration object:
+
+const CHARACTER_TYPES = {
+  gojo: { health: 120, speed: 1.2, color: 0x88ccff, ability: "shield" },
+  sukuna: { health: 200, speed: 1.0, color: 0xff4444, ability: "slash" },
+  nanami: { health: 140, speed: 1.0, color: 0xffdd88, ability: "critical" },
+  mahito: { health: 100, speed: 1.3, color: 0xaa66ff, ability: "dodge" },
+  megumi: { health: 130, speed: 1.1, color: 0x3333ff, ability: "summon" },
+  yuji: { health: 150, speed: 1.2, color: 0xff8888, ability: "burst" },
+  yuta: { health: 160, speed: 1.1, color: 0xffffff, ability: "energy" },
+  toji: { health: 170, speed: 1.4, color: 0x222222, ability: "rush" },
+  geto: { health: 150, speed: 1.0, color: 0x5500aa, ability: "projectile" }
+};
+
+-------------------------------------
+
+2. ENEMY CLASS REFACTOR
+
+Modify the Enemy class to:
+- Accept a "type" parameter
+- Load stats from CHARACTER_TYPES
+- Assign:
+  - health
+  - speed
+  - ability
+  - visual material
+
+Ensure each enemy has:
+- Independent animation mixer
+- Independent state (idle, chasing, dead)
+
+-------------------------------------
+
+3. ABILITY SYSTEM (CORE FEATURE)
+
+Implement a structured ability system:
+
+Each enemy must have:
+- abilityType
+- cooldownTimer
+- useAbility() method
+
+Implement abilities:
+
+- shield (Gojo):
+  temporary invulnerability
+
+- slash (Sukuna):
+  short-range AoE damage
+
+- critical (Nanami):
+  occasional high-damage attack
+
+- dodge (Mahito):
+  chance to ignore incoming damage
+
+- summon (Megumi):
+  spawn small helper enemies
+
+- burst (Yuji):
+  temporary speed + damage boost
+
+- energy (Yuta):
+  ranged energy attack
+
+- rush (Toji):
+  fast dash toward player
+
+- projectile (Geto):
+  slow powerful ranged attack
+
+All abilities must:
+- Have cooldowns
+- Be triggered in update loop
+- Not break existing systems
+
+-------------------------------------
+
+4. DAMAGE SYSTEM EXTENSION
+
+Modify damage handling to support:
+- Damage blocking (shield)
+- Damage avoidance (dodge)
+- Ability-based modifiers
+
+-------------------------------------
+
+5. ENEMY SPAWNING SYSTEM
+
+Refactor spawning to:
+- Randomly choose types from CHARACTER_TYPES
+- Spawn a mix of enemies
+
+Example:
+const types = Object.keys(CHARACTER_TYPES);
+
+-------------------------------------
+
+6. VISUAL DIFFERENTIATION
+
+Apply per-type visuals:
+- Different colors
+- Optional emissive glow for strong enemies
+- Slight scale differences
+
+-------------------------------------
+
+7. PLAYER WEAPON REFACTOR
+
+Rename shooting system to:
+- "Cursed Energy Attack"
+
+Optional:
+- Slight visual variation in shots
+
+-------------------------------------
+
+8. PERFORMANCE + STABILITY
+
+- Limit max enemies (10–20)
+- Avoid memory leaks
+- Ensure animation mixers are handled correctly
+
+-------------------------------------
+
+OUTPUT FORMAT:
+
+- Show ONLY modified or new code
+- Clearly indicate where changes go
+- Use clear section labels
+- Ensure code is directly usable
+
+-------------------------------------
+
+FINAL REQUIREMENTS:
+
+- Multiple enemy types spawn
+- Each has unique behavior
+- Abilities function correctly
+- No regression in movement, shooting, or animations
+- Code is clean and extensible
+
+Apply the changes now.
+
+Make sure that when you start a match, there is no black-screen and test everything thouroughly and don't make any changes util you are 95% sure they will work
+
+Once you are done IMPORTANT!!! PUSH ALL changes

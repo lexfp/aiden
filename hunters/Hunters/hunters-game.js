@@ -105,6 +105,22 @@
         ];
 
         // ============================================================
+        // JJK CHARACTER TYPES
+        // ============================================================
+        const JJK_CHARACTER_TYPES = {
+            gojo:   { health: 120, speed: 1.2, color: 0x88ccff, ability: 'shield',      emissive: false, scale: 1.0,  label: 'Gojo'   },
+            sukuna: { health: 200, speed: 1.0, color: 0xff4444, ability: 'slash',       emissive: true,  scale: 1.1,  label: 'Sukuna' },
+            nanami: { health: 140, speed: 1.0, color: 0xffdd88, ability: 'critical',    emissive: false, scale: 1.0,  label: 'Nanami' },
+            mahito: { health: 100, speed: 1.3, color: 0xaa66ff, ability: 'dodge',       emissive: false, scale: 0.95, label: 'Mahito' },
+            megumi: { health: 130, speed: 1.1, color: 0x3333ff, ability: 'summon',      emissive: false, scale: 1.0,  label: 'Megumi' },
+            yuji:   { health: 150, speed: 1.2, color: 0xff8888, ability: 'burst',       emissive: false, scale: 1.05, label: 'Yuji'   },
+            yuta:   { health: 160, speed: 1.1, color: 0xffffff, ability: 'energy',      emissive: true,  scale: 1.0,  label: 'Yuta'   },
+            toji:   { health: 170, speed: 1.4, color: 0x222222, ability: 'rush',        emissive: true,  scale: 1.1,  label: 'Toji'   },
+            geto:   { health: 150, speed: 1.0, color: 0x5500aa, ability: 'projectile',  emissive: false, scale: 1.0,  label: 'Geto'   }
+        };
+        const JJK_TYPES_LIST = Object.keys(JJK_CHARACTER_TYPES);
+
+        // ============================================================
         // MAP DEFINITIONS
         // ============================================================
         const MDEFS = [
@@ -1433,12 +1449,23 @@
         const BOT_EYE = 1.6;
 
         class Bot {
-            constructor(pos, diff, index) {
+            constructor(pos, diff, index, jjkType) {
                 this.pos = pos.clone();
                 this.diff = diff;
-                this.maxHp = diff.hp;
+                this.index = index;
+
+                // JJK character type
+                const typeKey = jjkType || JJK_TYPES_LIST[index % JJK_TYPES_LIST.length];
+                this.jjkDef = JJK_CHARACTER_TYPES[typeKey] || JJK_CHARACTER_TYPES.gojo;
+                this.jjkLabel = this.jjkDef.label;
+
+                // Stats scaled from diff + JJK type (130 = baseline health reference)
+                this.maxHp = Math.round(diff.hp * (this.jjkDef.health / 130));
                 this.hp = this.maxHp;
-                this.speed = diff.speed;
+                this.speed = diff.speed * this.jjkDef.speed;
+                this._baseSpeed = this.speed;
+                this.color = this.jjkDef.color;
+
                 this.yaw = Math.random() * Math.PI * 2;
                 this.state = 'patrol';
                 this.shootTimer = diff.react + Math.random() * .5;
@@ -1451,10 +1478,21 @@
                 this.hoverPhase = Math.random() * Math.PI * 2;
                 this.hitFlash = 0;
                 this.alive = true;
-                this.index = index;
-                this.colors = [0xff4444, 0x44aaff, 0x44ff44, 0xffaa00, 0xff44ff, 0x44ffff];
-                this.color = this.colors[index % this.colors.length];
                 this.statusEffects = {};
+
+                // Ability system
+                this.abilityType = this.jjkDef.ability;
+                this.abilityCooldown = 2 + Math.random() * 4; // stagger initial triggers
+                this.shieldActive = false;
+                this.shieldTimer = 0;
+                this.dodgeActive = false;
+                this.dodgeTimer = 0;
+                this.critNext = false;
+                this.burstActive = false;
+                this.burstTimer = 0;
+                this.isSummon = false;
+                this.summonCount = 0;
+
                 // Assign a random weapon (ranged only, not melee, not legendary)
                 const botWeps = WDEFS.filter(w => w.cat !== 'melee' && w.price <= 4200);
                 this.weapon = botWeps[Math.floor(Math.random() * botWeps.length)];
@@ -1511,6 +1549,16 @@
                 this.group.castShadow = true;
                 scene.add(this.group);
 
+                // JJK scale
+                this.group.scale.setScalar(this.jjkDef.scale);
+
+                // Emissive glow for strong JJK enemies
+                if (this.jjkDef.emissive) {
+                    this.glowLight = new THREE.PointLight(this.color, 0.6, 3);
+                    this.glowLight.position.set(0, 1, 0);
+                    this.group.add(this.glowLight);
+                }
+
                 // Health bar (sprite)
                 const canvas = document.createElement('canvas');
                 canvas.width = 128; canvas.height = 24;
@@ -1523,6 +1571,21 @@
                 this.hbSprite.position.y = 2.2;
                 this.group.add(this.hbSprite);
                 this.updateHBar();
+
+                // JJK name label sprite above health bar
+                const lblCanvas = document.createElement('canvas');
+                lblCanvas.width = 128; lblCanvas.height = 20;
+                const lblCtx = lblCanvas.getContext('2d');
+                lblCtx.font = 'bold 13px Arial';
+                lblCtx.textAlign = 'center';
+                lblCtx.fillStyle = '#' + this.color.toString(16).padStart(6, '0');
+                lblCtx.fillText(this.jjkLabel.toUpperCase(), 64, 14);
+                const lblTex = new THREE.CanvasTexture(lblCanvas);
+                const lblMat = new THREE.SpriteMaterial({ map: lblTex, transparent: true, depthTest: false });
+                this.lblSprite = new THREE.Sprite(lblMat);
+                this.lblSprite.scale.set(1.4, .22, 1);
+                this.lblSprite.position.y = 2.55;
+                this.group.add(this.lblSprite);
 
                 // Weapon prop (colored by bot's weapon)
                 const wepGeo = new THREE.BoxGeometry(.06, .06, .4);
@@ -1546,6 +1609,26 @@
 
             update(dt, playerPos, playerBox) {
                 if (!this.alive) return;
+
+                // Ability system tick
+                this.abilityCooldown = Math.max(0, this.abilityCooldown - dt);
+                if (this.abilityCooldown <= 0 && this.state !== 'patrol') {
+                    this.useAbility(playerPos);
+                }
+                if (this.shieldActive) {
+                    this.shieldTimer -= dt;
+                    if (this.shieldTimer <= 0) {
+                        this.shieldActive = false;
+                        // Remove shield tint
+                        this.group.traverse(c => { if (c.isMesh && c.material && c.material.color) c.material.color.setHex(this.color); });
+                    }
+                }
+                if (this.dodgeActive) { this.dodgeTimer -= dt; if (this.dodgeTimer <= 0) this.dodgeActive = false; }
+                if (this.burstActive) {
+                    this.burstTimer -= dt;
+                    if (this.burstTimer <= 0) { this.burstActive = false; this.speed = this._baseSpeed; }
+                }
+
                 const toPlayer = new THREE.Vector3().subVectors(playerPos, this.pos);
                 toPlayer.y = 0;
                 const dist = toPlayer.length();
@@ -1711,8 +1794,13 @@
                 const hits = ray.intersectObjects(getRaycastTargets());
                 if (hits.length > 0 && hits[0].distance < dist - .5) return;
 
-                // Damage based on bot's weapon
-                const baseDmg = this.weapon ? Math.round((this.weapon.dmg * (.52 + Math.random() * .18)) * (this.diff.dmgMult || 1)) : Math.round((18 + Math.random() * 12) * (this.diff.dmgMult || 1));
+                // Damage based on bot's weapon, with ability multipliers
+                let critMult = 1;
+                if (this.critNext) { critMult = 3; this.critNext = false; }
+                if (this.burstActive) critMult *= 1.5;
+                const baseDmg = this.weapon
+                    ? Math.round((this.weapon.dmg * (.52 + Math.random() * .18)) * (this.diff.dmgMult || 1) * critMult)
+                    : Math.round((18 + Math.random() * 12) * (this.diff.dmgMult || 1) * critMult);
                 G.playerTakeDamage(baseDmg);
 
                 // Visual: tracer with weapon color
@@ -1720,8 +1808,164 @@
                 spawnTracer(from, playerPos, tracerColor);
             }
 
+            useAbility(playerPos) {
+                const dist = this.pos.distanceTo(playerPos);
+                switch (this.abilityType) {
+                    case 'shield': {
+                        // Gojo: temporary invulnerability for 3s
+                        this.shieldActive = true;
+                        this.shieldTimer = 3;
+                        this.abilityCooldown = 12;
+                        // Visual: flash body blue-white
+                        this.group.traverse(c => {
+                            if (c.isMesh && c.material && c.material.color) {
+                                c.material.color.setHex(0xaaddff);
+                            }
+                        });
+                        G.showNotif && G.showNotif('Gojo: Infinity Shield!', 1200);
+                        break;
+                    }
+                    case 'slash': {
+                        // Sukuna: short-range AoE damage
+                        if (dist < 6) {
+                            G.playerTakeDamage(40);
+                            spawnImpact(this.group.position.clone().add(new THREE.Vector3(0, 1, 0)), 0xff0000);
+                            for (let i = 0; i < 8; i++) {
+                                const v = new THREE.Vector3((Math.random() - .5) * 6, Math.random() * 3 + 1, (Math.random() - .5) * 6);
+                                particles.push(new Particle(this.group.position.clone().add(new THREE.Vector3(0, .8, 0)), v, 0xff2200, .5, .07));
+                            }
+                        }
+                        this.abilityCooldown = 5;
+                        break;
+                    }
+                    case 'critical': {
+                        // Nanami: flag next shot as critical (3x damage)
+                        this.critNext = true;
+                        this.abilityCooldown = 8;
+                        break;
+                    }
+                    case 'dodge': {
+                        // Mahito: chance to avoid incoming damage for 2s
+                        this.dodgeActive = true;
+                        this.dodgeTimer = 2;
+                        this.abilityCooldown = 10;
+                        spawnImpact(this.group.position.clone().add(new THREE.Vector3(0, 1, 0)), 0xaa66ff);
+                        break;
+                    }
+                    case 'summon': {
+                        // Megumi: spawn up to 2 small helper shikigami
+                        if (this.summonCount < 2 && G.bots.filter(b => b.alive && !b.isSummon).length < 18) {
+                            const summonDiff = { ...this.diff, hp: Math.round(this.diff.hp * 0.35), speed: this.diff.speed * 0.8 };
+                            const offset = new THREE.Vector3((Math.random() - .5) * 2, 0, (Math.random() - .5) * 2);
+                            const sBot = new Bot(this.pos.clone().add(offset), summonDiff, G.bots.length, 'mahito');
+                            sBot.isSummon = true;
+                            sBot.group.scale.setScalar(0.6);
+                            const parent = this;
+                            const origDie = sBot.die.bind(sBot);
+                            sBot.die = function() { parent.summonCount--; origDie(); };
+                            G.bots.push(sBot);
+                            this.summonCount++;
+                            if (this.summonCount < 2) {
+                                const sBot2 = new Bot(this.pos.clone().add(new THREE.Vector3(-offset.x, 0, -offset.z)), summonDiff, G.bots.length, 'mahito');
+                                sBot2.isSummon = true;
+                                sBot2.group.scale.setScalar(0.6);
+                                const origDie2 = sBot2.die.bind(sBot2);
+                                sBot2.die = function() { parent.summonCount--; origDie2(); };
+                                G.bots.push(sBot2);
+                                this.summonCount++;
+                            }
+                        }
+                        this.abilityCooldown = 15;
+                        break;
+                    }
+                    case 'burst': {
+                        // Yuji: temporary speed + damage boost for 4s
+                        if (!this.burstActive) {
+                            this.burstActive = true;
+                            this.burstTimer = 4;
+                            this.speed = this._baseSpeed * 1.8;
+                            spawnImpact(this.group.position.clone().add(new THREE.Vector3(0, 1, 0)), 0xff8800);
+                        }
+                        this.abilityCooldown = 9;
+                        break;
+                    }
+                    case 'energy': {
+                        // Yuta: ranged energy attack up to 60 units
+                        if (dist < 60) {
+                            const from = new THREE.Vector3(this.pos.x, BOT_EYE, this.pos.z);
+                            const dir = new THREE.Vector3().subVectors(playerPos, from).normalize();
+                            const ray = new THREE.Raycaster(from, dir);
+                            const wallHits = ray.intersectObjects(getRaycastTargets());
+                            const blocked = wallHits.length > 0 && wallHits[0].distance < dist - .5;
+                            if (!blocked) {
+                                G.playerTakeDamage(40);
+                                spawnTracer(from, playerPos, 0xffffff);
+                                spawnImpact(playerPos.clone(), 0xffffff);
+                            }
+                        }
+                        this.abilityCooldown = 7;
+                        break;
+                    }
+                    case 'rush': {
+                        // Toji: dash 4 units toward player, deal 50 damage if very close
+                        const rushDir = new THREE.Vector3().subVectors(playerPos, this.pos);
+                        rushDir.y = 0;
+                        const rushDist = Math.min(4, rushDir.length());
+                        rushDir.normalize().multiplyScalar(rushDist);
+                        const nx = this.pos.x + rushDir.x;
+                        const nz = this.pos.z + rushDir.z;
+                        if (!collidesWithObstacle(nx, nz, BOT_RADIUS)) {
+                            this.pos.x = nx; this.pos.z = nz;
+                            this.group.position.x = nx; this.group.position.z = nz;
+                        }
+                        if (this.pos.distanceTo(playerPos) < 3) {
+                            G.playerTakeDamage(50);
+                            spawnImpact(playerPos.clone(), 0x222222);
+                        }
+                        this.abilityCooldown = 6;
+                        break;
+                    }
+                    case 'projectile': {
+                        // Geto: slow powerful ranged attack (delayed 0.8s)
+                        if (dist < 50) {
+                            const from = new THREE.Vector3(this.pos.x, BOT_EYE, this.pos.z);
+                            const target = playerPos.clone();
+                            spawnTracer(from, target, 0x9933ff);
+                            setTimeout(() => {
+                                if (!G || G.state !== 'playing') return;
+                                const playerNow = G.playerPos.clone();
+                                playerNow.y = G.EYE_HEIGHT;
+                                if (target.distanceTo(playerNow) < 2.5) {
+                                    G.playerTakeDamage(70);
+                                    spawnImpact(target, 0x9933ff);
+                                }
+                            }, 800);
+                        }
+                        this.abilityCooldown = 8;
+                        break;
+                    }
+                }
+            }
+
             takeDamage(dmg, isHead) {
                 if (!this.alive) return;
+                // Ability-based damage blocking
+                if (this.shieldActive) {
+                    // Gojo shield: block all damage, show blue flash
+                    this.group.traverse(c => {
+                        if (c.isMesh && c.material && c.material.color) {
+                            const old = c.material.color.clone();
+                            c.material.color.setHex(0xaaddff);
+                            setTimeout(() => { if (this.alive) c.material.color.copy(old); }, 120);
+                        }
+                    });
+                    return;
+                }
+                if (this.dodgeActive && Math.random() < 0.40) {
+                    // Mahito dodge: ignore hit
+                    spawnImpact(this.group.position.clone().add(new THREE.Vector3(0, 1, 0)), 0xaa66ff);
+                    return;
+                }
                 this.hp -= dmg * (isHead ? 2 : 1);
                 this.updateHBar();
                 this.hitFlash = 1;
@@ -2237,7 +2481,8 @@
                     for (let i = 0; i < this.selBots; i++) {
                         const sp2 = spawnPts[i % spawnPts.length];
                         const jitter = new THREE.Vector3((Math.random() - .5) * 3, 0, (Math.random() - .5) * 3);
-                        this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), diff, i));
+                        const jjkType = JJK_TYPES_LIST[Math.floor(Math.random() * JJK_TYPES_LIST.length)];
+                        this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), diff, i, jjkType));
                     }
                 } else {
                     document.getElementById('wave-d').style.display = 'none';
@@ -2247,7 +2492,8 @@
                     for (let i = 0; i < this.selBots; i++) {
                         const sp2 = spawnPts[i % spawnPts.length];
                         const jitter = new THREE.Vector3((Math.random() - .5) * 3, 0, (Math.random() - .5) * 3);
-                        this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), diff, i));
+                        const jjkType = JJK_TYPES_LIST[Math.floor(Math.random() * JJK_TYPES_LIST.length)];
+                        this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), diff, i, jjkType));
                     }
                 }
 
@@ -2283,9 +2529,11 @@
                     strafe: (diff.strafe || 1) + (this.waveNum - 1) * 0.08
                 };
                 for (let i = 0; i < waveSize; i++) {
+                    if (this.bots.filter(b => b.alive && !b.isSummon).length >= 20) break;
                     const sp2 = spawnPts[i % spawnPts.length];
                     const jitter = new THREE.Vector3((Math.random() - .5) * 4, 0, (Math.random() - .5) * 4);
-                    this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), waveDiff, this.bots.length));
+                    const jjkType = JJK_TYPES_LIST[Math.floor(Math.random() * JJK_TYPES_LIST.length)];
+                    this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), waveDiff, this.bots.length, jjkType));
                 }
                 document.getElementById('wave-d').textContent = 'WAVE ' + this.waveNum;
                 this.showNotif('WAVE ' + this.waveNum + ' - ' + waveSize + ' ENEMIES!', 2500);
@@ -2557,7 +2805,7 @@
                     setTimeout(() => ki.style.opacity = 0, 900);
                     this.updateHUD();
                     // Check win conditions
-                    const allDead = this.bots.every(b => !b.alive);
+                    const allDead = this.bots.every(b => !b.alive || b.isSummon);
                     if (allDead) {
                         if (this.selMode === 'survival') {
                             // Spawn next wave after 3s
@@ -2577,7 +2825,8 @@
                             const mdef = MDEFS[this.selMap];
                             const sp2 = mdef.spawnPts[Math.floor(Math.random() * mdef.spawnPts.length)];
                             const jitter = new THREE.Vector3((Math.random() - .5) * 3, 0, (Math.random() - .5) * 3);
-                            const nb = new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), DIFFS[this.selDiff], this.bots.length);
+                            const jjkType = JJK_TYPES_LIST[Math.floor(Math.random() * JJK_TYPES_LIST.length)];
+                            const nb = new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), DIFFS[this.selDiff], this.bots.length, jjkType);
                             this.bots.push(nb);
                         }, 4000);
                     }
@@ -2861,7 +3110,7 @@
                     document.getElementById('wep-name').textContent = w.name.toUpperCase();
                 }
                 document.getElementById('hud-coins').textContent = save.coins;
-                const alive = this.bots.filter(b => b.alive).length;
+                const alive = this.bots.filter(b => b.alive && !b.isSummon).length;
                 if (this.selMode === 'survival') {
                     document.getElementById('bots-alive').textContent = alive;
                 } else {

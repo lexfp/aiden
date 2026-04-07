@@ -1062,6 +1062,7 @@
         <div id="ammo-d">
             <div id="ammo-c">17</div>
             <div id="ammo-m">/ 17</div>
+            <div id="cursed-lbl" style="font-size:9px;color:#8888ff;letter-spacing:2px;opacity:0.7">&#9889; CURSED ENERGY ATTACK</div>
             <div id="wep-name">GLOCK 17</div>
         </div>
         <div id="coins-d">ðŸ’° <span id="hud-coins">0</span></div>
@@ -1107,14 +1108,7 @@
         };
     </script>
     <script type="module">
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-        import { SkeletonUtils } from 'three/addons/utils/SkeletonUtils.js';
-        window.GLTFLoader = GLTFLoader;
-        window.RoomEnvironment = RoomEnvironment;
-        window.SkeletonUtils = SkeletonUtils;
-
-        // Load game scripts after Three.js addons are available
+        // Load game scripts regardless of CDN availability
         async function loadScript(src) {
             return new Promise((resolve, reject) => {
                 const s = document.createElement('script');
@@ -1124,6 +1118,26 @@
                 document.body.appendChild(s);
             });
         }
+
+        // Try to load Three.js ESM addons within 4 seconds.
+        // If CDN is slow or unreachable, game still launches with box-bot fallback.
+        try {
+            await Promise.race([
+                (async () => {
+                    const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+                    const { RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js');
+                    const { SkeletonUtils } = await import('three/addons/utils/SkeletonUtils.js');
+                    window.GLTFLoader = GLTFLoader;
+                    window.RoomEnvironment = RoomEnvironment;
+                    window.SkeletonUtils = SkeletonUtils;
+                })(),
+                new Promise(r => setTimeout(r, 4000)) // 4-second CDN timeout
+            ]);
+        } catch (e) {
+            console.warn('[Hunters] Three.js addons unavailable, using fallback:', e.message || e);
+        }
+
+        // Always load game scripts — with or without GLTF support
         await loadScript('hunters-gl.js');
         await loadScript('hunters-game.js');
     </script>
