@@ -1459,6 +1459,7 @@
                 this.jjkDef = JJK_CHARACTER_TYPES[typeKey] || JJK_CHARACTER_TYPES.gojo;
                 this.jjkLabel = this.jjkDef.label;
 
+                this.diff = diff; // Store for external reference (e.g. Domain Expansion)
                 // Stats scaled from diff + JJK type (130 = baseline health reference)
                 this.maxHp = Math.round(diff.hp * (this.jjkDef.health / 130));
                 this.hp = this.maxHp;
@@ -2014,6 +2015,219 @@
             }
         }
 
+        // ============================================================
+        // DOMAIN EXPANSION SYSTEM
+        // ============================================================
+        const DOMAIN_CONFIGS = {
+            gojo:   { type: 'gojo',   label: 'INFINITE VOID',                radius: 18, duration: 18, cssClass: 'domain-gojo',   bannerColor: '#44aaff', bannerText: 'INFINITE VOID' },
+            sukuna: { type: 'sukuna', label: 'MALEVOLENT SHRINE',             radius: 18, duration: 20, cssClass: 'domain-sukuna', bannerColor: '#ff2222', bannerText: 'MALEVOLENT SHRINE' },
+            mahito: { type: 'mahito', label: 'SELF-EMBODIMENT OF PERFECTION', radius: 18, duration: 15, cssClass: 'domain-mahito', bannerColor: '#aa44ff', bannerText: 'EMBODIMENT OF PERFECTION' },
+            megumi: { type: 'megumi', label: 'CHIMERA SHADOW GARDEN',         radius: 18, duration: 20, cssClass: 'domain-megumi', bannerColor: '#3355cc', bannerText: 'CHIMERA SHADOW GARDEN' },
+        };
+        const DOMAIN_LABEL_MAP = { 'Gojo': 'gojo', 'Sukuna': 'sukuna', 'Mahito': 'mahito', 'Megumi': 'megumi' };
+
+        class DomainManager {
+            constructor() {
+                this.active = false;
+                this.config = null;
+                this.timer = 0;
+                this.ownerBot = null;
+                this._sukDmgTick = 0;
+                this._megSpawnTick = 0;
+                this._frozenBots = new Map();
+                this._domainOv = null;
+                this._banner = null;
+                this._bannerTimeout = null;
+            }
+
+            _initDom() {
+                if (!this._domainOv) this._domainOv = document.getElementById('domain-ov');
+                if (!this._banner)   this._banner   = document.getElementById('domain-banner');
+            }
+
+            tryActivate(bot) {
+                if (this.active || bot.domainUsed) return false;
+                const typeKey = DOMAIN_LABEL_MAP[bot.jjkDef && bot.jjkDef.label];
+                if (!typeKey) return false;
+                bot.domainUsed = true;
+                this.activate(DOMAIN_CONFIGS[typeKey], bot);
+                return true;
+            }
+
+            activate(config, bot) {
+                this._initDom();
+                this.active = true;
+                this.config = config;
+                this.timer = config.duration;
+                this.ownerBot = bot;
+                this._sukDmgTick = 0;
+                this._megSpawnTick = 0;
+
+                if (this._domainOv) this._domainOv.className = config.cssClass;
+
+                if (this._banner) {
+                    this._banner.textContent = '\u26a1 ' + config.bannerText + ' \u26a1';
+                    this._banner.style.color = config.bannerColor;
+                    this._banner.classList.add('visible');
+                    clearTimeout(this._bannerTimeout);
+                    this._bannerTimeout = setTimeout(() => {
+                        if (this._banner) this._banner.classList.remove('visible');
+                    }, 3500);
+                }
+
+                const G = window.G;
+                if (config.type === 'gojo') {
+                    const center = bot.pos;
+                    if (G && G.bots) {
+                        G.bots.forEach(b => {
+                            if (!b.alive || b === bot) return;
+                            const dx = b.pos.x - center.x, dz = b.pos.z - center.z;
+                            if (Math.sqrt(dx * dx + dz * dz) < config.radius) {
+                                this._frozenBots.set(b, b.speed);
+                                b.speed = 0.15;
+                            }
+                        });
+                    }
+                    if (G) G._speedBoost = config.duration;
+                }
+
+                if (G) G.showNotif('DOMAIN EXPANSION: ' + config.label + '!', 3500);
+            }
+
+            update(dt) {
+                if (!this.active) return;
+                this.timer -= dt;
+                if (this.timer <= 0) { this.cleanup(); return; }
+
+                const G = window.G;
+                if (!G) return;
+                const config = this.config;
+                const center = (this.ownerBot && this.ownerBot.alive) ? this.ownerBot.pos : new THREE.Vector3(0, 0, 0);
+                const pp = G.playerPos;
+                const pdx = pp.x - center.x, pdz = pp.z - center.z;
+                const distToPlayer = Math.sqrt(pdx * pdx + pdz * pdz);
+                const playerInside = distToPlayer < config.radius;
+
+                if (config.type === 'gojo') {
+                    G.bots.forEach(b => {
+                        if (!b.alive) return;
+                        const bx = b.pos.x - center.x, bz = b.pos.z - center.z;
+                        const bd = Math.sqrt(bx * bx + bz * bz);
+                        if (bd < config.radius && !this._frozenBots.has(b)) {
+                            this._frozenBots.set(b, b.speed);
+                            b.speed = 0.15;
+                        } else if (bd >= config.radius && this._frozenBots.has(b)) {
+                            b.speed = this._frozenBots.get(b);
+                            this._frozenBots.delete(b);
+                        }
+                    });
+                }
+
+                if (config.type === 'sukuna') {
+                    this._sukDmgTick += dt;
+                    if (playerInside && this._sukDmgTick >= 1.0) {
+                        G.playerTakeDamage(8);
+                        this._sukDmgTick = 0;
+                    }
+                    G.bots.forEach(b => {
+                        if (!b.alive) return;
+                        const bx = b.pos.x - center.x, bz = b.pos.z - center.z;
+                        if (Math.sqrt(bx * bx + bz * bz) < config.radius) b.state = 'attack';
+                    });
+                }
+
+                if (config.type === 'mahito') {
+                    if (playerInside) {
+                        const j = 0.06;
+                        G.playerPos.x += (Math.random() - 0.5) * j;
+                        G.playerPos.z += (Math.random() - 0.5) * j;
+                        if (typeof camera !== 'undefined' && camera) {
+                            camera.position.x += (Math.random() - 0.5) * 0.05;
+                            camera.position.z += (Math.random() - 0.5) * 0.05;
+                        }
+                    }
+                    G.bots.forEach(b => {
+                        if (!b.alive) return;
+                        const bx = b.pos.x - center.x, bz = b.pos.z - center.z;
+                        if (Math.sqrt(bx * bx + bz * bz) < config.radius) {
+                            b.dodgeActive = true;
+                            b.dodgeTimer = Math.max(b.dodgeTimer, 0.4);
+                        }
+                    });
+                }
+
+                if (config.type === 'megumi') {
+                    this._megSpawnTick += dt;
+                    if (this._megSpawnTick >= 4.0) {
+                        this._megSpawnTick = 0;
+                        const shadowCount = G.bots.filter(b => b.alive && b._domainSummon).length;
+                        if (shadowCount < 6 && G.bots.length < 30) {
+                            const angle = Math.random() * Math.PI * 2;
+                            const r = (0.3 + Math.random() * 0.6) * config.radius;
+                            const sx = center.x + Math.cos(angle) * r;
+                            const sz = center.z + Math.sin(angle) * r;
+                            const refDiff = (G.bots[0] && G.bots[0].diff) ? G.bots[0].diff : { react: .3, acc: .7, aggroRange: 20, speed: 3.5, hp: 80, dmgMult: 1.1, strafe: 1.0, reward: 1 };
+                            const scaledDiff = { ...refDiff, hp: 40, speed: 3.0 };
+                            const sBot = new Bot(new THREE.Vector3(sx, 0, sz), scaledDiff, G.bots.length, 'megumi');
+                            sBot.isSummon = true;
+                            sBot._domainSummon = true;
+                            if (sBot.group) {
+                                sBot.group.scale.setScalar(0.6);
+                                sBot.group.traverse(o => {
+                                    if (o.isMesh && o.material) {
+                                        const mats = Array.isArray(o.material) ? o.material : [o.material];
+                                        mats.forEach(mat => { if (mat.color) mat.color.set(0x001133); });
+                                    }
+                                });
+                            }
+                            G.bots.push(sBot);
+                            for (let i = 0; i < 6; i++) {
+                                const v = new THREE.Vector3((Math.random() - .5) * 4, Math.random() * 3 + 1, (Math.random() - .5) * 4);
+                                particles.push(new Particle(new THREE.Vector3(sx, 0.5, sz), v, 0x001133, 0.7, 0.06));
+                            }
+                        }
+                    }
+                }
+            }
+
+            cleanup() {
+                this._initDom();
+                if (this._domainOv) this._domainOv.className = '';
+                if (this._banner) this._banner.classList.remove('visible');
+                clearTimeout(this._bannerTimeout);
+
+                const G = window.G;
+                this._frozenBots.forEach((speed, bot) => { if (bot) bot.speed = speed; });
+                this._frozenBots.clear();
+                if (G && this.config && this.config.type === 'gojo') G._speedBoost = 0;
+
+                if (G && G.bots) {
+                    G.bots.forEach(b => {
+                        if (b._domainSummon && b.alive) {
+                            b.alive = false;
+                            if (b.group) scene.remove(b.group);
+                        }
+                    });
+                }
+
+                if (G) G.showNotif('DOMAIN COLLAPSED', 2000);
+                this.active = false;
+                this.config = null;
+                this.timer = 0;
+                this.ownerBot = null;
+                this._sukDmgTick = 0;
+                this._megSpawnTick = 0;
+            }
+
+            reset() {
+                if (this.active) this.cleanup();
+                this.active = false;
+                this.config = null;
+                this.timer = 0;
+                this._frozenBots.clear();
+            }
+        }
+
         function spawnTracer(from, to, color) {
             const dir = new THREE.Vector3().subVectors(to, from);
             const len = dir.length();
@@ -2198,6 +2412,8 @@
             waveBotsLeft: 0,
             // Timed mode
             matchTimer: 0,
+            // Domain Expansion
+            domainManager: null,
             // Physics
             GRAVITY: 20,
             JUMP_VEL: 7,
@@ -2421,6 +2637,7 @@
                     this.showNotif('CURSED ENERGY UNAVAILABLE — RELOAD PAGE', 4000);
                     return;
                 }
+                if (this.domainManager) this.domainManager.reset();
                 this.matchKills = 0;
                 this.matchDmgDealt = 0;
                 this._killStreak = 0;
@@ -2575,6 +2792,7 @@
             endMatch(won, quit = false) {
                 if (this.state !== 'playing') return;
                 this.state = 'gameover';
+                if (this.domainManager) this.domainManager.reset();
                 if (this.wepModel) { scene.remove(this.wepModel); this.wepModel = null; }
                 // Clear bots and powerups
                 this.bots.forEach(b => { if (b.group) scene.remove(b.group); });
@@ -3241,6 +3459,7 @@
                     this.updatePlayer(dt);
                     this.updateBots(dt);
                     this.updateParticles(dt);
+                    if (this.domainManager && this.domainManager.active) this.domainManager.update(dt);
                     this.updateHUD();
                 }
 
@@ -3268,6 +3487,7 @@
         window.G._charRage = false;
         window.G.selChar = save.character || 'soldier';
         window.G.selMode = 'elimination';
+        window.G.domainManager = new DomainManager();
 
         if (typeof window.HuntersGL !== 'undefined' && window.HuntersGL.preload) {
             console.log('Starting HuntersGL preload');
