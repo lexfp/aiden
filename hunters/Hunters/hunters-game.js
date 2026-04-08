@@ -485,7 +485,7 @@
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2;
+            renderer.toneMappingExposure = 1.6;
             document.body.appendChild(renderer.domElement);
 
             scene = new THREE.Scene();
@@ -1319,9 +1319,9 @@
 
             // Lighting
             scene.children.filter(c => c.isLight).forEach(l => scene.remove(l));
-            const amb = new THREE.AmbientLight(mdef.ambient, 1.5);
+            const amb = new THREE.AmbientLight(mdef.ambient, 2.2);
             scene.add(amb);
-            const sun = new THREE.DirectionalLight(0xffffff, .8);
+            const sun = new THREE.DirectionalLight(0xffffff, 1.1);
             sun.position.set(10, 20, 10);
             sun.castShadow = true;
             sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
@@ -2631,13 +2631,22 @@
 
             // ---- MATCH ----
             startMatch() {
-                // Ensure Three.js is initialized before starting
-                if (!renderer) setupThreeJS();
-                if (!camera || !scene || !renderer) {
-                    this.showNotif('CURSED ENERGY UNAVAILABLE — RELOAD PAGE', 4000);
-                    return;
-                }
-                if (this.domainManager) this.domainManager.reset();
+                console.log('[startMatch] Function called');
+                try {
+                    // Ensure Three.js is initialized before starting
+                    console.log('[startMatch] Checking Three.js state:', { renderer: !!renderer, camera: !!camera, scene: !!scene });
+                    if (!renderer) {
+                        console.log('[startMatch] Renderer not found, calling setupThreeJS()');
+                        setupThreeJS();
+                        console.log('[startMatch] After setupThreeJS():', { renderer: !!renderer, camera: !!camera, scene: !!scene });
+                    }
+                    if (!camera || !scene || !renderer) {
+                        console.error('[startMatch] FATAL: Three.js setup failed', { renderer: !!renderer, camera: !!camera, scene: !!scene });
+                        this.showNotif('CURSED ENERGY UNAVAILABLE — RELOAD PAGE', 4000);
+                        return;
+                    }
+                    console.log('[startMatch] Three.js initialized, proceeding with match setup');
+                    if (this.domainManager) this.domainManager.reset();
                 this.matchKills = 0;
                 this.matchDmgDealt = 0;
                 this._killStreak = 0;
@@ -2680,7 +2689,9 @@
                 if (this.playerChar) { scene.remove(this.playerChar.root); this.playerChar = null; }
                 if (typeof HuntersGL !== 'undefined' && HuntersGL.soldier) {
                     this.playerChar = HuntersGL.cloneSoldier(0x88ccff);
-                    scene.add(this.playerChar.root);
+                    if (this.playerChar) {
+                        scene.add(this.playerChar.root);
+                    }
                 }
 
                 // Build weapons array from loadout
@@ -2743,6 +2754,12 @@
 
                 this.updateHUD();
                 save.matches++; writeSave();
+                console.log('[startMatch] Match started successfully!');
+                } catch (e) {
+                    console.error('[startMatch] ERROR:', e);
+                    console.error('[startMatch] Stack:', e.stack);
+                    alert('Error starting match: ' + e.message);
+                }
             },
 
             spawnWave(mdef, diff) {
@@ -3498,4 +3515,4 @@
         }
         console.log('G is defined on window');
 
-
+

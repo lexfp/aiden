@@ -112,7 +112,8 @@
             cursor: pointer;
             border-radius: 3px;
             transition: all .15s;
-            min-width: 240px
+            min-width: 240px;
+            pointer-events: auto
         }
 
         .btn-p {
@@ -1110,7 +1111,7 @@
             <div class="bc-row" id="bc-row"></div>
             <div class="sec-lbl">SORCERER</div>
             <div class="char-row" id="char-row"></div>
-            <button class="btn btn-p" onclick="G.startMatch()">&#9889; EXPAND DOMAIN</button>
+            <button class="btn btn-p" onclick="console.log('[BUTTON] Click detected'); if(typeof G !== 'undefined' && G.startMatch) { console.log('[BUTTON] Calling G.startMatch()'); G.startMatch(); } else { console.error('[BUTTON] G.startMatch not available'); alert('Game not loaded yet, please wait...'); }">&#9889; EXPAND DOMAIN</button>
             <button class="btn btn-s" style="margin-top:8px" onclick="G.showScreen('s-menu')">BACK</button>
         </div>
     </div>
@@ -1215,17 +1216,39 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
     <script>
         // Minimal G fallback for UI responsiveness before full script loads
-        window.G = window.G || {
+        window._minimalG = {
             showScreen: function(id) {
-                console.log('UI: showing screen', id);
+                console.log('[UI] showing screen', id);
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('hud').classList.remove('active');
                 const el = document.getElementById(id);
                 if (el) el.classList.add('active');
             },
             showPreplay: function() { this.showScreen('s-preplay'); },
-            startMatch: function() { this.showScreen('hud'); },
-            init: function() { console.log('Minimal G initialized'); }
+            startMatch: function() { 
+                console.log('[CLICK] startMatch called, checking game state...');
+                console.log('[CHECK] window.G type:', typeof window.G);
+                console.log('[CHECK] window.G.startMatch exists?', typeof (window.G?.startMatch));
+                console.log('[CHECK] is real game loaded?', window.G !== window._minimalG && window.G && typeof window.G.renderLoop === 'function');
+                
+                // Check if real game is loaded
+                if (window.G && window.G !== window._minimalG && typeof window.G.renderLoop === 'function') {
+                    console.log('[SUCCESS] Real game found, calling startMatch()');
+                    window.G.startMatch();
+                } else {
+                    console.log('[LOADING] Game scripts loading, retrying...');
+                    // Show user feedback
+                    if (window.G && window.G.showNotif) {
+                        window.G.showNotif('Loading game...');
+                    }
+                    // Retry after 300ms
+                    setTimeout(() => this.startMatch(), 300);
+                }
+            },
+            init: function() { console.log('[INIT] Minimal G initialized'); }
         };
+        window.G = window.G || window._minimalG;
+        console.log('[SETUP] Fallback G ready');
     </script>
     <script type="module">
         // Load game scripts regardless of CDN availability
@@ -1258,8 +1281,25 @@
         }
 
         // Always load game scripts — with or without GLTF support
-        await loadScript('hunters-gl.js');
-        await loadScript('hunters-game.js');
+        try {
+            console.log('[Hunters] Loading hunters-gl.js...');
+            await loadScript('hunters-gl.js');
+            console.log('[Hunters] hunters-gl.js loaded successfully');
+        } catch (e) {
+            console.error('[Hunters] Failed to load hunters-gl.js:', e);
+        }
+        
+        try {
+            console.log('[Hunters] Loading hunters-game.js...');
+            await loadScript('hunters-game.js');
+            console.log('[Hunters] hunters-game.js loaded successfully');
+            console.log('[Hunters] G object is now:', typeof window.G, window.G === window._minimalG ? '(fallback)' : '(real game)');
+        } catch (e) {
+            console.error('[Hunters] CRITICAL: Failed to load hunters-game.js:', e);
+            if (window.G && window.G.showNotif) {
+                window.G.showNotif('ERROR: Game scripts failed to load. Check console.');
+            }
+        }
     </script>
 </body>
 
