@@ -48,7 +48,9 @@
 
         #s-menu {
             background: radial-gradient(ellipse at 50% 60%, #1a003d 0%, #08001a 50%, #04020a 100%);
-            animation: cursed-pulse 6s ease-in-out infinite alternate
+            animation: cursed-pulse 6s ease-in-out infinite alternate;
+            overflow-y: auto;
+            padding: 20px 0;
         }
 
         @keyframes cursed-pulse {
@@ -75,7 +77,7 @@
         }
 
         .title {
-            font-size: 80px;
+            font-size: 66px;
             font-weight: 900;
             letter-spacing: 14px;
             text-transform: uppercase;
@@ -83,7 +85,7 @@
             background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             animation: cursed-flow 4s linear infinite;
             filter: drop-shadow(0 0 20px rgba(120, 0, 255, 0.5))
         }
@@ -97,7 +99,7 @@
             color: #6633aa;
             font-size: 12px;
             letter-spacing: 8px;
-            margin-bottom: 60px;
+            margin-bottom: 14px;
             text-transform: uppercase
         }
 
@@ -1085,6 +1087,59 @@
         }
         #domain-banner.visible { opacity: 1; }
 
+        /* ── Featured skins cards ── */
+        .feat-card {
+            background: rgba(40,8,0,.5);
+            border: 1px solid rgba(255,120,0,.25);
+            border-radius: 8px;
+            padding: 18px;
+            position: relative;
+            transition: all .15s;
+        }
+        .feat-card:hover { border-color: rgba(255,140,0,.55); box-shadow: 0 0 16px rgba(255,100,0,.15); }
+        .feat-card.new-badge::before {
+            content: 'NEW';
+            position: absolute; top: 10px; right: 10px;
+            font-size: 8px; letter-spacing: 2px;
+            background: linear-gradient(90deg,#ff6600,#ffaa00);
+            color: #000; padding: 2px 6px; border-radius: 2px; font-weight: 900;
+        }
+        .feat-skin-icon { font-size: 36px; margin-bottom: 8px; }
+        .feat-skin-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+        .feat-skin-cat { font-size: 9px; letter-spacing: 3px; color: #884422; text-transform: uppercase; margin-bottom: 8px; }
+        .feat-skin-desc { font-size: 10px; color: #775544; line-height: 1.5; margin-bottom: 12px; }
+        .feat-price-row { display: flex; align-items: center; gap: 8px; }
+        .feat-orig-price { font-size: 11px; color: #554433; text-decoration: line-through; }
+        .feat-sale-price { font-size: 16px; font-weight: 900; color: #ffaa44; }
+        .feat-buy-btn {
+            margin-top: 10px; width: 100%;
+            padding: 8px; font-size: 10px; letter-spacing: 2px;
+            background: linear-gradient(90deg,rgba(180,60,0,.4),rgba(220,100,0,.3));
+            border: 1px solid rgba(255,120,0,.4); border-radius: 3px;
+            color: #ffaa44; cursor: pointer; font-weight: 700; text-transform: uppercase;
+            transition: all .12s;
+        }
+        .feat-buy-btn:hover { background: linear-gradient(90deg,rgba(220,80,0,.6),rgba(255,140,0,.5)); border-color: rgba(255,160,0,.7); }
+        .feat-buy-btn.owned { background: rgba(0,150,80,.12); border-color: rgba(0,200,100,.25); color: #66ffaa; cursor: default; }
+        .bundle-card {
+            background: rgba(20,5,30,.5);
+            border: 1px solid rgba(150,60,255,.2);
+            border-radius: 8px;
+            padding: 16px;
+            transition: all .15s;
+        }
+        .bundle-card:hover { border-color: rgba(180,80,255,.4); box-shadow: 0 0 14px rgba(120,0,255,.12); }
+        /* ── Stats screen ── */
+        .stat-tile {
+            background: rgba(60,0,120,.07);
+            border: 1px solid rgba(120,50,255,.15);
+            border-radius: 6px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-tile-val { font-size: 32px; font-weight: 900; color: #aa66ff; }
+        .stat-tile-lbl { font-size: 9px; letter-spacing: 3px; color: #553388; margin-top: 4px; text-transform: uppercase; }
+
         /* ── Culling Game homepage card ── */
         .culling-card {
             position: relative;
@@ -1092,8 +1147,8 @@
             background: linear-gradient(135deg, rgba(30,5,0,.92) 0%, rgba(18,2,8,.95) 60%, rgba(10,0,20,.92) 100%);
             border: 1px solid transparent;
             border-radius: 8px;
-            padding: 28px 36px;
-            margin: 18px 0 12px;
+            padding: 18px 36px;
+            margin: 10px 0 8px;
             cursor: pointer;
             text-align: center;
             background-clip: padding-box;
@@ -1167,19 +1222,42 @@
             80%  { opacity: .3;  }
             100% { opacity: 0;    transform: translateY(-110vh) rotate(30deg); }
         }
-        .home-row {
+        /* ── Homepage secondary grid ── */
+        .home-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+            width: 380px;
+        }
+        .home-grid-btn {
+            background: rgba(60,0,120,.07);
+            border: 1px solid rgba(150,80,255,.18);
+            border-radius: 6px;
+            padding: 12px 10px;
+            cursor: pointer;
+            color: #e8e0ff;
             display: flex;
-            gap: 0;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            transition: all .15s;
+            pointer-events: auto;
         }
-        .home-row .btn {
-            min-width: 170px;
+        .home-grid-btn:hover {
+            background: rgba(80,0,180,.16);
+            border-color: rgba(150,80,255,.45);
+            box-shadow: 0 0 12px rgba(100,0,255,.15);
         }
+        .hgb-icon { font-size: 20px; }
+        .hgb-label { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+        .hgb-sub { font-size: 9px; color: #7755bb; letter-spacing: 1px; }
         /* colony sigil decoration above title */
         .home-sigil {
-            font-size: 28px;
-            letter-spacing: 18px;
+            font-size: 22px;
+            letter-spacing: 14px;
             color: rgba(180, 60, 0, 0.35);
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             text-shadow: 0 0 20px rgba(255,80,0,.2);
             animation: sigil-pulse 4s ease-in-out infinite alternate;
         }
@@ -1217,11 +1295,30 @@
             <div class="culling-desc">Enter the colony. Merge with Tengen.<br>Dominate all sorcerers.</div>
             <div class="culling-cta">ENTER COLONY &#8594;</div>
         </div>
-        <!-- Standard entry + utility buttons -->
-        <button class="btn btn-p" onclick="G.showPreplay()" style="margin-top:4px">OTHER MISSIONS</button>
-        <div class="home-row">
-            <button class="btn btn-s" onclick="G.showScreen('s-loadout')">CURSED TOOLS</button>
-            <button class="btn btn-s" onclick="G.showScreen('s-shop')">ARMORY</button>
+        <!-- Standard entry -->
+        <button class="btn btn-p" onclick="G.showPreplay()" style="margin-top:2px">OTHER MISSIONS</button>
+        <!-- Secondary grid -->
+        <div class="home-grid">
+            <button class="home-grid-btn" onclick="G.showScreen('s-featured')">
+                <span class="hgb-icon">&#10024;</span>
+                <span class="hgb-label">FEATURED</span>
+                <span class="hgb-sub">Weapon Skins</span>
+            </button>
+            <button class="home-grid-btn" onclick="G.showScreen('s-shop')">
+                <span class="hgb-icon">&#9876;</span>
+                <span class="hgb-label">ARMORY</span>
+                <span class="hgb-sub">Buy Weapons</span>
+            </button>
+            <button class="home-grid-btn" onclick="G.showScreen('s-loadout')">
+                <span class="hgb-icon">&#9960;</span>
+                <span class="hgb-label">LOADOUT</span>
+                <span class="hgb-sub">Cursed Tools</span>
+            </button>
+            <button class="home-grid-btn" onclick="G.showScreen('s-stats')">
+                <span class="hgb-icon">&#128202;</span>
+                <span class="hgb-label">STATS</span>
+                <span class="hgb-sub">Battle Record</span>
+            </button>
         </div>
     </div>
 
@@ -1280,6 +1377,42 @@
             </div>
         </div>
         <button class="btn btn-s" style="margin-top:24px" onclick="G.showScreen('s-menu')">RETURN TO HQ</button>
+    </div>
+
+    <!-- FEATURED SKINS SCREEN -->
+    <div id="s-featured" class="screen" style="background:linear-gradient(160deg,#06030f 0%,#1a0508 60%,#04020a 100%);overflow-y:auto;padding:40px;align-items:flex-start;justify-content:flex-start">
+        <div class="shop-wrap">
+            <div class="shop-hdr">
+                <div class="shop-title" style="background:linear-gradient(90deg,#ff8800,#ffcc44);-webkit-background-clip:text;-webkit-text-fill-color:transparent">&#10024; FEATURED SKINS</div>
+                <div class="shop-coins">&#128176; <span id="feat-coins-val">0</span></div>
+            </div>
+            <div style="font-size:10px;letter-spacing:3px;color:#884422;margin-bottom:20px;text-transform:uppercase">Colony Season — Rotating Weekly</div>
+            <div id="featured-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px"></div>
+            <div style="margin-top:32px">
+                <div style="font-size:10px;letter-spacing:3px;color:#664422;margin-bottom:12px;text-transform:uppercase">&#9960; Cursed Skin Bundles</div>
+                <div id="bundle-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px"></div>
+            </div>
+            <div style="margin-top:24px;display:flex;gap:12px">
+                <button class="btn btn-s" onclick="G.showScreen('s-menu')">BACK</button>
+                <button class="btn btn-s" onclick="G.showScreen('s-shop')">FULL ARMORY</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS SCREEN -->
+    <div id="s-stats" class="screen" style="background:linear-gradient(160deg,#06030f 0%,#0d0025 60%,#04020a 100%);overflow-y:auto;padding:40px;align-items:flex-start;justify-content:flex-start">
+        <div class="shop-wrap">
+            <div class="shop-hdr">
+                <div class="shop-title">&#128202; BATTLE RECORD</div>
+                <div class="shop-coins">&#128176; <span id="stats-coins-val">0</span></div>
+            </div>
+            <div id="stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px"></div>
+            <div style="font-size:10px;letter-spacing:3px;color:#5544aa;margin-bottom:12px;text-transform:uppercase">Match History</div>
+            <div id="stats-hist" style="font-size:12px;color:#665588;letter-spacing:1px;line-height:2"></div>
+            <div style="margin-top:24px">
+                <button class="btn btn-s" onclick="G.showScreen('s-menu')">BACK</button>
+            </div>
+        </div>
     </div>
 
     <div id="s-over" class="screen">

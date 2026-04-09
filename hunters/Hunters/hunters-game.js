@@ -1567,9 +1567,7 @@
         function generateCulling() {
             const obs = [];
             // Giant tournament arena — Culling Game colony grounds
-
-            // Central combat area - cracked dark earth
-            obs.push({ x: 0, z: 0, w: 100, d: 100, h: 0.3, c: 0x1a1208 });
+            // Note: central floor is handled by the PlaneGeometry in buildMap(); no obstacle here
 
             // Observation platforms around perimeter - elevated stone slabs
             const platformRadius = 130;
@@ -2947,6 +2945,8 @@
                 this.state = id;
                 if (id === 's-shop') { document.getElementById('shop-coins-val').textContent = save.coins; this.buildShopUI(); }
                 if (id === 's-loadout') this.buildLoadoutUI();
+                if (id === 's-featured') { document.getElementById('feat-coins-val').textContent = save.coins; this.buildFeaturedUI(); }
+                if (id === 's-stats') { document.getElementById('stats-coins-val').textContent = save.coins; this.buildStatsUI(); }
             },
 
             showPreplay() {
@@ -3144,6 +3144,124 @@
                         list.appendChild(el);
                     });
                 });
+            },
+
+            buildFeaturedUI() {
+                // Rotating featured skins — seeded by week number for consistency
+                const week = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
+                const FEATURED_SKINS = [
+                    { id: 'skin_gojo_void', name: 'Infinite Void', cat: 'Rifle Skin', icon: '🌌', desc: 'Gojo\'s Infinity wraps the barrel in swirling blue void energy.', basePrice: 800, sale: 0.4, isNew: true, color: '#44aaff' },
+                    { id: 'skin_sukuna_shrine', name: 'Malevolent Shrine', cat: 'SMG Skin', icon: '🩸', desc: 'Carved with Sukuna\'s cursed seals. Drips with crimson energy.', basePrice: 750, sale: 0.3, isNew: false, color: '#ff4422' },
+                    { id: 'skin_tengen_fusion', name: 'Tengen Fusion', cat: 'Sniper Skin', icon: '⚛️', desc: 'Geometric barrier patterns pulse across the stock and scope.', basePrice: 900, sale: 0.5, isNew: true, color: '#ffcc44' },
+                    { id: 'skin_chimera_shadow', name: 'Chimera Shadow', cat: 'Shotgun Skin', icon: '👤', desc: 'Shadow clones flicker along the barrel in dark violet light.', basePrice: 700, sale: 0.2, isNew: false, color: '#9944ff' },
+                    { id: 'skin_cursed_spirit', name: 'Special Grade', cat: 'Pistol Skin', icon: '💀', desc: 'Special Grade cursed spirit wraps around the grip.', basePrice: 650, sale: 0.35, isNew: false, color: '#44ff88' },
+                    { id: 'skin_domain_expanse', name: 'Domain Expanse', cat: 'Melee Skin', icon: '🌀', desc: 'Infinite Void aura pulses around every strike.', basePrice: 850, sale: 0.45, isNew: true, color: '#00ccff' },
+                ];
+                const BUNDLES = [
+                    { id: 'bundle_jjk', name: 'JJK Sorcerer Bundle', icon: '⚡', desc: '6 exclusive skins from the Jujutsu High collection. All characters represented.', items: 6, price: 2400, salePrice: 1400 },
+                    { id: 'bundle_culling', name: 'Culling Game Pack', icon: '⚔️', desc: 'Colony-themed weapon wraps. Enter every match looking like a player sorcerer.', items: 4, price: 1600, salePrice: 900 },
+                ];
+                // Rotate 4 featured skins based on week
+                const rotated = [...FEATURED_SKINS];
+                rotated.sort((a, b) => ((a.id.charCodeAt(5) + week) % 10) - ((b.id.charCodeAt(5) + week) % 10));
+                const featured = rotated.slice(0, 4);
+
+                const grid = document.getElementById('featured-grid');
+                grid.innerHTML = '';
+                featured.forEach(s => {
+                    const salePrice = Math.round(s.basePrice * (1 - s.sale));
+                    const owned = (save.ownedSkins || []).includes(s.id);
+                    const el = document.createElement('div');
+                    el.className = 'feat-card' + (s.isNew ? ' new-badge' : '');
+                    el.innerHTML = `
+                        <div class="feat-skin-icon">${s.icon}</div>
+                        <div class="feat-skin-name" style="color:${s.color}">${s.name}</div>
+                        <div class="feat-skin-cat">${s.cat}</div>
+                        <div class="feat-skin-desc">${s.desc}</div>
+                        <div class="feat-price-row">
+                            <span class="feat-orig-price">💰 ${s.basePrice}</span>
+                            <span class="feat-sale-price">💰 ${salePrice}</span>
+                            <span style="font-size:9px;color:#ff6600;letter-spacing:1px">${Math.round(s.sale*100)}% OFF</span>
+                        </div>
+                        <button class="feat-buy-btn${owned ? ' owned' : ''}" onclick="G.buySkin('${s.id}',${salePrice},this)">
+                            ${owned ? '✔ EQUIPPED' : 'UNLOCK SKIN'}
+                        </button>`;
+                    grid.appendChild(el);
+                });
+                const bgrid = document.getElementById('bundle-grid');
+                bgrid.innerHTML = '';
+                BUNDLES.forEach(b => {
+                    const owned = (save.ownedBundles || []).includes(b.id);
+                    const el = document.createElement('div');
+                    el.className = 'bundle-card';
+                    el.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                            <span style="font-size:24px">${b.icon}</span>
+                            <div>
+                                <div style="font-size:13px;font-weight:700;color:#cc88ff">${b.name}</div>
+                                <div style="font-size:9px;color:#553388;letter-spacing:2px">${b.items} ITEMS INCLUDED</div>
+                            </div>
+                        </div>
+                        <div style="font-size:10px;color:#664466;line-height:1.5;margin-bottom:10px">${b.desc}</div>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span style="font-size:11px;color:#443355;text-decoration:line-through">💰 ${b.price}</span>
+                            <span style="font-size:18px;font-weight:900;color:#cc88ff">💰 ${b.salePrice}</span>
+                        </div>
+                        <button class="feat-buy-btn${owned ? ' owned' : ''}" style="margin-top:8px" onclick="G.buyBundle('${b.id}',${b.salePrice},this)">
+                            ${owned ? '✔ OWNED' : 'GET BUNDLE'}
+                        </button>`;
+                    bgrid.appendChild(el);
+                });
+            },
+
+            buySkin(id, price, btn) {
+                const skins = save.ownedSkins || [];
+                if (skins.includes(id)) return;
+                if (save.coins < price) { this.showNotif('Not enough coins!'); return; }
+                save.coins -= price;
+                if (!save.ownedSkins) save.ownedSkins = [];
+                save.ownedSkins.push(id);
+                writeSave();
+                btn.textContent = '✔ EQUIPPED';
+                btn.classList.add('owned');
+                document.getElementById('feat-coins-val').textContent = save.coins;
+                this.showNotif('Skin unlocked!');
+            },
+
+            buyBundle(id, price, btn) {
+                const bundles = save.ownedBundles || [];
+                if (bundles.includes(id)) return;
+                if (save.coins < price) { this.showNotif('Not enough coins!'); return; }
+                save.coins -= price;
+                if (!save.ownedBundles) save.ownedBundles = [];
+                save.ownedBundles.push(id);
+                writeSave();
+                btn.textContent = '✔ OWNED';
+                btn.classList.add('owned');
+                document.getElementById('feat-coins-val').textContent = save.coins;
+                this.showNotif('Bundle unlocked!');
+            },
+
+            buildStatsUI() {
+                const tiles = [
+                    { val: save.matches || 0, lbl: 'Total Matches' },
+                    { val: save.coins || 0, lbl: 'Coins Earned' },
+                    { val: (save.owned || []).length, lbl: 'Weapons Owned' },
+                    { val: (save.ownedChars || ['soldier']).length, lbl: 'Sorcerers' },
+                ];
+                const grid = document.getElementById('stats-grid');
+                grid.innerHTML = '';
+                tiles.forEach(t => {
+                    const el = document.createElement('div');
+                    el.className = 'stat-tile';
+                    el.innerHTML = `<div class="stat-tile-val">${t.val}</div><div class="stat-tile-lbl">${t.lbl}</div>`;
+                    grid.appendChild(el);
+                });
+                document.getElementById('stats-hist').innerHTML =
+                    `Total battles fought: <b style="color:#aa66ff">${save.matches || 0}</b><br>` +
+                    `Coins in vault: <b style="color:#ffd700">${save.coins || 0}</b><br>` +
+                    `Arsenal size: <b style="color:#66aaff">${(save.owned || []).length} weapons</b><br>` +
+                    `Skins unlocked: <b style="color:#ff8844">${(save.ownedSkins || []).length} skins</b>`;
             },
 
             // ---- MATCH ----
