@@ -1084,6 +1084,109 @@
             text-shadow: 0 0 30px currentColor;
         }
         #domain-banner.visible { opacity: 1; }
+
+        /* ── Culling Game homepage card ── */
+        .culling-card {
+            position: relative;
+            width: 380px;
+            background: linear-gradient(135deg, rgba(30,5,0,.92) 0%, rgba(18,2,8,.95) 60%, rgba(10,0,20,.92) 100%);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 28px 36px;
+            margin: 18px 0 12px;
+            cursor: pointer;
+            text-align: center;
+            background-clip: padding-box;
+            box-shadow: 0 0 0 1px rgba(200,80,0,.35), 0 0 30px rgba(220,60,0,.15), inset 0 1px 0 rgba(255,100,0,.08);
+            animation: culling-glow 3s ease-in-out infinite alternate;
+            transition: transform .15s, box-shadow .15s;
+        }
+        .culling-card:hover {
+            transform: scale(1.04);
+            box-shadow: 0 0 0 1px rgba(255,120,0,.7), 0 0 50px rgba(255,80,0,.35), inset 0 1px 0 rgba(255,150,0,.15);
+        }
+        @keyframes culling-glow {
+            0%   { box-shadow: 0 0 0 1px rgba(200,60,0,.3),  0 0 24px rgba(200,40,0,.12); }
+            50%  { box-shadow: 0 0 0 1px rgba(220,100,0,.5), 0 0 40px rgba(220,60,0,.22); }
+            100% { box-shadow: 0 0 0 1px rgba(180,40,0,.35), 0 0 28px rgba(180,30,0,.14); }
+        }
+        .culling-badge {
+            font-size: 9px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: #cc6600;
+            margin-bottom: 10px;
+        }
+        .culling-title {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #ff6600, #ffcc44, #ff4400, #ffaa00);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: cursed-flow 3s linear infinite;
+            filter: drop-shadow(0 0 10px rgba(255,100,0,.4));
+            margin-bottom: 8px;
+        }
+        .culling-desc {
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            color: #886644;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        .culling-cta {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #ff8833;
+            text-transform: uppercase;
+        }
+
+        /* ── Homepage floating decorations ── */
+        .home-deco {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .float-rune {
+            position: absolute;
+            bottom: -40px;
+            font-size: 22px;
+            opacity: 0;
+            color: rgba(180, 60, 0, 0.35);
+            animation: rune-drift 8s ease-in infinite;
+            text-shadow: 0 0 12px rgba(255,80,0,.3);
+        }
+        @keyframes rune-drift {
+            0%   { opacity: 0;    transform: translateY(0)    rotate(0deg);   }
+            10%  { opacity: .55; }
+            80%  { opacity: .3;  }
+            100% { opacity: 0;    transform: translateY(-110vh) rotate(30deg); }
+        }
+        .home-row {
+            display: flex;
+            gap: 0;
+        }
+        .home-row .btn {
+            min-width: 170px;
+        }
+        /* colony sigil decoration above title */
+        .home-sigil {
+            font-size: 28px;
+            letter-spacing: 18px;
+            color: rgba(180, 60, 0, 0.35);
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(255,80,0,.2);
+            animation: sigil-pulse 4s ease-in-out infinite alternate;
+        }
+        @keyframes sigil-pulse {
+            0%   { opacity: .25; letter-spacing: 16px; }
+            100% { opacity: .55; letter-spacing: 20px; }
+        }
     </style>
 </head>
 
@@ -1091,11 +1194,35 @@
 
     <!-- SCREENS -->
     <div id="s-menu" class="screen active">
+        <!-- Floating cursed rune decorations -->
+        <div class="home-deco">
+            <span class="float-rune" style="left:6%;animation-delay:0s;animation-duration:9s">&#9876;</span>
+            <span class="float-rune" style="left:15%;animation-delay:1.4s;animation-duration:11s">&#10022;</span>
+            <span class="float-rune" style="left:25%;animation-delay:3.1s;animation-duration:8s">&#9960;</span>
+            <span class="float-rune" style="left:42%;animation-delay:5.2s;animation-duration:12s">&#9728;</span>
+            <span class="float-rune" style="left:58%;animation-delay:2.0s;animation-duration:10s">&#9960;</span>
+            <span class="float-rune" style="left:72%;animation-delay:0.7s;animation-duration:9.5s">&#10022;</span>
+            <span class="float-rune" style="left:82%;animation-delay:4.0s;animation-duration:11s">&#9876;</span>
+            <span class="float-rune" style="left:91%;animation-delay:1.8s;animation-duration:8.5s">&#9728;</span>
+            <span class="float-rune" style="left:33%;animation-delay:6.5s;animation-duration:13s;font-size:16px">&#9889;</span>
+            <span class="float-rune" style="left:66%;animation-delay:3.8s;animation-duration:10s;font-size:16px">&#9889;</span>
+        </div>
+        <div class="home-sigil">&#9960; &#10022; &#9960;</div>
         <div class="title">HUNTERS</div>
         <div class="subtitle">&#9889; CURSED ENERGY COMBAT &#9889;</div>
-        <button class="btn btn-p" onclick="G.showPreplay()">ENTER THE DOMAIN</button>
-        <button class="btn btn-s" onclick="G.showScreen('s-loadout')">CURSED TOOLS</button>
-        <button class="btn btn-s" onclick="G.showScreen('s-shop')">ARMORY</button>
+        <!-- Featured Culling Game card -->
+        <div class="culling-card" onclick="G.startCullingGame()">
+            <div class="culling-badge">&#9876; SPECIAL EVENT — COLONY ACTIVE</div>
+            <div class="culling-title">CULLING GAME</div>
+            <div class="culling-desc">Enter the colony. Merge with Tengen.<br>Dominate all sorcerers.</div>
+            <div class="culling-cta">ENTER COLONY &#8594;</div>
+        </div>
+        <!-- Standard entry + utility buttons -->
+        <button class="btn btn-p" onclick="G.showPreplay()" style="margin-top:4px">OTHER MISSIONS</button>
+        <div class="home-row">
+            <button class="btn btn-s" onclick="G.showScreen('s-loadout')">CURSED TOOLS</button>
+            <button class="btn btn-s" onclick="G.showScreen('s-shop')">ARMORY</button>
+        </div>
     </div>
 
     <div id="s-preplay" class="screen">

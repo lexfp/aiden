@@ -1566,21 +1566,21 @@
 
         function generateCulling() {
             const obs = [];
-            // Giant tournament arena with tiered terrain
-            
-            // Central combat area - open floor
-            obs.push({ x: 0, z: 0, w: 100, d: 100, h: 0.3, c: 0x2a2a1a });
-            
-            // Observation platforms around perimeter - elevated
+            // Giant tournament arena — Culling Game colony grounds
+
+            // Central combat area - cracked dark earth
+            obs.push({ x: 0, z: 0, w: 100, d: 100, h: 0.3, c: 0x1a1208 });
+
+            // Observation platforms around perimeter - elevated stone slabs
             const platformRadius = 130;
             for (let i = 0; i < 8; i++) {
                 const angle = (i / 8) * Math.PI * 2;
                 const px = Math.cos(angle) * platformRadius;
                 const pz = Math.sin(angle) * platformRadius;
-                obs.push({ x: px, z: pz, w: 20, d: 20, h: 2, c: 0x3a3a2a });
+                obs.push({ x: px, z: pz, w: 22, d: 22, h: 2.5, c: 0x2a1a10 });
             }
-            
-            // Rock formations for tactical cover - arranged in octagon
+
+            // Rock formations for tactical cover - dark volcanic stone
             for (let i = 0; i < 8; i++) {
                 const angle = (i / 8) * Math.PI * 2 + Math.PI / 16;
                 const rx = Math.cos(angle) * 90;
@@ -1593,27 +1593,27 @@
                         w: 8 + Math.random() * 4,
                         d: 8 + Math.random() * 4,
                         h: 5 + Math.random() * 8,
-                        c: 0x4a4a3a
+                        c: 0x180e06
                     });
                 }
             }
-            
-            // Center arena elevated pillars (tetsukkei-style)
+
+            // Center arena elevated pillars — ancient stone, slightly warm tinted
             for (let i = 0; i < 6; i++) {
                 const angle = (i / 6) * Math.PI * 2;
                 const pillarRad = 35;
                 obs.push({
                     x: Math.cos(angle) * pillarRad,
                     z: Math.sin(angle) * pillarRad,
-                    w: 6,
-                    d: 6,
-                    h: 12,
-                    c: 0x5a5a4a
+                    w: 5,
+                    d: 5,
+                    h: 14,
+                    c: 0x221208
                 });
             }
-            
-            // Scattered debris and obstacles
-            for (let i = 0; i < 25; i++) {
+
+            // Scattered debris and battle ruins
+            for (let i = 0; i < 28; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const radius = 30 + Math.random() * 140;
                 obs.push({
@@ -1622,10 +1622,23 @@
                     w: 4 + Math.random() * 6,
                     d: 4 + Math.random() * 6,
                     h: 2 + Math.random() * 5,
-                    c: 0x3a3a2a + Math.floor(Math.random() * 0x1a1a1a)
+                    c: 0x1a1008
                 });
             }
-            
+
+            // Colony boundary marker pillars — tall, imposing, at perimeter
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                obs.push({
+                    x: Math.cos(angle) * 185,
+                    z: Math.sin(angle) * 185,
+                    w: 4,
+                    d: 4,
+                    h: 28,
+                    c: 0x3a1400
+                });
+            }
+
             return obs;
         }
 
@@ -1722,7 +1735,19 @@
 
             // Obstacles
             obstacles.forEach(obs => {
-                const mat = new THREE.MeshLambertMaterial({ color: obs.c || mdef.wall });
+                let mat;
+                if (mdef.id === 'culling_arena' && obs.h >= 10) {
+                    // Tall pillars and boundary markers: standard material with subtle emissive glow
+                    mat = new THREE.MeshStandardMaterial({
+                        color: obs.c || mdef.wall,
+                        emissive: 0x220800,
+                        emissiveIntensity: 0.18,
+                        roughness: 0.85,
+                        metalness: 0.05
+                    });
+                } else {
+                    mat = new THREE.MeshLambertMaterial({ color: obs.c || mdef.wall });
+                }
                 const mesh = new THREE.Mesh(new THREE.BoxGeometry(obs.w, obs.h, obs.d), mat);
                 mesh.position.set(obs.x, obs.h / 2, obs.z);
                 mesh.castShadow = true; mesh.receiveShadow = true;
@@ -1833,6 +1858,73 @@
                         scene.add(l);
                     }
                 }
+            }
+            if (mdef.id === 'culling_arena') {
+                // Dawn/dusk sky — deep crimson horizon
+                scene.background = new THREE.Color(0x160608);
+                scene.fog = new THREE.FogExp2(0x100406, 0.006);
+
+                // Overpowered sunset directional light from low angle
+                sun.color.set(0xff5522);
+                sun.intensity = 2.2;
+                sun.position.set(60, 25, -100);
+
+                // Cold moonlight fill from opposite side
+                const moon = new THREE.DirectionalLight(0x3366cc, 0.7);
+                moon.position.set(-50, 70, 50);
+                moon.userData.isMap = true;
+                scene.add(moon);
+
+                // Warmer ambient
+                amb.color.set(0x180a04);
+                amb.intensity = 3.2;
+
+                // 4 torchlight point lights at cardinal edges of arena floor
+                [[80,4,0],[-80,4,0],[0,4,80],[0,4,-80]].forEach(p => {
+                    const t = new THREE.PointLight(0xff4400, 5, 80);
+                    t.position.set(...p);
+                    t.userData.isMap = true;
+                    scene.add(t);
+                });
+
+                // 4 corner area-fill lights — deep orange, mid-height
+                [[120,12,120],[-120,12,120],[120,12,-120],[-120,12,-120]].forEach(p => {
+                    const c = new THREE.PointLight(0xff2200, 2.5, 120);
+                    c.position.set(...p);
+                    c.userData.isMap = true;
+                    scene.add(c);
+                });
+
+                // Ground sigil outer ring — glowing cursed rune circle
+                const sigilGeo = new THREE.TorusGeometry(48, 0.55, 8, 64);
+                const sigilMat = new THREE.MeshStandardMaterial({
+                    color: 0x220800, emissive: 0xff2200, emissiveIntensity: 0.55, roughness: 0.9, metalness: 0.1
+                });
+                const sigil = new THREE.Mesh(sigilGeo, sigilMat);
+                sigil.rotation.x = -Math.PI / 2;
+                sigil.position.y = 0.06;
+                sigil.userData.isMap = true;
+                scene.add(sigil);
+
+                // Inner sigil ring
+                const sigil2 = new THREE.Mesh(
+                    new THREE.TorusGeometry(22, 0.35, 8, 48),
+                    new THREE.MeshStandardMaterial({ color: 0x1a0500, emissive: 0xff4400, emissiveIntensity: 0.45, roughness: 0.9 })
+                );
+                sigil2.rotation.x = -Math.PI / 2;
+                sigil2.position.y = 0.06;
+                sigil2.userData.isMap = true;
+                scene.add(sigil2);
+
+                // Tiny innermost rune dot
+                const sigil3 = new THREE.Mesh(
+                    new THREE.TorusGeometry(8, 0.2, 8, 32),
+                    new THREE.MeshStandardMaterial({ color: 0x110300, emissive: 0xff6600, emissiveIntensity: 0.6, roughness: 0.9 })
+                );
+                sigil3.rotation.x = -Math.PI / 2;
+                sigil3.position.y = 0.06;
+                sigil3.userData.isMap = true;
+                scene.add(sigil3);
             }
         }
 
@@ -2861,6 +2953,15 @@
                 console.log('G.showPreplay() called');
                 this.buildPreplayUI();
                 this.showScreen('s-preplay');
+            },
+
+            startCullingGame() {
+                this.selMode = 'culling';
+                const idx = MDEFS.findIndex(m => m.id === 'culling_arena');
+                if (idx >= 0) this.selMap = idx;
+                this.selDiff = 'hard';
+                this.selBots = MDEFS[this.selMap].botCount || 15;
+                this.startMatch();
             },
 
             showNotif(msg, dur = 2000) {
