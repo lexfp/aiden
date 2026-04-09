@@ -88,20 +88,21 @@
         // GAME MODE DEFINITIONS
         // ============================================================
         const GAME_MODES = [
-            { id: 'elimination', name: 'Extermination', icon: 'â˜ ï¸', desc: 'Eliminate all cursed spirits' },
-            { id: 'survival', name: 'Domain Siege', icon: 'ðŸŒŠ', desc: 'Survive 5 waves of curses' },
-            { id: 'timed', name: 'Cursed Hunt', icon: 'â±ï¸', desc: 'Most exorcisms in 2 min' },
+            { id: 'elimination', name: 'Extermination', icon: '☠️', desc: 'Eliminate all cursed spirits' },
+            { id: 'survival', name: 'Domain Siege', icon: '🌊', desc: 'Survive 5 waves of curses' },
+            { id: 'timed', name: 'Cursed Hunt', icon: '⏱️', desc: 'Most exorcisms in 2 min' },
+            { id: 'culling', name: 'Culling Game', icon: '⚔️', desc: 'Merge with Tengen and dominate' },
         ];
-
         // ============================================================
         // POWERUP DEFINITIONS
         // ============================================================
         const POWERUP_TYPES = [
-            { id: 'health', icon: 'â¤ï¸', color: 0xff4444, label: 'HEALTH PACK', apply(G) { G.playerHp = Math.min(G.playerMaxHp, G.playerHp + 40); G.updateHUD(); } },
-            { id: 'ammo', icon: 'ðŸ“¦', color: 0xffcc44, label: 'AMMO CRATE', apply(G) { G.weapons.forEach(w => { if (w.cat !== 'melee') { w.curMag = w.mag; w.totalAmmo = w.mag * 3; } }); G.updateHUD(); } },
-            { id: 'speed', icon: 'âš¡', color: 0x44ffff, label: 'SPEED BOOST', apply(G) { G._speedBoost = 8; } },
-            { id: 'damage', icon: 'ðŸ”¥', color: 0xff8800, label: 'DAMAGE BOOST', apply(G) { G._dmgBoost = 8; } },
-            { id: 'shield', icon: 'ðŸ›¡', color: 0x4488ff, label: 'SHIELD', apply(G) { G.playerHp = Math.min(G.playerMaxHp + 50, G.playerHp + 50); G.playerMaxHp = Math.max(G.playerMaxHp, G.playerHp); G.updateHUD(); } },
+            { id: 'health', icon: '❤️', color: 0xff4444, label: 'HEALTH PACK', apply(G) { G.playerHp = Math.min(G.playerMaxHp, G.playerHp + 40); G.updateHUD(); } },
+            { id: 'ammo', icon: '📦', color: 0xffcc44, label: 'AMMO CRATE', apply(G) { G.weapons.forEach(w => { if (w.cat !== 'melee') { w.curMag = w.mag; w.totalAmmo = w.mag * 3; } }); G.updateHUD(); } },
+            { id: 'speed', icon: '⚡', color: 0x44ffff, label: 'SPEED BOOST', apply(G) { G._speedBoost = 8; } },
+            { id: 'damage', icon: '🔥', color: 0xff8800, label: 'DAMAGE BOOST', apply(G) { G._dmgBoost = 8; } },
+            { id: 'shield', icon: '🛡️', color: 0x4488ff, label: 'SHIELD', apply(G) { G.playerHp = Math.min(G.playerMaxHp + 50, G.playerHp + 50); G.playerMaxHp = Math.max(G.playerMaxHp, G.playerHp); G.updateHUD(); } },
+            { id: 'tengen_merge', icon: '⚛️', color: 0xaa00ff, label: 'TENGEN FUSION', apply(G) { G._tengenMerged = true; G._tengenMergeDur = 45; G.playerHp = G.playerMaxHp; G._charDmgMult = (G._baseCharDmgMult || G._charDmgMult || 1) * 1.5; G._charSpeedMult = (G._baseCharSpeedMult || G._charSpeedMult || 1) * 1.3; G.updateHUD(); } },
         ];
 
         // ============================================================
@@ -218,26 +219,17 @@
                 playerSpawn: { x: 0, z: 0 },
             },
             {
-                id: 'bunker', name: 'Culling Game', icon: 'ðŸ—ï¸', size: 'SMALL',
-                floor: 0x141410, wall: 0x1e1e16, accent: 0x88ff44,
-                ambient: 0x101008, fog: [0x141410, .07],
-                botCount: 3,
-                obstacles: [
-                    // corridor walls
-                    { x: -5, z: 0, w: .5, d: 12, h: 3, c: 0x2a2a1e }, { x: 5, z: 0, w: .5, d: 12, h: 3, c: 0x2a2a1e },
-                    { x: 0, z: -3, w: 8, d: .5, h: 3, c: 0x2a2a1e }, { x: 0, z: 3, w: 8, d: .5, h: 3, c: 0x2a2a1e },
-                    // crate cover
-                    { x: -3, z: -6, w: 1.5, d: 1.5, h: 2, c: 0x443322 }, { x: 3, z: 6, w: 1.5, d: 1.5, h: 2, c: 0x443322 },
-                    { x: 3, z: -6, w: 1.5, d: 1.5, h: 2, c: 0x443322 }, { x: -3, z: 6, w: 1.5, d: 1.5, h: 2, c: 0x443322 },
-                    // pillars
-                    { x: -7, z: -7, w: 1, d: 1, h: 3, c: 0x333322 }, { x: 7, z: -7, w: 1, d: 1, h: 3, c: 0x333322 },
-                    { x: -7, z: 7, w: 1, d: 1, h: 3, c: 0x333322 }, { x: 7, z: 7, w: 1, d: 1, h: 3, c: 0x333322 },
-                    // machinery
-                    { x: 0, z: 0, w: 2, d: 2, h: 2.5, c: 0x445533 },
+                id: 'culling_arena', name: 'Culling Arena', icon: '⚔️', size: 'GIANT',
+                floor: 0x151505, wall: 0x1a1a12, accent: 0xff8800,
+                ambient: 0x0a0a08, fog: [0x151505, .015],
+                botCount: 15,
+                generator: 'culling',
+                bounds: 200,
+                spawnPts: [
+                    { x: -140, z: -140 }, { x: 140, z: -140 }, { x: -140, z: 140 }, { x: 140, z: 140 },
+                    { x: -180, z: 0 }, { x: 180, z: 0 }, { x: 0, z: -180 }, { x: 0, z: 180 }
                 ],
-                bounds: 13,
-                spawnPts: [{ x: -10, z: -10 }, { x: 10, z: -10 }, { x: 0, z: -11 }],
-                playerSpawn: { x: 0, z: 10 },
+                playerSpawn: { x: 0, z: 0 },
             },
             {
                 id: 'ice', name: 'Frost Domain', icon: 'â„ï¸', size: 'LARGE',
@@ -307,6 +299,66 @@
                 bounds: 16,
                 spawnPts: [{ x: -12, z: -12 }, { x: 12, z: -12 }, { x: -12, z: 12 }, { x: 12, z: 12 }],
                 playerSpawn: { x: 0, z: 0 },
+            },
+            {
+                id: 'downtown', name: 'Urban Downtown', icon: 'ðŸŒ†', size: 'GIANT',
+                floor: 0x333333, wall: 0x444444, accent: 0x00ccff,
+                ambient: 0x333333, fog: [0x444444, .008],
+                botCount: 8,
+                generator: 'cityscape',
+                bounds: 120,
+                spawnPts: [{ x: -100, z: 0 }, { x: 100, z: 0 }, { x: 0, z: -100 }, { x: 0, z: 100 }],
+                playerSpawn: { x: 0, z: 50 },
+            },
+            {
+                id: 'industrial', name: 'Industrial Complex', icon: 'ðŸ­', size: 'GIANT',
+                floor: 0x2a2a2a, wall: 0x1a1a1a, accent: 0xff9900,
+                ambient: 0x2a2a2a, fog: [0x1f1f1f, .012],
+                botCount: 7,
+                generator: 'warehouse',
+                bounds: 150,
+                spawnPts: [{ x: -120, z: -60 }, { x: 120, z: -60 }, { x: -120, z: 60 }, { x: 120, z: 60 }],
+                playerSpawn: { x: 0, z: 80 },
+            },
+            {
+                id: 'underground', name: 'Subway Tunnels', icon: 'ðŸš‡', size: 'GIANT',
+                floor: 0x1a1a1a, wall: 0x0f0f0f, accent: 0x00ff88,
+                ambient: 0x151515, fog: [0x0a0a0a, .02],
+                botCount: 6,
+                generator: 'bunker',
+                bounds: 100,
+                spawnPts: [{ x: -80, z: -80 }, { x: 80, z: -80 }, { x: -80, z: 80 }, { x: 80, z: 80 }],
+                playerSpawn: { x: 0, z: 0 },
+            },
+            {
+                id: 'forest', name: 'Dense Forest', icon: 'ðŸŒ²', size: 'GIANT',
+                floor: 0x3a4a2a, wall: 0x2a3a1a, accent: 0x88dd44,
+                ambient: 0x4a5a3a, fog: [0x2a3a1a, .015],
+                botCount: 7,
+                generator: 'forest',
+                bounds: 130,
+                spawnPts: [{ x: -100, z: -100 }, { x: 100, z: -100 }, { x: -100, z: 100 }, { x: 100, z: 100 }],
+                playerSpawn: { x: 0, z: 60 },
+            },
+            {
+                id: 'airport', name: 'Abandoned Airport', icon: 'ðŸ›«', size: 'GIANT',
+                floor: 0x3a3a3a, wall: 0x2a2a2a, accent: 0xffff44,
+                ambient: 0x3a3a3a, fog: [0x2a2a2a, .01],
+                botCount: 8,
+                generator: 'airport',
+                bounds: 140,
+                spawnPts: [{ x: -120, z: 0 }, { x: 120, z: 0 }, { x: 0, z: -120 }, { x: 0, z: 120 }],
+                playerSpawn: { x: 0, z: 90 },
+            },
+            {
+                id: 'mansion', name: 'Mansion Interior', icon: '🏰', size: 'GIANT',
+                floor: 0x5a4a3a, wall: 0x3a2a1a, accent: 0xffdd99,
+                ambient: 0x3a2a1a, fog: [0x2a1a0a, .016],
+                botCount: 6,
+                generator: 'mansion',
+                bounds: 110,
+                spawnPts: [{ x: -80, z: -80 }, { x: 80, z: -80 }, { x: -80, z: 80 }, { x: 80, z: 80 }],
+                playerSpawn: { x: 0, z: 70 },
             },
         ];
 
@@ -490,7 +542,7 @@
 
             scene = new THREE.Scene();
             if (typeof HuntersGL !== 'undefined') HuntersGL.initEnvironment(scene, renderer);
-            camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, .05, 500);
+            camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, .05, 800);
             camera.position.set(0, 1.7, 0);
 
             window.addEventListener('resize', () => {
@@ -1301,6 +1353,282 @@
             return mapCityMeshes.length ? mapObstacleMeshes.concat(mapCityMeshes) : mapObstacleMeshes;
         }
 
+        // ============================================================
+        // PROCEDURAL MAP GENERATORS
+        // ============================================================
+        function generateCityscape() {
+            const obs = [];
+            // Main blocks (40-80 units tall buildings)
+            const buildingColors = [0x333366, 0x3a3a4a, 0x2a3a4a, 0x4a4a5a, 0x3a4a5a, 0x2a5a6a];
+            for (let i = 0; i < 20; i++) {
+                const x = (Math.random() - 0.5) * 100;
+                const z = (Math.random() - 0.5) * 100;
+                const w = 6 + Math.random() * 12;
+                const d = 6 + Math.random() * 12;
+                const h = 20 + Math.random() * 60;
+                // Check distance from player spawn
+                if (Math.hypot(x, z - 50) < 8) continue;
+                obs.push({ x, z, w, d, h, c: buildingColors[Math.floor(Math.random() * buildingColors.length)] });
+            }
+            // Street blocks and alleys
+            for (let i = -60; i <= 60; i += 20) {
+                obs.push({ x: i, z: -40, w: 2, d: 120, h: 0.5, c: 0x444444 });
+                obs.push({ x: -60, z: i, w: 120, d: 2, h: 0.5, c: 0x444444 });
+            }
+            // Rooftop ventilation
+            for (let i = 0; i < 15; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                obs.push({ x, z, w: 3, d: 2, h: 2, c: 0x555555 });
+            }
+            return obs;
+        }
+
+        function generateWarehouse() {
+            const obs = [];
+            // Large warehouse structures
+            for (let i = 0; i < 6; i++) {
+                const x = -100 + i * 35;
+                const z = 0;
+                obs.push({ x, z, w: 20, d: 80, h: 15, c: 0x2a2a1a });
+                // Skylights
+                for (let j = 0; j < 4; j++) {
+                    obs.push({ x: x - 8 + j * 5, z: z - 30 + j * 15, w: 3, d: 3, h: 1, c: 0x444433 });
+                }
+            }
+            // Loading docks and ramps
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const rad = 70;
+                obs.push({
+                    x: Math.cos(angle) * rad,
+                    z: Math.sin(angle) * rad,
+                    w: 15,
+                    d: 8,
+                    h: 2,
+                    c: 0x554422
+                });
+            }
+            // Central stacked containers
+            for (let x = -20; x <= 20; x += 20) {
+                for (let z = -40; z <= 40; z += 20) {
+                    obs.push({ x, z, w: 12, d: 12, h: 8 + Math.random() * 12, c: 0x443322 });
+                }
+            }
+            return obs;
+        }
+
+        function generateBunker() {
+            const obs = [];
+            // Tunnel system with multiple levels
+            // Main horizontal tunnel
+            obs.push({ x: 0, z: 0, w: 100, d: 8, h: 5, c: 0x0f0f0f });
+            // Perpendicular tunnel
+            obs.push({ x: 0, z: -40, w: 8, d: 80, h: 5, c: 0x0f0f0f });
+            // Central atrium
+            obs.push({ x: 0, z: -40, w: 20, d: 20, h: 4, c: 0x1a1a1a });
+            // Support columns throughout
+            for (let i = -40; i <= 40; i += 20) {
+                obs.push({ x: i, z: 0, w: 1.5, d: 1.5, h: 6, c: 0x333333 });
+                obs.push({ x: 0, z: i, w: 1.5, d: 1.5, h: 6, c: 0x333333 });
+            }
+            // Sealed rooms off main tunnel
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const rad = 35;
+                const x = Math.cos(angle) * rad;
+                const z = Math.sin(angle) * rad;
+                obs.push({ x, z, w: 12, d: 12, h: 4, c: 0x1a1a1a });
+            }
+            return obs;
+        }
+
+        function generateForest() {
+            const obs = [];
+            // Tree clusters (dense forest)
+            for (let i = 0; i < 50; i++) {
+                const x = (Math.random() - 0.5) * 120;
+                const z = (Math.random() - 0.5) * 120;
+                const size = 1 + Math.random() * 3;
+                const h = 8 + Math.random() * 18;
+                if (Math.hypot(x, z - 60) < 12) continue; // avoid spawn
+                obs.push({ x, z, w: size, d: size, h, c: 0x2a4a1a });
+            }
+            // Rocky outcrops
+            for (let i = 0; i < 12; i++) {
+                const x = (Math.random() - 0.5) * 100;
+                const z = (Math.random() - 0.5) * 100;
+                obs.push({ x, z, w: 6 + Math.random() * 8, d: 6 + Math.random() * 8, h: 2 + Math.random() * 4, c: 0x5a5a4a });
+            }
+            // Clearings with vegetation
+            for (let i = 0; i < 6; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                obs.push({ x, z, w: 20 + Math.random() * 15, d: 20 + Math.random() * 15, h: 0.3, c: 0x4a6a3a });
+            }
+            return obs;
+        }
+
+        function generateAirport() {
+            const obs = [];
+            // RunWays (large flat areas)
+            obs.push({ x: 0, z: -80, w: 40, d: 120, h: 0.5, c: 0x3a3a3a });
+            obs.push({ x: 0, z: 40, w: 40, d: 120, h: 0.5, c: 0x3a3a3a });
+            // Terminal building (large structure)
+            obs.push({ x: -50, z: 0, w: 30, d: 20, h: 20, c: 0x2a2a3a });
+            obs.push({ x: 50, z: 0, w: 30, d: 20, h: 20, c: 0x2a2a3a });
+            // Control tower
+            obs.push({ x: -80, z: -60, w: 6, d: 6, h: 30, c: 0x3a3a4a });
+            obs.push({ x: 80, z: 60, w: 6, d: 6, h: 30, c: 0x3a3a4a });
+            // Hangars
+            for (let i = 0; i < 4; i++) {
+                const x = -70 + i * 45;
+                obs.push({ x, z: 40, w: 25, d: 35, h: 18, c: 0x1a1a2a });
+            }
+            // Fuel tanks
+            for (let i = 0; i < 6; i++) {
+                obs.push({
+                    x: -80 + Math.random() * 160,
+                    z: -80 + Math.random() * 40,
+                    w: 4,
+                    d: 4,
+                    h: 8,
+                    c: 0x554433
+                });
+            }
+            // Ground equipment
+            for (let i = 0; i < 15; i++) {
+                obs.push({
+                    x: (Math.random() - 0.5) * 100,
+                    z: (Math.random() - 0.5) * 100,
+                    w: 3 + Math.random() * 5,
+                    d: 3 + Math.random() * 5,
+                    h: 1 + Math.random() * 3,
+                    c: 0x3a3a3a
+                });
+            }
+            return obs;
+        }
+
+        function generateMansion() {
+            const obs = [];
+            // Main mansion structure - multiple rooms
+            const rooms = [
+                { x: -40, z: -40, w: 30, d: 25, h: 0.1, c: 0x5a4a3a }, // grand ballroom
+                { x: 40, z: -40, w: 25, d: 30, h: 0.1, c: 0x5a4a3a }, // library
+                { x: -40, z: 40, w: 28, d: 28, h: 0.1, c: 0x5a4a3a }, // dining hall
+                { x: 40, z: 40, w: 25, d: 25, h: 0.1, c: 0x5a4a3a }, // conservatory
+            ];
+            rooms.forEach(r => obs.push(r));
+
+            // Interior walls separating rooms
+            obs.push({ x: 0, z: 0, w: 80, d: 3, h: 4, c: 0x3a2a1a });
+            obs.push({ x: 0, z: -50, w: 3, d: 60, h: 4, c: 0x3a2a1a });
+            obs.push({ x: 50, z: 0, w: 60, d: 3, h: 4, c: 0x3a2a1a });
+
+            // Staircases
+            for (let i = 0; i < 4; i++) {
+                const angle = (i / 4) * Math.PI * 2;
+                const rad = 35;
+                obs.push({
+                    x: Math.cos(angle) * rad,
+                    z: Math.sin(angle) * rad,
+                    w: 8,
+                    d: 8,
+                    h: 5,
+                    c: 0x4a3a2a
+                });
+            }
+
+            // Columns
+            for (let x = -30; x <= 30; x += 20) {
+                for (let z = -30; z <= 30; z += 20) {
+                    if (Math.abs(x) < 5 && Math.abs(z) < 5) continue;
+                    obs.push({ x, z, w: 2, d: 2, h: 5, c: 0x3a2a1a });
+                }
+            }
+
+            // Furniture clusters
+            for (let i = 0; i < 20; i++) {
+                obs.push({
+                    x: (Math.random() - 0.5) * 70,
+                    z: (Math.random() - 0.5) * 70,
+                    w: 2 + Math.random() * 4,
+                    d: 2 + Math.random() * 4,
+                    h: 1 + Math.random() * 2,
+                    c: 0x4a3a2a
+                });
+            }
+
+            return obs;
+        }
+
+
+        function generateCulling() {
+            const obs = [];
+            // Giant tournament arena with tiered terrain
+            
+            // Central combat area - open floor
+            obs.push({ x: 0, z: 0, w: 100, d: 100, h: 0.3, c: 0x2a2a1a });
+            
+            // Observation platforms around perimeter - elevated
+            const platformRadius = 130;
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const px = Math.cos(angle) * platformRadius;
+                const pz = Math.sin(angle) * platformRadius;
+                obs.push({ x: px, z: pz, w: 20, d: 20, h: 2, c: 0x3a3a2a });
+            }
+            
+            // Rock formations for tactical cover - arranged in octagon
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2 + Math.PI / 16;
+                const rx = Math.cos(angle) * 90;
+                const rz = Math.sin(angle) * 90;
+                for (let j = 0; j < 3; j++) {
+                    const offset = (j - 1) * 15;
+                    obs.push({
+                        x: rx + Math.cos(angle + Math.PI / 2) * offset,
+                        z: rz + Math.sin(angle + Math.PI / 2) * offset,
+                        w: 8 + Math.random() * 4,
+                        d: 8 + Math.random() * 4,
+                        h: 5 + Math.random() * 8,
+                        c: 0x4a4a3a
+                    });
+                }
+            }
+            
+            // Center arena elevated pillars (tetsukkei-style)
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2;
+                const pillarRad = 35;
+                obs.push({
+                    x: Math.cos(angle) * pillarRad,
+                    z: Math.sin(angle) * pillarRad,
+                    w: 6,
+                    d: 6,
+                    h: 12,
+                    c: 0x5a5a4a
+                });
+            }
+            
+            // Scattered debris and obstacles
+            for (let i = 0; i < 25; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 30 + Math.random() * 140;
+                obs.push({
+                    x: Math.cos(angle) * radius,
+                    z: Math.sin(angle) * radius,
+                    w: 4 + Math.random() * 6,
+                    d: 4 + Math.random() * 6,
+                    h: 2 + Math.random() * 5,
+                    c: 0x3a3a2a + Math.floor(Math.random() * 0x1a1a1a)
+                });
+            }
+            
+            return obs;
+        }
+
         function buildMap(mdef) {
             mapObstacles = [];
             mapObstacleMeshes = [];
@@ -1324,10 +1652,16 @@
             const sun = new THREE.DirectionalLight(0xffffff, 1.1);
             sun.position.set(10, 20, 10);
             sun.castShadow = true;
-            sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
-            sun.shadow.camera.near = .1; sun.shadow.camera.far = 100;
-            sun.shadow.camera.left = -30; sun.shadow.camera.right = 30;
-            sun.shadow.camera.top = 30; sun.shadow.camera.bottom = -30;
+            sun.shadow.mapSize.width = 2048;
+            sun.shadow.mapSize.height = 2048;
+            sun.shadow.camera.near = .1;
+            sun.shadow.camera.far = 200;
+            // Scale shadow camera for giant maps
+            const shadowScale = mdef.size === 'GIANT' ? 80 : mdef.size === 'LARGE' ? 40 : 30;
+            sun.shadow.camera.left = -shadowScale;
+            sun.shadow.camera.right = shadowScale;
+            sun.shadow.camera.top = shadowScale;
+            sun.shadow.camera.bottom = -shadowScale;
             scene.add(sun);
             // Accent point light
             const accent = new THREE.PointLight(mdef.accent, 2, 20);
@@ -1370,8 +1704,24 @@
                 mapObstacleMeshes.push(m);
             });
 
+            // Get obstacles - from generator or hardcoded
+            let obstacles = mdef.obstacles || [];
+            if (mdef.generator) {
+                const generatorFuncs = {
+                    cityscape: generateCityscape,
+                    warehouse: generateWarehouse,
+                    bunker: generateBunker,
+                    culling: generateCulling,
+                    forest: generateForest,
+                    airport: generateAirport,
+                    mansion: generateMansion,
+                };
+                const genFunc = generatorFuncs[mdef.generator];
+                if (genFunc) obstacles = genFunc();
+            }
+
             // Obstacles
-            mdef.obstacles.forEach(obs => {
+            obstacles.forEach(obs => {
                 const mat = new THREE.MeshLambertMaterial({ color: obs.c || mdef.wall });
                 const mesh = new THREE.Mesh(new THREE.BoxGeometry(obs.w, obs.h, obs.d), mat);
                 mesh.position.set(obs.x, obs.h / 2, obs.z);
@@ -1422,6 +1772,67 @@
                     l.userData.isMap = true;
                     scene.add(l);
                 });
+            }
+            // Giant map lighting enhancements
+            if (mdef.id === 'downtown') {
+                // Multiple street lights
+                for (let i = -100; i <= 100; i += 30) {
+                    for (let j = -100; j <= 100; j += 30) {
+                        const l = new THREE.PointLight(0x8899ff, 0.6, 25);
+                        l.position.set(i, 5, j);
+                        l.userData.isMap = true;
+                        scene.add(l);
+                    }
+                }
+            }
+            if (mdef.id === 'industrial') {
+                // Harsh industrial lighting
+                for (let i = -120; i <= 120; i += 50) {
+                    const l = new THREE.PointLight(0xffaa44, 1.2, 50);
+                    l.position.set(i, 15, 0);
+                    l.userData.isMap = true;
+                    scene.add(l);
+                }
+            }
+            if (mdef.id === 'underground') {
+                // Emergency lighting
+                for (let i = -80; i <= 80; i += 40) {
+                    for (let j = -80; j <= 80; j += 40) {
+                        const l = new THREE.PointLight(0x88ff44, 0.8, 20);
+                        l.position.set(i, 2, j);
+                        l.userData.isMap = true;
+                        scene.add(l);
+                    }
+                }
+            }
+            if (mdef.id === 'forest') {
+                // Dappled forest lighting
+                const skyLight = new THREE.PointLight(0x88aa88, 1.5, 100);
+                skyLight.position.set(0, 40, 0);
+                skyLight.userData.isMap = true;
+                scene.add(skyLight);
+            }
+            if (mdef.id === 'airport') {
+                // Runway lights and beacons
+                const beacon1 = new THREE.PointLight(0xffcc00, 1.5, 60);
+                beacon1.position.set(-80, 20, -60);
+                beacon1.userData.isMap = true;
+                scene.add(beacon1);
+                const beacon2 = new THREE.PointLight(0xff0000, 1.5, 60);
+                beacon2.position.set(80, 20, 60);
+                beacon2.userData.isMap = true;
+                scene.add(beacon2);
+            }
+            if (mdef.id === 'mansion') {
+                // Interior chandeliers
+                for (let i = -30; i <= 30; i += 30) {
+                    for (let j = -30; j <= 30; j += 30) {
+                        const l = new THREE.PointLight(0xffdd99, 1.2, 25);
+                        l.position.set(i, 4, j);
+                        l.userData.isMap = true;
+                        scene.add(l);
+                    }
+                }
             }
         }
 
@@ -1641,6 +2052,11 @@
                 const toPlayer = new THREE.Vector3().subVectors(playerPos, this.pos);
                 toPlayer.y = 0;
                 const dist = toPlayer.length();
+
+                if (window.G && window.G.selMode === 'culling') {
+                    if (!this.burstActive) this.speed = this._baseSpeed * 1.08;
+                    if (window.G._tengenMerged) this.abilityCooldown = Math.max(0.25, this.abilityCooldown - dt * 0.25);
+                }
 
                 // State transitions
                 if (dist < this.diff.aggroRange) this.state = 'chase';
@@ -2654,6 +3070,10 @@
                 this.scopeMode = false;
                 this._speedBoost = 0;
                 this._dmgBoost = 0;
+                this._tengenMerged = false;
+                this._tengenMergeDur = 0;
+                this._baseCharDmgMult = 1.0;
+                this._baseCharSpeedMult = 1.0;
                 this.powerups = [];
                 this._powerupTimer = 20;
                 camera.fov = 72;
@@ -2670,6 +3090,8 @@
                 this.playerHp = cdef.hp;
                 this._charDmgMult = cdef.dmgMult;
                 this._charSpeedMult = cdef.speed;
+                this._baseCharDmgMult = cdef.dmgMult;
+                this._baseCharSpeedMult = cdef.speed;
                 this._charRage = cdef.rage || false;
 
                 const mdef = MDEFS[this.selMap];
@@ -2737,6 +3159,11 @@
                         const jjkType = JJK_TYPES_LIST[Math.floor(Math.random() * JJK_TYPES_LIST.length)];
                         this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), diff, i, jjkType));
                     }
+                }
+
+                if (this.selMode === 'culling') {
+                    this._powerupTimer = 10;
+                    this.spawnPowerup();
                 }
 
                 // Weapon model
@@ -3113,8 +3540,9 @@
             // ---- MOVEMENT ----
             updatePlayer(dt) {
                 // Boost timers
-                if (this._speedBoost > 0) { this._speedBoost -= dt; if (this._speedBoost <= 0) { this._speedBoost = 0; document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = 'âš¡ SPEED ' + Math.ceil(this._speedBoost) + 's'; } }
-                if (this._dmgBoost > 0) { this._dmgBoost -= dt; if (this._dmgBoost <= 0) { this._dmgBoost = 0; if (this._speedBoost <= 0) document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = 'ðŸ”¥ DAMAGE ' + Math.ceil(this._dmgBoost) + 's'; } }
+                if (this._speedBoost > 0) { this._speedBoost -= dt; if (this._speedBoost <= 0) { this._speedBoost = 0; document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = '⚡ SPEED ' + Math.ceil(this._speedBoost) + 's'; } }
+                if (this._dmgBoost > 0) { this._dmgBoost -= dt; if (this._dmgBoost <= 0) { this._dmgBoost = 0; if (this._speedBoost <= 0) document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = '🔥 DAMAGE ' + Math.ceil(this._dmgBoost) + 's'; } }
+                if (this._tengenMerged) { this._tengenMergeDur -= dt; if (this._tengenMergeDur <= 0) { this._tengenMerged = false; this._tengenMergeDur = 0; this._charDmgMult = this._baseCharDmgMult || 1; this._charSpeedMult = this._baseCharSpeedMult || 1; this.showNotif('Tengen Fusion has faded'); document.getElementById('boost-d').textContent = ''; } }
                 // Timed mode countdown
                 if (this.selMode === 'timed') {
                     this.matchTimer -= dt;
@@ -3315,7 +3743,12 @@
                 const x = (Math.random() - .5) * b * 2;
                 const z = (Math.random() - .5) * b * 2;
                 if (collidesWithObstacle(x, z, .5)) return;
-                const type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+                let type;
+                if (this.selMode === 'culling' && Math.random() < 0.35) {
+                    type = POWERUP_TYPES.find(p => p.id === 'tengen_merge') || POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+                } else {
+                    type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+                }
                 const geo = new THREE.OctahedronGeometry(.35, 0);
                 const mat = new THREE.MeshLambertMaterial({ color: type.color, emissive: new THREE.Color(type.color), emissiveIntensity: .6 });
                 const mesh = new THREE.Mesh(geo, mat);
@@ -3501,6 +3934,10 @@
         window.G._shopCat = 'all';
         window.G._charDmgMult = 1.0;
         window.G._charSpeedMult = 1.0;
+        window.G._tengenMerged = false;
+        window.G._tengenMergeDur = 0;
+        window.G._baseCharDmgMult = 1.0;
+        window.G._baseCharSpeedMult = 1.0;
         window.G._charRage = false;
         window.G.selChar = save.character || 'soldier';
         window.G.selMode = 'elimination';
