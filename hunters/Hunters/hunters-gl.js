@@ -51,49 +51,74 @@
             const THREE = global.THREE;
             const self = this;
             this.preloadPromise = new Promise(function (resolve) {
+                if (!global.GLTFLoader) {
+                    console.warn('HuntersGL: GLTFLoader not found');
+                    return resolve();
+                }
+
+                const loader = new global.GLTFLoader();
+
+                // Setup DRACOLoader if available
+                if (global.DRACOLoader) {
+                    try {
+                        const dracoLoader = new global.DRACOLoader();
+                        // Use official Draco decoders from CDN
+                        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+                        loader.setDRACOLoader(dracoLoader);
+                    } catch (e) {
+                        console.warn('HuntersGL: DRACOLoader init failed', e);
+                    }
+                }
+
                 let pending = 2;
                 function done() {
                     pending--;
                     if (pending <= 0) resolve();
                 }
 
-                // Load Soldier model (skinning blending example)
-                self.loadGltf(
-                    ['./models/Soldier.glb', 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/models/gltf/Soldier.glb'],
-                    function (gltf) {
-                        self.soldier = gltf;
-                        self.clips = gltf.animations || [];
-                        gltf.scene.traverse(function (o) {
-                            if (o.isMesh) {
-                                o.castShadow = true;
-                                o.receiveShadow = true;
-                                const mats = Array.isArray(o.material) ? o.material : [o.material];
-                                for (let j = 0; j < mats.length; j++) {
-                                    const m = mats[j];
-                                    if (m && m.map && m.map.colorSpace !== undefined) m.map.colorSpace = THREE.SRGBColorSpace;
-                                }
-                            }
-                        });
-                        done();
-                    },
-                    function () {
-                        console.warn('HuntersGL: Soldier preload failed');
-                        done();
-                    }
-                );
+                const soldierUrls = [
+                    'https://threejs.org/examples/models/gltf/Soldier.glb',
+                    'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/Soldier.glb',
+                    './models/Soldier.glb'
+                ];
 
-                // Load LittlestTokyo model (keyframes example)
-                self.loadGltf(
-                    ['./models/LittlestTokyo.glb', 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/models/gltf/LittlestTokyo.glb'],
-                    function (gltf) {
-                        self.city = gltf;
-                        done();
-                    },
-                    function () {
-                        console.warn('HuntersGL: LittlestTokyo preload failed');
-                        done();
-                    }
-                );
+                const cityUrls = [
+                    'https://threejs.org/examples/models/gltf/LittlestTokyo.glb',
+                    'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/LittlestTokyo.glb',
+                    './models/LittlestTokyo.glb'
+                ];
+
+                const loadModel = (urls, name, onOk) => {
+                    let idx = 0;
+                    const tryLoad = () => {
+                        if (idx >= urls.length) {
+                            console.warn('HuntersGL: Failed to load ' + name);
+                            done();
+                            return;
+                        }
+                        loader.load(urls[idx], (gltf) => {
+                            onOk(gltf);
+                            done();
+                        }, undefined, () => {
+                            idx++;
+                            tryLoad();
+                        });
+                    };
+                    tryLoad();
+                };
+
+                // Load Soldier
+                loadModel(soldierUrls, 'Soldier', (gltf) => {
+                    self.soldier = gltf;
+                    self.clips = gltf.animations || [];
+                    console.log('HuntersGL: Soldier loaded');
+                });
+
+                // Load City
+                loadModel(cityUrls, 'City', (gltf) => {
+                    self.city = gltf;
+                    console.log('HuntersGL: City loaded');
+                });
             });
             return this.preloadPromise;
         },
