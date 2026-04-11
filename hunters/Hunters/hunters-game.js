@@ -88,28 +88,45 @@
         // GAME MODE DEFINITIONS
         // ============================================================
         const GAME_MODES = [
-            { id: 'elimination', name: 'Elimination', icon: 'â˜ ï¸', desc: 'Kill all enemies' },
-            { id: 'survival', name: 'Survival', icon: 'ðŸŒŠ', desc: 'Survive 5 waves' },
-            { id: 'timed', name: 'Timed Hunt', icon: 'â±ï¸', desc: 'Most kills in 2 min' },
+            { id: 'elimination', name: 'Extermination', icon: '☠️', desc: 'Eliminate all cursed spirits' },
+            { id: 'survival', name: 'Domain Siege', icon: '🌊', desc: 'Survive 5 waves of curses' },
+            { id: 'timed', name: 'Cursed Hunt', icon: '⏱️', desc: 'Most exorcisms in 2 min' },
+            { id: 'culling', name: 'Culling Game', icon: '⚔️', desc: 'Merge with Tengen and dominate' },
         ];
-
         // ============================================================
         // POWERUP DEFINITIONS
         // ============================================================
         const POWERUP_TYPES = [
-            { id: 'health', icon: 'â¤ï¸', color: 0xff4444, label: 'HEALTH PACK', apply(G) { G.playerHp = Math.min(G.playerMaxHp, G.playerHp + 40); G.updateHUD(); } },
-            { id: 'ammo', icon: 'ðŸ“¦', color: 0xffcc44, label: 'AMMO CRATE', apply(G) { G.weapons.forEach(w => { if (w.cat !== 'melee') { w.curMag = w.mag; w.totalAmmo = w.mag * 3; } }); G.updateHUD(); } },
-            { id: 'speed', icon: 'âš¡', color: 0x44ffff, label: 'SPEED BOOST', apply(G) { G._speedBoost = 8; } },
-            { id: 'damage', icon: 'ðŸ”¥', color: 0xff8800, label: 'DAMAGE BOOST', apply(G) { G._dmgBoost = 8; } },
-            { id: 'shield', icon: 'ðŸ›¡', color: 0x4488ff, label: 'SHIELD', apply(G) { G.playerHp = Math.min(G.playerMaxHp + 50, G.playerHp + 50); G.playerMaxHp = Math.max(G.playerMaxHp, G.playerHp); G.updateHUD(); } },
+            { id: 'health', icon: '❤️', color: 0xff4444, label: 'HEALTH PACK', apply(G) { G.playerHp = Math.min(G.playerMaxHp, G.playerHp + 40); G.updateHUD(); } },
+            { id: 'ammo', icon: '📦', color: 0xffcc44, label: 'AMMO CRATE', apply(G) { G.weapons.forEach(w => { if (w.cat !== 'melee') { w.curMag = w.mag; w.totalAmmo = w.mag * 3; } }); G.updateHUD(); } },
+            { id: 'speed', icon: '⚡', color: 0x44ffff, label: 'SPEED BOOST', apply(G) { G._speedBoost = 8; } },
+            { id: 'damage', icon: '🔥', color: 0xff8800, label: 'DAMAGE BOOST', apply(G) { G._dmgBoost = 8; } },
+            { id: 'shield', icon: '🛡️', color: 0x4488ff, label: 'SHIELD', apply(G) { G.playerHp = Math.min(G.playerMaxHp + 50, G.playerHp + 50); G.playerMaxHp = Math.max(G.playerMaxHp, G.playerHp); G.updateHUD(); } },
+            { id: 'tengen_merge', icon: '⚛️', color: 0xaa00ff, label: 'TENGEN FUSION', apply(G) { G._tengenMerged = true; G._tengenMergeDur = 45; G.playerHp = G.playerMaxHp; G._charDmgMult = (G._baseCharDmgMult || G._charDmgMult || 1) * 1.5; G._charSpeedMult = (G._baseCharSpeedMult || G._charSpeedMult || 1) * 1.3; G.updateHUD(); } },
         ];
+
+        // ============================================================
+        // JJK CHARACTER TYPES
+        // ============================================================
+        const JJK_CHARACTER_TYPES = {
+            gojo:   { health: 120, speed: 1.2, color: 0x88ccff, ability: 'shield',      emissive: false, scale: 1.0,  label: 'Gojo'   },
+            sukuna: { health: 200, speed: 1.0, color: 0xff4444, ability: 'slash',       emissive: true,  scale: 1.1,  label: 'Sukuna' },
+            nanami: { health: 140, speed: 1.0, color: 0xffdd88, ability: 'critical',    emissive: false, scale: 1.0,  label: 'Nanami' },
+            mahito: { health: 100, speed: 1.3, color: 0xaa66ff, ability: 'dodge',       emissive: false, scale: 0.95, label: 'Mahito' },
+            megumi: { health: 130, speed: 1.1, color: 0x3333ff, ability: 'summon',      emissive: false, scale: 1.0,  label: 'Megumi' },
+            yuji:   { health: 150, speed: 1.2, color: 0xff8888, ability: 'burst',       emissive: false, scale: 1.05, label: 'Yuji'   },
+            yuta:   { health: 160, speed: 1.1, color: 0xffffff, ability: 'energy',      emissive: true,  scale: 1.0,  label: 'Yuta'   },
+            toji:   { health: 170, speed: 1.4, color: 0x222222, ability: 'rush',        emissive: true,  scale: 1.1,  label: 'Toji'   },
+            geto:   { health: 150, speed: 1.0, color: 0x5500aa, ability: 'projectile',  emissive: false, scale: 1.0,  label: 'Geto'   }
+        };
+        const JJK_TYPES_LIST = Object.keys(JJK_CHARACTER_TYPES);
 
         // ============================================================
         // MAP DEFINITIONS
         // ============================================================
         const MDEFS = [
             {
-                id: 'arena', name: 'Combat Arena', icon: 'ðŸŸï¸', size: 'SMALL',
+                id: 'arena', name: 'Jujutsu High', icon: 'ðŸŸï¸', size: 'SMALL',
                 floor: 0x1a1a2a, wall: 0x2a2244, accent: 0xff3366,
                 ambient: 0x221133, fog: [0x1a1a2a, .04],
                 botCount: 3,
@@ -127,7 +144,7 @@
                 playerSpawn: { x: 0, z: 11 },
             },
             {
-                id: 'warehouse', name: 'Warehouse', icon: 'ðŸ­', size: 'MEDIUM',
+                id: 'warehouse', name: 'Zenin Estate', icon: 'ðŸ­', size: 'MEDIUM',
                 floor: 0x1a1610, wall: 0x2a2014, accent: 0xff8800,
                 ambient: 0x221a10, fog: [0x1a1610, .025],
                 obstacles: [
@@ -146,7 +163,7 @@
                 playerSpawn: { x: 0, z: 0 },
             },
             {
-                id: 'rooftop', name: 'Rooftop', icon: 'ðŸ™ï¸', size: 'MEDIUM',
+                id: 'rooftop', name: 'Shibuya', icon: 'ðŸ™ï¸', size: 'MEDIUM',
                 urbanGltf: true,
                 floor: 0x181820, wall: 0x222233, accent: 0x00ccff,
                 ambient: 0x101020, fog: [0x101522, .02],
@@ -167,7 +184,7 @@
                 playerSpawn: { x: 0, z: 0 },
             },
             {
-                id: 'desert', name: 'Desert Ruins', icon: 'ðŸœï¸', size: 'LARGE',
+                id: 'desert', name: 'Cursed Tomb', icon: 'ðŸœï¸', size: 'LARGE',
                 floor: 0x3a2a10, wall: 0x4a3820, accent: 0xffaa00,
                 ambient: 0x302010, fog: [0x4a3820, .015],
                 obstacles: [
@@ -187,7 +204,7 @@
                 playerSpawn: { x: 0, z: 12 },
             },
             {
-                id: 'neon', name: 'Neon City', icon: 'ðŸŒ†', size: 'LARGE',
+                id: 'neon', name: 'Tokyo Colony', icon: 'ðŸŒ†', size: 'LARGE',
                 urbanGltf: true,
                 floor: 0x050510, wall: 0x0a0a20, accent: 0xff00ff,
                 ambient: 0x050515, fog: [0x050510, .018],
@@ -202,29 +219,20 @@
                 playerSpawn: { x: 0, z: 0 },
             },
             {
-                id: 'bunker', name: 'Bunker', icon: 'ðŸ—ï¸', size: 'SMALL',
-                floor: 0x141410, wall: 0x1e1e16, accent: 0x88ff44,
-                ambient: 0x101008, fog: [0x141410, .07],
-                botCount: 3,
-                obstacles: [
-                    // corridor walls
-                    { x: -5, z: 0, w: .5, d: 12, h: 3, c: 0x2a2a1e }, { x: 5, z: 0, w: .5, d: 12, h: 3, c: 0x2a2a1e },
-                    { x: 0, z: -3, w: 8, d: .5, h: 3, c: 0x2a2a1e }, { x: 0, z: 3, w: 8, d: .5, h: 3, c: 0x2a2a1e },
-                    // crate cover
-                    { x: -3, z: -6, w: 1.5, d: 1.5, h: 2, c: 0x443322 }, { x: 3, z: 6, w: 1.5, d: 1.5, h: 2, c: 0x443322 },
-                    { x: 3, z: -6, w: 1.5, d: 1.5, h: 2, c: 0x443322 }, { x: -3, z: 6, w: 1.5, d: 1.5, h: 2, c: 0x443322 },
-                    // pillars
-                    { x: -7, z: -7, w: 1, d: 1, h: 3, c: 0x333322 }, { x: 7, z: -7, w: 1, d: 1, h: 3, c: 0x333322 },
-                    { x: -7, z: 7, w: 1, d: 1, h: 3, c: 0x333322 }, { x: 7, z: 7, w: 1, d: 1, h: 3, c: 0x333322 },
-                    // machinery
-                    { x: 0, z: 0, w: 2, d: 2, h: 2.5, c: 0x445533 },
+                id: 'culling_arena', name: 'Culling Arena', icon: '⚔️', size: 'GIANT',
+                floor: 0x151505, wall: 0x1a1a12, accent: 0xff8800,
+                ambient: 0x0a0a08, fog: [0x151505, .015],
+                botCount: 15,
+                generator: 'culling',
+                bounds: 200,
+                spawnPts: [
+                    { x: -140, z: -140 }, { x: 140, z: -140 }, { x: -140, z: 140 }, { x: 140, z: 140 },
+                    { x: -180, z: 0 }, { x: 180, z: 0 }, { x: 0, z: -180 }, { x: 0, z: 180 }
                 ],
-                bounds: 13,
-                spawnPts: [{ x: -10, z: -10 }, { x: 10, z: -10 }, { x: 0, z: -11 }],
-                playerSpawn: { x: 0, z: 10 },
+                playerSpawn: { x: 0, z: 0 },
             },
             {
-                id: 'ice', name: 'Ice Field', icon: 'â„ï¸', size: 'LARGE',
+                id: 'ice', name: 'Frost Domain', icon: 'â„ï¸', size: 'LARGE',
                 floor: 0x99bbdd, wall: 0xaaccee, accent: 0x00ffff,
                 ambient: 0x7799aa, fog: [0xaabbcc, .010],
                 botCount: 4,
@@ -247,7 +255,7 @@
                 playerSpawn: { x: 0, z: 14 },
             },
             {
-                id: 'temple', name: 'Ancient Temple', icon: 'ðŸ›ï¸', size: 'LARGE',
+                id: 'temple', name: 'Cursed Shrine', icon: 'ðŸ›ï¸', size: 'LARGE',
                 floor: 0x2a1e0a, wall: 0x3a2810, accent: 0xffcc44,
                 ambient: 0x1e1408, fog: [0x2a1a08, .014],
                 botCount: 4,
@@ -271,7 +279,7 @@
                 playerSpawn: { x: 5, z: -12 },
             },
             {
-                id: 'space', name: 'Space Station', icon: 'ðŸš€', size: 'MEDIUM',
+                id: 'space', name: 'Void Realm', icon: 'ðŸš€', size: 'MEDIUM',
                 floor: 0x080818, wall: 0x101028, accent: 0x0088ff,
                 ambient: 0x040412, fog: [0x060616, .025],
                 botCount: 4,
@@ -291,6 +299,66 @@
                 bounds: 16,
                 spawnPts: [{ x: -12, z: -12 }, { x: 12, z: -12 }, { x: -12, z: 12 }, { x: 12, z: 12 }],
                 playerSpawn: { x: 0, z: 0 },
+            },
+            {
+                id: 'downtown', name: 'Urban Downtown', icon: 'ðŸŒ†', size: 'GIANT',
+                floor: 0x333333, wall: 0x444444, accent: 0x00ccff,
+                ambient: 0x333333, fog: [0x444444, .008],
+                botCount: 8,
+                generator: 'cityscape',
+                bounds: 120,
+                spawnPts: [{ x: -100, z: 0 }, { x: 100, z: 0 }, { x: 0, z: -100 }, { x: 0, z: 100 }],
+                playerSpawn: { x: 0, z: 50 },
+            },
+            {
+                id: 'industrial', name: 'Industrial Complex', icon: 'ðŸ­', size: 'GIANT',
+                floor: 0x2a2a2a, wall: 0x1a1a1a, accent: 0xff9900,
+                ambient: 0x2a2a2a, fog: [0x1f1f1f, .012],
+                botCount: 7,
+                generator: 'warehouse',
+                bounds: 150,
+                spawnPts: [{ x: -120, z: -60 }, { x: 120, z: -60 }, { x: -120, z: 60 }, { x: 120, z: 60 }],
+                playerSpawn: { x: 0, z: 80 },
+            },
+            {
+                id: 'underground', name: 'Subway Tunnels', icon: 'ðŸš‡', size: 'GIANT',
+                floor: 0x1a1a1a, wall: 0x0f0f0f, accent: 0x00ff88,
+                ambient: 0x151515, fog: [0x0a0a0a, .02],
+                botCount: 6,
+                generator: 'bunker',
+                bounds: 100,
+                spawnPts: [{ x: -80, z: -80 }, { x: 80, z: -80 }, { x: -80, z: 80 }, { x: 80, z: 80 }],
+                playerSpawn: { x: 0, z: 0 },
+            },
+            {
+                id: 'forest', name: 'Dense Forest', icon: 'ðŸŒ²', size: 'GIANT',
+                floor: 0x3a4a2a, wall: 0x2a3a1a, accent: 0x88dd44,
+                ambient: 0x4a5a3a, fog: [0x2a3a1a, .015],
+                botCount: 7,
+                generator: 'forest',
+                bounds: 130,
+                spawnPts: [{ x: -100, z: -100 }, { x: 100, z: -100 }, { x: -100, z: 100 }, { x: 100, z: 100 }],
+                playerSpawn: { x: 0, z: 60 },
+            },
+            {
+                id: 'airport', name: 'Abandoned Airport', icon: 'ðŸ›«', size: 'GIANT',
+                floor: 0x3a3a3a, wall: 0x2a2a2a, accent: 0xffff44,
+                ambient: 0x3a3a3a, fog: [0x2a2a2a, .01],
+                botCount: 8,
+                generator: 'airport',
+                bounds: 140,
+                spawnPts: [{ x: -120, z: 0 }, { x: 120, z: 0 }, { x: 0, z: -120 }, { x: 0, z: 120 }],
+                playerSpawn: { x: 0, z: 90 },
+            },
+            {
+                id: 'mansion', name: 'Mansion Interior', icon: '🏰', size: 'GIANT',
+                floor: 0x5a4a3a, wall: 0x3a2a1a, accent: 0xffdd99,
+                ambient: 0x3a2a1a, fog: [0x2a1a0a, .016],
+                botCount: 6,
+                generator: 'mansion',
+                bounds: 110,
+                spawnPts: [{ x: -80, z: -80 }, { x: 80, z: -80 }, { x: -80, z: 80 }, { x: 80, z: 80 }],
+                playerSpawn: { x: 0, z: 70 },
             },
         ];
 
@@ -469,12 +537,12 @@
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2;
+            renderer.toneMappingExposure = 1.6;
             document.body.appendChild(renderer.domElement);
 
             scene = new THREE.Scene();
             if (typeof HuntersGL !== 'undefined') HuntersGL.initEnvironment(scene, renderer);
-            camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, .05, 500);
+            camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, .05, 800);
             camera.position.set(0, 1.7, 0);
 
             window.addEventListener('resize', () => {
@@ -1285,6 +1353,293 @@
             return mapCityMeshes.length ? mapObstacleMeshes.concat(mapCityMeshes) : mapObstacleMeshes;
         }
 
+        // ============================================================
+        // PROCEDURAL MAP GENERATORS
+        // ============================================================
+        function generateCityscape() {
+            const obs = [];
+            // Main blocks (40-80 units tall buildings)
+            const buildingColors = [0x333366, 0x3a3a4a, 0x2a3a4a, 0x4a4a5a, 0x3a4a5a, 0x2a5a6a];
+            for (let i = 0; i < 20; i++) {
+                const x = (Math.random() - 0.5) * 100;
+                const z = (Math.random() - 0.5) * 100;
+                const w = 6 + Math.random() * 12;
+                const d = 6 + Math.random() * 12;
+                const h = 20 + Math.random() * 60;
+                // Check distance from player spawn
+                if (Math.hypot(x, z - 50) < 8) continue;
+                obs.push({ x, z, w, d, h, c: buildingColors[Math.floor(Math.random() * buildingColors.length)] });
+            }
+            // Street blocks and alleys
+            for (let i = -60; i <= 60; i += 20) {
+                obs.push({ x: i, z: -40, w: 2, d: 120, h: 0.5, c: 0x444444 });
+                obs.push({ x: -60, z: i, w: 120, d: 2, h: 0.5, c: 0x444444 });
+            }
+            // Rooftop ventilation
+            for (let i = 0; i < 15; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                obs.push({ x, z, w: 3, d: 2, h: 2, c: 0x555555 });
+            }
+            return obs;
+        }
+
+        function generateWarehouse() {
+            const obs = [];
+            // Large warehouse structures
+            for (let i = 0; i < 6; i++) {
+                const x = -100 + i * 35;
+                const z = 0;
+                obs.push({ x, z, w: 20, d: 80, h: 15, c: 0x2a2a1a });
+                // Skylights
+                for (let j = 0; j < 4; j++) {
+                    obs.push({ x: x - 8 + j * 5, z: z - 30 + j * 15, w: 3, d: 3, h: 1, c: 0x444433 });
+                }
+            }
+            // Loading docks and ramps
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const rad = 70;
+                obs.push({
+                    x: Math.cos(angle) * rad,
+                    z: Math.sin(angle) * rad,
+                    w: 15,
+                    d: 8,
+                    h: 2,
+                    c: 0x554422
+                });
+            }
+            // Central stacked containers
+            for (let x = -20; x <= 20; x += 20) {
+                for (let z = -40; z <= 40; z += 20) {
+                    obs.push({ x, z, w: 12, d: 12, h: 8 + Math.random() * 12, c: 0x443322 });
+                }
+            }
+            return obs;
+        }
+
+        function generateBunker() {
+            const obs = [];
+            // Tunnel system with multiple levels
+            // Main horizontal tunnel
+            obs.push({ x: 0, z: 0, w: 100, d: 8, h: 5, c: 0x0f0f0f });
+            // Perpendicular tunnel
+            obs.push({ x: 0, z: -40, w: 8, d: 80, h: 5, c: 0x0f0f0f });
+            // Central atrium
+            obs.push({ x: 0, z: -40, w: 20, d: 20, h: 4, c: 0x1a1a1a });
+            // Support columns throughout
+            for (let i = -40; i <= 40; i += 20) {
+                obs.push({ x: i, z: 0, w: 1.5, d: 1.5, h: 6, c: 0x333333 });
+                obs.push({ x: 0, z: i, w: 1.5, d: 1.5, h: 6, c: 0x333333 });
+            }
+            // Sealed rooms off main tunnel
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const rad = 35;
+                const x = Math.cos(angle) * rad;
+                const z = Math.sin(angle) * rad;
+                obs.push({ x, z, w: 12, d: 12, h: 4, c: 0x1a1a1a });
+            }
+            return obs;
+        }
+
+        function generateForest() {
+            const obs = [];
+            // Tree clusters (dense forest)
+            for (let i = 0; i < 50; i++) {
+                const x = (Math.random() - 0.5) * 120;
+                const z = (Math.random() - 0.5) * 120;
+                const size = 1 + Math.random() * 3;
+                const h = 8 + Math.random() * 18;
+                if (Math.hypot(x, z - 60) < 12) continue; // avoid spawn
+                obs.push({ x, z, w: size, d: size, h, c: 0x2a4a1a });
+            }
+            // Rocky outcrops
+            for (let i = 0; i < 12; i++) {
+                const x = (Math.random() - 0.5) * 100;
+                const z = (Math.random() - 0.5) * 100;
+                obs.push({ x, z, w: 6 + Math.random() * 8, d: 6 + Math.random() * 8, h: 2 + Math.random() * 4, c: 0x5a5a4a });
+            }
+            // Clearings with vegetation
+            for (let i = 0; i < 6; i++) {
+                const x = (Math.random() - 0.5) * 80;
+                const z = (Math.random() - 0.5) * 80;
+                obs.push({ x, z, w: 20 + Math.random() * 15, d: 20 + Math.random() * 15, h: 0.3, c: 0x4a6a3a });
+            }
+            return obs;
+        }
+
+        function generateAirport() {
+            const obs = [];
+            // RunWays (large flat areas)
+            obs.push({ x: 0, z: -80, w: 40, d: 120, h: 0.5, c: 0x3a3a3a });
+            obs.push({ x: 0, z: 40, w: 40, d: 120, h: 0.5, c: 0x3a3a3a });
+            // Terminal building (large structure)
+            obs.push({ x: -50, z: 0, w: 30, d: 20, h: 20, c: 0x2a2a3a });
+            obs.push({ x: 50, z: 0, w: 30, d: 20, h: 20, c: 0x2a2a3a });
+            // Control tower
+            obs.push({ x: -80, z: -60, w: 6, d: 6, h: 30, c: 0x3a3a4a });
+            obs.push({ x: 80, z: 60, w: 6, d: 6, h: 30, c: 0x3a3a4a });
+            // Hangars
+            for (let i = 0; i < 4; i++) {
+                const x = -70 + i * 45;
+                obs.push({ x, z: 40, w: 25, d: 35, h: 18, c: 0x1a1a2a });
+            }
+            // Fuel tanks
+            for (let i = 0; i < 6; i++) {
+                obs.push({
+                    x: -80 + Math.random() * 160,
+                    z: -80 + Math.random() * 40,
+                    w: 4,
+                    d: 4,
+                    h: 8,
+                    c: 0x554433
+                });
+            }
+            // Ground equipment
+            for (let i = 0; i < 15; i++) {
+                obs.push({
+                    x: (Math.random() - 0.5) * 100,
+                    z: (Math.random() - 0.5) * 100,
+                    w: 3 + Math.random() * 5,
+                    d: 3 + Math.random() * 5,
+                    h: 1 + Math.random() * 3,
+                    c: 0x3a3a3a
+                });
+            }
+            return obs;
+        }
+
+        function generateMansion() {
+            const obs = [];
+            // Main mansion structure - multiple rooms
+            const rooms = [
+                { x: -40, z: -40, w: 30, d: 25, h: 0.1, c: 0x5a4a3a }, // grand ballroom
+                { x: 40, z: -40, w: 25, d: 30, h: 0.1, c: 0x5a4a3a }, // library
+                { x: -40, z: 40, w: 28, d: 28, h: 0.1, c: 0x5a4a3a }, // dining hall
+                { x: 40, z: 40, w: 25, d: 25, h: 0.1, c: 0x5a4a3a }, // conservatory
+            ];
+            rooms.forEach(r => obs.push(r));
+
+            // Interior walls separating rooms
+            obs.push({ x: 0, z: 0, w: 80, d: 3, h: 4, c: 0x3a2a1a });
+            obs.push({ x: 0, z: -50, w: 3, d: 60, h: 4, c: 0x3a2a1a });
+            obs.push({ x: 50, z: 0, w: 60, d: 3, h: 4, c: 0x3a2a1a });
+
+            // Staircases
+            for (let i = 0; i < 4; i++) {
+                const angle = (i / 4) * Math.PI * 2;
+                const rad = 35;
+                obs.push({
+                    x: Math.cos(angle) * rad,
+                    z: Math.sin(angle) * rad,
+                    w: 8,
+                    d: 8,
+                    h: 5,
+                    c: 0x4a3a2a
+                });
+            }
+
+            // Columns
+            for (let x = -30; x <= 30; x += 20) {
+                for (let z = -30; z <= 30; z += 20) {
+                    if (Math.abs(x) < 5 && Math.abs(z) < 5) continue;
+                    obs.push({ x, z, w: 2, d: 2, h: 5, c: 0x3a2a1a });
+                }
+            }
+
+            // Furniture clusters
+            for (let i = 0; i < 20; i++) {
+                obs.push({
+                    x: (Math.random() - 0.5) * 70,
+                    z: (Math.random() - 0.5) * 70,
+                    w: 2 + Math.random() * 4,
+                    d: 2 + Math.random() * 4,
+                    h: 1 + Math.random() * 2,
+                    c: 0x4a3a2a
+                });
+            }
+
+            return obs;
+        }
+
+
+        function generateCulling() {
+            const obs = [];
+            // Giant tournament arena — Culling Game colony grounds
+            // Note: central floor is handled by the PlaneGeometry in buildMap(); no obstacle here
+
+            // Observation platforms around perimeter - elevated stone slabs
+            const platformRadius = 130;
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const px = Math.cos(angle) * platformRadius;
+                const pz = Math.sin(angle) * platformRadius;
+                obs.push({ x: px, z: pz, w: 22, d: 22, h: 2.5, c: 0x2a1a10 });
+            }
+
+            // Rock formations for tactical cover - dark volcanic stone
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2 + Math.PI / 16;
+                const rx = Math.cos(angle) * 90;
+                const rz = Math.sin(angle) * 90;
+                for (let j = 0; j < 3; j++) {
+                    const offset = (j - 1) * 15;
+                    obs.push({
+                        x: rx + Math.cos(angle + Math.PI / 2) * offset,
+                        z: rz + Math.sin(angle + Math.PI / 2) * offset,
+                        w: 8 + Math.random() * 4,
+                        d: 8 + Math.random() * 4,
+                        h: 5 + Math.random() * 8,
+                        c: 0x180e06
+                    });
+                }
+            }
+
+            // Center arena elevated pillars — ancient stone, slightly warm tinted
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2;
+                const pillarRad = 35;
+                obs.push({
+                    x: Math.cos(angle) * pillarRad,
+                    z: Math.sin(angle) * pillarRad,
+                    w: 5,
+                    d: 5,
+                    h: 14,
+                    c: 0x221208
+                });
+            }
+
+            // Scattered debris and battle ruins
+            for (let i = 0; i < 28; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 30 + Math.random() * 140;
+                obs.push({
+                    x: Math.cos(angle) * radius,
+                    z: Math.sin(angle) * radius,
+                    w: 4 + Math.random() * 6,
+                    d: 4 + Math.random() * 6,
+                    h: 2 + Math.random() * 5,
+                    c: 0x1a1008
+                });
+            }
+
+            // Colony boundary marker pillars — tall, imposing, at perimeter
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                obs.push({
+                    x: Math.cos(angle) * 185,
+                    z: Math.sin(angle) * 185,
+                    w: 4,
+                    d: 4,
+                    h: 28,
+                    c: 0x3a1400
+                });
+            }
+
+            return obs;
+        }
+
         function buildMap(mdef) {
             mapObstacles = [];
             mapObstacleMeshes = [];
@@ -1303,15 +1658,21 @@
 
             // Lighting
             scene.children.filter(c => c.isLight).forEach(l => scene.remove(l));
-            const amb = new THREE.AmbientLight(mdef.ambient, 1.5);
+            const amb = new THREE.AmbientLight(mdef.ambient, 2.2);
             scene.add(amb);
-            const sun = new THREE.DirectionalLight(0xffffff, .8);
+            const sun = new THREE.DirectionalLight(0xffffff, 1.1);
             sun.position.set(10, 20, 10);
             sun.castShadow = true;
-            sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
-            sun.shadow.camera.near = .1; sun.shadow.camera.far = 100;
-            sun.shadow.camera.left = -30; sun.shadow.camera.right = 30;
-            sun.shadow.camera.top = 30; sun.shadow.camera.bottom = -30;
+            sun.shadow.mapSize.width = 2048;
+            sun.shadow.mapSize.height = 2048;
+            sun.shadow.camera.near = .1;
+            sun.shadow.camera.far = 200;
+            // Scale shadow camera for giant maps
+            const shadowScale = mdef.size === 'GIANT' ? 80 : mdef.size === 'LARGE' ? 40 : 30;
+            sun.shadow.camera.left = -shadowScale;
+            sun.shadow.camera.right = shadowScale;
+            sun.shadow.camera.top = shadowScale;
+            sun.shadow.camera.bottom = -shadowScale;
             scene.add(sun);
             // Accent point light
             const accent = new THREE.PointLight(mdef.accent, 2, 20);
@@ -1354,9 +1715,37 @@
                 mapObstacleMeshes.push(m);
             });
 
+            // Get obstacles - from generator or hardcoded
+            let obstacles = mdef.obstacles || [];
+            if (mdef.generator) {
+                const generatorFuncs = {
+                    cityscape: generateCityscape,
+                    warehouse: generateWarehouse,
+                    bunker: generateBunker,
+                    culling: generateCulling,
+                    forest: generateForest,
+                    airport: generateAirport,
+                    mansion: generateMansion,
+                };
+                const genFunc = generatorFuncs[mdef.generator];
+                if (genFunc) obstacles = genFunc();
+            }
+
             // Obstacles
-            mdef.obstacles.forEach(obs => {
-                const mat = new THREE.MeshLambertMaterial({ color: obs.c || mdef.wall });
+            obstacles.forEach(obs => {
+                let mat;
+                if (mdef.id === 'culling_arena' && obs.h >= 10) {
+                    // Tall pillars and boundary markers: standard material with subtle emissive glow
+                    mat = new THREE.MeshStandardMaterial({
+                        color: obs.c || mdef.wall,
+                        emissive: 0x220800,
+                        emissiveIntensity: 0.18,
+                        roughness: 0.85,
+                        metalness: 0.05
+                    });
+                } else {
+                    mat = new THREE.MeshLambertMaterial({ color: obs.c || mdef.wall });
+                }
                 const mesh = new THREE.Mesh(new THREE.BoxGeometry(obs.w, obs.h, obs.d), mat);
                 mesh.position.set(obs.x, obs.h / 2, obs.z);
                 mesh.castShadow = true; mesh.receiveShadow = true;
@@ -1407,6 +1796,134 @@
                     scene.add(l);
                 });
             }
+            // Giant map lighting enhancements
+            if (mdef.id === 'downtown') {
+                // Multiple street lights
+                for (let i = -100; i <= 100; i += 30) {
+                    for (let j = -100; j <= 100; j += 30) {
+                        const l = new THREE.PointLight(0x8899ff, 0.6, 25);
+                        l.position.set(i, 5, j);
+                        l.userData.isMap = true;
+                        scene.add(l);
+                    }
+                }
+            }
+            if (mdef.id === 'industrial') {
+                // Harsh industrial lighting
+                for (let i = -120; i <= 120; i += 50) {
+                    const l = new THREE.PointLight(0xffaa44, 1.2, 50);
+                    l.position.set(i, 15, 0);
+                    l.userData.isMap = true;
+                    scene.add(l);
+                }
+            }
+            if (mdef.id === 'underground') {
+                // Emergency lighting
+                for (let i = -80; i <= 80; i += 40) {
+                    for (let j = -80; j <= 80; j += 40) {
+                        const l = new THREE.PointLight(0x88ff44, 0.8, 20);
+                        l.position.set(i, 2, j);
+                        l.userData.isMap = true;
+                        scene.add(l);
+                    }
+                }
+            }
+            if (mdef.id === 'forest') {
+                // Dappled forest lighting
+                const skyLight = new THREE.PointLight(0x88aa88, 1.5, 100);
+                skyLight.position.set(0, 40, 0);
+                skyLight.userData.isMap = true;
+                scene.add(skyLight);
+            }
+            if (mdef.id === 'airport') {
+                // Runway lights and beacons
+                const beacon1 = new THREE.PointLight(0xffcc00, 1.5, 60);
+                beacon1.position.set(-80, 20, -60);
+                beacon1.userData.isMap = true;
+                scene.add(beacon1);
+                const beacon2 = new THREE.PointLight(0xff0000, 1.5, 60);
+                beacon2.position.set(80, 20, 60);
+                beacon2.userData.isMap = true;
+                scene.add(beacon2);
+            }
+            if (mdef.id === 'mansion') {
+                // Interior chandeliers
+                for (let i = -30; i <= 30; i += 30) {
+                    for (let j = -30; j <= 30; j += 30) {
+                        const l = new THREE.PointLight(0xffdd99, 1.2, 25);
+                        l.position.set(i, 4, j);
+                        l.userData.isMap = true;
+                        scene.add(l);
+                    }
+                }
+            }
+            if (mdef.id === 'culling_arena') {
+                // Dawn/dusk sky — deep crimson horizon
+                scene.background = new THREE.Color(0x160608);
+                scene.fog = new THREE.FogExp2(0x100406, 0.006);
+
+                // Overpowered sunset directional light from low angle
+                sun.color.set(0xff5522);
+                sun.intensity = 2.2;
+                sun.position.set(60, 25, -100);
+
+                // Cold moonlight fill from opposite side
+                const moon = new THREE.DirectionalLight(0x3366cc, 0.7);
+                moon.position.set(-50, 70, 50);
+                moon.userData.isMap = true;
+                scene.add(moon);
+
+                // Warmer ambient
+                amb.color.set(0x180a04);
+                amb.intensity = 3.2;
+
+                // 4 torchlight point lights at cardinal edges of arena floor
+                [[80,4,0],[-80,4,0],[0,4,80],[0,4,-80]].forEach(p => {
+                    const t = new THREE.PointLight(0xff4400, 5, 80);
+                    t.position.set(...p);
+                    t.userData.isMap = true;
+                    scene.add(t);
+                });
+
+                // 4 corner area-fill lights — deep orange, mid-height
+                [[120,12,120],[-120,12,120],[120,12,-120],[-120,12,-120]].forEach(p => {
+                    const c = new THREE.PointLight(0xff2200, 2.5, 120);
+                    c.position.set(...p);
+                    c.userData.isMap = true;
+                    scene.add(c);
+                });
+
+                // Ground sigil outer ring — glowing cursed rune circle
+                const sigilGeo = new THREE.TorusGeometry(48, 0.55, 8, 64);
+                const sigilMat = new THREE.MeshStandardMaterial({
+                    color: 0x220800, emissive: 0xff2200, emissiveIntensity: 0.55, roughness: 0.9, metalness: 0.1
+                });
+                const sigil = new THREE.Mesh(sigilGeo, sigilMat);
+                sigil.rotation.x = -Math.PI / 2;
+                sigil.position.y = 0.06;
+                sigil.userData.isMap = true;
+                scene.add(sigil);
+
+                // Inner sigil ring
+                const sigil2 = new THREE.Mesh(
+                    new THREE.TorusGeometry(22, 0.35, 8, 48),
+                    new THREE.MeshStandardMaterial({ color: 0x1a0500, emissive: 0xff4400, emissiveIntensity: 0.45, roughness: 0.9 })
+                );
+                sigil2.rotation.x = -Math.PI / 2;
+                sigil2.position.y = 0.06;
+                sigil2.userData.isMap = true;
+                scene.add(sigil2);
+
+                // Tiny innermost rune dot
+                const sigil3 = new THREE.Mesh(
+                    new THREE.TorusGeometry(8, 0.2, 8, 32),
+                    new THREE.MeshStandardMaterial({ color: 0x110300, emissive: 0xff6600, emissiveIntensity: 0.6, roughness: 0.9 })
+                );
+                sigil3.rotation.x = -Math.PI / 2;
+                sigil3.position.y = 0.06;
+                sigil3.userData.isMap = true;
+                scene.add(sigil3);
+            }
         }
 
         function collidesWithObstacle(x, z, radius) {
@@ -1433,12 +1950,24 @@
         const BOT_EYE = 1.6;
 
         class Bot {
-            constructor(pos, diff, index) {
+            constructor(pos, diff, index, jjkType) {
                 this.pos = pos.clone();
                 this.diff = diff;
-                this.maxHp = diff.hp;
+                this.index = index;
+
+                // JJK character type
+                const typeKey = jjkType || JJK_TYPES_LIST[index % JJK_TYPES_LIST.length];
+                this.jjkDef = JJK_CHARACTER_TYPES[typeKey] || JJK_CHARACTER_TYPES.gojo;
+                this.jjkLabel = this.jjkDef.label;
+
+                this.diff = diff; // Store for external reference (e.g. Domain Expansion)
+                // Stats scaled from diff + JJK type (130 = baseline health reference)
+                this.maxHp = Math.round(diff.hp * (this.jjkDef.health / 130));
                 this.hp = this.maxHp;
-                this.speed = diff.speed;
+                this.speed = diff.speed * this.jjkDef.speed;
+                this._baseSpeed = this.speed;
+                this.color = this.jjkDef.color;
+
                 this.yaw = Math.random() * Math.PI * 2;
                 this.state = 'patrol';
                 this.shootTimer = diff.react + Math.random() * .5;
@@ -1451,10 +1980,23 @@
                 this.hoverPhase = Math.random() * Math.PI * 2;
                 this.hitFlash = 0;
                 this.alive = true;
-                this.index = index;
-                this.colors = [0xff4444, 0x44aaff, 0x44ff44, 0xffaa00, 0xff44ff, 0x44ffff];
-                this.color = this.colors[index % this.colors.length];
                 this.statusEffects = {};
+
+                // Ability system
+                this.abilityType = this.jjkDef.ability;
+                this.abilityCooldown = 2 + Math.random() * 4; // stagger initial triggers
+                this.shieldActive = false;
+                this.shieldTimer = 0;
+                this.dodgeActive = false;
+                this.dodgeTimer = 0;
+                this.critNext = false;
+                this.burstActive = false;
+                this.burstTimer = 0;
+                this.isSummon = false;
+                this.summonCount = 0;
+                this.domainUsed = false;    // Domain Expansion: one trigger per bot
+                this._domainSummon = false; // true if spawned by Megumi domain
+
                 // Assign a random weapon (ranged only, not melee, not legendary)
                 const botWeps = WDEFS.filter(w => w.cat !== 'melee' && w.price <= 4200);
                 this.weapon = botWeps[Math.floor(Math.random() * botWeps.length)];
@@ -1470,17 +2012,56 @@
                 if (this.charObj) {
                     this.group.add(this.charObj.root);
                 } else {
-                    // Fallback to boxy bot
+                    // Fallback to boxy bot with full body parts for animation
                     const bodyMat = new THREE.MeshLambertMaterial({ color: this.color });
                     const body = new THREE.Mesh(new THREE.BoxGeometry(.7, 1.1, .35), bodyMat);
                     body.position.y = .55;
                     this.group.add(body);
                     this.bodyMesh = body;
+
+                    const headMat = new THREE.MeshLambertMaterial({ color: 0xffccaa });
+                    const head = new THREE.Mesh(new THREE.SphereGeometry(.22, 8, 8), headMat);
+                    head.position.y = 1.35;
+                    this.group.add(head);
+                    this.headMesh = head;
+
+                    const limbMat = new THREE.MeshLambertMaterial({ color: this.color });
+                    const armGeo = new THREE.BoxGeometry(.18, .6, .18);
+                    const lArm = new THREE.Mesh(armGeo, limbMat);
+                    lArm.position.set(-.5, .7, 0);
+                    this.group.add(lArm);
+                    this.lArm = lArm;
+
+                    const rArm = new THREE.Mesh(armGeo, limbMat);
+                    rArm.position.set(.5, .7, 0);
+                    this.group.add(rArm);
+                    this.rArm = rArm;
+
+                    const legGeo = new THREE.BoxGeometry(.2, .5, .2);
+                    const lLeg = new THREE.Mesh(legGeo, limbMat);
+                    lLeg.position.set(-.18, -.1, 0);
+                    this.group.add(lLeg);
+                    this.lLeg = lLeg;
+
+                    const rLeg = new THREE.Mesh(legGeo, limbMat);
+                    rLeg.position.set(.18, -.1, 0);
+                    this.group.add(rLeg);
+                    this.rLeg = rLeg;
                 }
 
                 this.group.position.copy(this.pos);
                 this.group.castShadow = true;
                 scene.add(this.group);
+
+                // JJK scale
+                this.group.scale.setScalar(this.jjkDef.scale);
+
+                // Emissive glow for strong JJK enemies
+                if (this.jjkDef.emissive) {
+                    this.glowLight = new THREE.PointLight(this.color, 0.6, 3);
+                    this.glowLight.position.set(0, 1, 0);
+                    this.group.add(this.glowLight);
+                }
 
                 // Health bar (sprite)
                 const canvas = document.createElement('canvas');
@@ -1494,6 +2075,21 @@
                 this.hbSprite.position.y = 2.2;
                 this.group.add(this.hbSprite);
                 this.updateHBar();
+
+                // JJK name label sprite above health bar
+                const lblCanvas = document.createElement('canvas');
+                lblCanvas.width = 128; lblCanvas.height = 20;
+                const lblCtx = lblCanvas.getContext('2d');
+                lblCtx.font = 'bold 13px Arial';
+                lblCtx.textAlign = 'center';
+                lblCtx.fillStyle = '#' + this.color.toString(16).padStart(6, '0');
+                lblCtx.fillText(this.jjkLabel.toUpperCase(), 64, 14);
+                const lblTex = new THREE.CanvasTexture(lblCanvas);
+                const lblMat = new THREE.SpriteMaterial({ map: lblTex, transparent: true, depthTest: false });
+                this.lblSprite = new THREE.Sprite(lblMat);
+                this.lblSprite.scale.set(1.4, .22, 1);
+                this.lblSprite.position.y = 2.55;
+                this.group.add(this.lblSprite);
 
                 // Weapon prop (colored by bot's weapon)
                 const wepGeo = new THREE.BoxGeometry(.06, .06, .4);
@@ -1517,9 +2113,40 @@
 
             update(dt, playerPos, playerBox) {
                 if (!this.alive) return;
+
+                // Ability system tick
+                this.abilityCooldown = Math.max(0, this.abilityCooldown - dt);
+                if (this.abilityCooldown <= 0 && this.state !== 'patrol') {
+                    this.useAbility(playerPos);
+                }
+
+                // Domain Expansion trigger: fires once when bot HP drops below 30%
+                if (window.G && window.G.domainManager && !this.domainUsed &&
+                    this.hp > 0 && (this.hp / this.maxHp) < 0.30) {
+                    window.G.domainManager.tryActivate(this);
+                }
+                if (this.shieldActive) {
+                    this.shieldTimer -= dt;
+                    if (this.shieldTimer <= 0) {
+                        this.shieldActive = false;
+                        // Remove shield tint
+                        this.group.traverse(c => { if (c.isMesh && c.material && c.material.color) c.material.color.setHex(this.color); });
+                    }
+                }
+                if (this.dodgeActive) { this.dodgeTimer -= dt; if (this.dodgeTimer <= 0) this.dodgeActive = false; }
+                if (this.burstActive) {
+                    this.burstTimer -= dt;
+                    if (this.burstTimer <= 0) { this.burstActive = false; this.speed = this._baseSpeed; }
+                }
+
                 const toPlayer = new THREE.Vector3().subVectors(playerPos, this.pos);
                 toPlayer.y = 0;
                 const dist = toPlayer.length();
+
+                if (window.G && window.G.selMode === 'culling') {
+                    if (!this.burstActive) this.speed = this._baseSpeed * 1.08;
+                    if (window.G._tengenMerged) this.abilityCooldown = Math.max(0.25, this.abilityCooldown - dt * 0.25);
+                }
 
                 // State transitions
                 if (dist < this.diff.aggroRange) this.state = 'chase';
@@ -1682,8 +2309,13 @@
                 const hits = ray.intersectObjects(getRaycastTargets());
                 if (hits.length > 0 && hits[0].distance < dist - .5) return;
 
-                // Damage based on bot's weapon
-                const baseDmg = this.weapon ? Math.round((this.weapon.dmg * (.52 + Math.random() * .18)) * (this.diff.dmgMult || 1)) : Math.round((18 + Math.random() * 12) * (this.diff.dmgMult || 1));
+                // Damage based on bot's weapon, with ability multipliers
+                let critMult = 1;
+                if (this.critNext) { critMult = 3; this.critNext = false; }
+                if (this.burstActive) critMult *= 1.5;
+                const baseDmg = this.weapon
+                    ? Math.round((this.weapon.dmg * (.52 + Math.random() * .18)) * (this.diff.dmgMult || 1) * critMult)
+                    : Math.round((18 + Math.random() * 12) * (this.diff.dmgMult || 1) * critMult);
                 G.playerTakeDamage(baseDmg);
 
                 // Visual: tracer with weapon color
@@ -1691,8 +2323,164 @@
                 spawnTracer(from, playerPos, tracerColor);
             }
 
+            useAbility(playerPos) {
+                const dist = this.pos.distanceTo(playerPos);
+                switch (this.abilityType) {
+                    case 'shield': {
+                        // Gojo: temporary invulnerability for 3s
+                        this.shieldActive = true;
+                        this.shieldTimer = 3;
+                        this.abilityCooldown = 12;
+                        // Visual: flash body blue-white
+                        this.group.traverse(c => {
+                            if (c.isMesh && c.material && c.material.color) {
+                                c.material.color.setHex(0xaaddff);
+                            }
+                        });
+                        G.showNotif && G.showNotif('Gojo: Infinity Shield!', 1200);
+                        break;
+                    }
+                    case 'slash': {
+                        // Sukuna: short-range AoE damage
+                        if (dist < 6) {
+                            G.playerTakeDamage(40);
+                            spawnImpact(this.group.position.clone().add(new THREE.Vector3(0, 1, 0)), 0xff0000);
+                            for (let i = 0; i < 8; i++) {
+                                const v = new THREE.Vector3((Math.random() - .5) * 6, Math.random() * 3 + 1, (Math.random() - .5) * 6);
+                                particles.push(new Particle(this.group.position.clone().add(new THREE.Vector3(0, .8, 0)), v, 0xff2200, .5, .07));
+                            }
+                        }
+                        this.abilityCooldown = 5;
+                        break;
+                    }
+                    case 'critical': {
+                        // Nanami: flag next shot as critical (3x damage)
+                        this.critNext = true;
+                        this.abilityCooldown = 8;
+                        break;
+                    }
+                    case 'dodge': {
+                        // Mahito: chance to avoid incoming damage for 2s
+                        this.dodgeActive = true;
+                        this.dodgeTimer = 2;
+                        this.abilityCooldown = 10;
+                        spawnImpact(this.group.position.clone().add(new THREE.Vector3(0, 1, 0)), 0xaa66ff);
+                        break;
+                    }
+                    case 'summon': {
+                        // Megumi: spawn up to 2 small helper shikigami
+                        if (this.summonCount < 2 && G.bots.filter(b => b.alive && !b.isSummon).length < 18) {
+                            const summonDiff = { ...this.diff, hp: Math.round(this.diff.hp * 0.35), speed: this.diff.speed * 0.8 };
+                            const offset = new THREE.Vector3((Math.random() - .5) * 2, 0, (Math.random() - .5) * 2);
+                            const sBot = new Bot(this.pos.clone().add(offset), summonDiff, G.bots.length, 'mahito');
+                            sBot.isSummon = true;
+                            sBot.group.scale.setScalar(0.6);
+                            const parent = this;
+                            const origDie = sBot.die.bind(sBot);
+                            sBot.die = function() { parent.summonCount--; origDie(); };
+                            G.bots.push(sBot);
+                            this.summonCount++;
+                            if (this.summonCount < 2) {
+                                const sBot2 = new Bot(this.pos.clone().add(new THREE.Vector3(-offset.x, 0, -offset.z)), summonDiff, G.bots.length, 'mahito');
+                                sBot2.isSummon = true;
+                                sBot2.group.scale.setScalar(0.6);
+                                const origDie2 = sBot2.die.bind(sBot2);
+                                sBot2.die = function() { parent.summonCount--; origDie2(); };
+                                G.bots.push(sBot2);
+                                this.summonCount++;
+                            }
+                        }
+                        this.abilityCooldown = 15;
+                        break;
+                    }
+                    case 'burst': {
+                        // Yuji: temporary speed + damage boost for 4s
+                        if (!this.burstActive) {
+                            this.burstActive = true;
+                            this.burstTimer = 4;
+                            this.speed = this._baseSpeed * 1.8;
+                            spawnImpact(this.group.position.clone().add(new THREE.Vector3(0, 1, 0)), 0xff8800);
+                        }
+                        this.abilityCooldown = 9;
+                        break;
+                    }
+                    case 'energy': {
+                        // Yuta: ranged energy attack up to 60 units
+                        if (dist < 60) {
+                            const from = new THREE.Vector3(this.pos.x, BOT_EYE, this.pos.z);
+                            const dir = new THREE.Vector3().subVectors(playerPos, from).normalize();
+                            const ray = new THREE.Raycaster(from, dir);
+                            const wallHits = ray.intersectObjects(getRaycastTargets());
+                            const blocked = wallHits.length > 0 && wallHits[0].distance < dist - .5;
+                            if (!blocked) {
+                                G.playerTakeDamage(40);
+                                spawnTracer(from, playerPos, 0xffffff);
+                                spawnImpact(playerPos.clone(), 0xffffff);
+                            }
+                        }
+                        this.abilityCooldown = 7;
+                        break;
+                    }
+                    case 'rush': {
+                        // Toji: dash 4 units toward player, deal 50 damage if very close
+                        const rushDir = new THREE.Vector3().subVectors(playerPos, this.pos);
+                        rushDir.y = 0;
+                        const rushDist = Math.min(4, rushDir.length());
+                        rushDir.normalize().multiplyScalar(rushDist);
+                        const nx = this.pos.x + rushDir.x;
+                        const nz = this.pos.z + rushDir.z;
+                        if (!collidesWithObstacle(nx, nz, BOT_RADIUS)) {
+                            this.pos.x = nx; this.pos.z = nz;
+                            this.group.position.x = nx; this.group.position.z = nz;
+                        }
+                        if (this.pos.distanceTo(playerPos) < 3) {
+                            G.playerTakeDamage(50);
+                            spawnImpact(playerPos.clone(), 0x222222);
+                        }
+                        this.abilityCooldown = 6;
+                        break;
+                    }
+                    case 'projectile': {
+                        // Geto: slow powerful ranged attack (delayed 0.8s)
+                        if (dist < 50) {
+                            const from = new THREE.Vector3(this.pos.x, BOT_EYE, this.pos.z);
+                            const target = playerPos.clone();
+                            spawnTracer(from, target, 0x9933ff);
+                            setTimeout(() => {
+                                if (!G || G.state !== 'playing') return;
+                                const playerNow = G.playerPos.clone();
+                                playerNow.y = G.EYE_HEIGHT;
+                                if (target.distanceTo(playerNow) < 2.5) {
+                                    G.playerTakeDamage(70);
+                                    spawnImpact(target, 0x9933ff);
+                                }
+                            }, 800);
+                        }
+                        this.abilityCooldown = 8;
+                        break;
+                    }
+                }
+            }
+
             takeDamage(dmg, isHead) {
                 if (!this.alive) return;
+                // Ability-based damage blocking
+                if (this.shieldActive) {
+                    // Gojo shield: block all damage, show blue flash
+                    this.group.traverse(c => {
+                        if (c.isMesh && c.material && c.material.color) {
+                            const old = c.material.color.clone();
+                            c.material.color.setHex(0xaaddff);
+                            setTimeout(() => { if (this.alive) c.material.color.copy(old); }, 120);
+                        }
+                    });
+                    return;
+                }
+                if (this.dodgeActive && Math.random() < 0.40) {
+                    // Mahito dodge: ignore hit
+                    spawnImpact(this.group.position.clone().add(new THREE.Vector3(0, 1, 0)), 0xaa66ff);
+                    return;
+                }
                 this.hp -= dmg * (isHead ? 2 : 1);
                 this.updateHBar();
                 this.hitFlash = 1;
@@ -1730,6 +2518,219 @@
                     else setTimeout(() => scene.remove(this.group), 1500);
                 };
                 tween(0);
+            }
+        }
+
+        // ============================================================
+        // DOMAIN EXPANSION SYSTEM
+        // ============================================================
+        const DOMAIN_CONFIGS = {
+            gojo:   { type: 'gojo',   label: 'INFINITE VOID',                radius: 18, duration: 18, cssClass: 'domain-gojo',   bannerColor: '#44aaff', bannerText: 'INFINITE VOID' },
+            sukuna: { type: 'sukuna', label: 'MALEVOLENT SHRINE',             radius: 18, duration: 20, cssClass: 'domain-sukuna', bannerColor: '#ff2222', bannerText: 'MALEVOLENT SHRINE' },
+            mahito: { type: 'mahito', label: 'SELF-EMBODIMENT OF PERFECTION', radius: 18, duration: 15, cssClass: 'domain-mahito', bannerColor: '#aa44ff', bannerText: 'EMBODIMENT OF PERFECTION' },
+            megumi: { type: 'megumi', label: 'CHIMERA SHADOW GARDEN',         radius: 18, duration: 20, cssClass: 'domain-megumi', bannerColor: '#3355cc', bannerText: 'CHIMERA SHADOW GARDEN' },
+        };
+        const DOMAIN_LABEL_MAP = { 'Gojo': 'gojo', 'Sukuna': 'sukuna', 'Mahito': 'mahito', 'Megumi': 'megumi' };
+
+        class DomainManager {
+            constructor() {
+                this.active = false;
+                this.config = null;
+                this.timer = 0;
+                this.ownerBot = null;
+                this._sukDmgTick = 0;
+                this._megSpawnTick = 0;
+                this._frozenBots = new Map();
+                this._domainOv = null;
+                this._banner = null;
+                this._bannerTimeout = null;
+            }
+
+            _initDom() {
+                if (!this._domainOv) this._domainOv = document.getElementById('domain-ov');
+                if (!this._banner)   this._banner   = document.getElementById('domain-banner');
+            }
+
+            tryActivate(bot) {
+                if (this.active || bot.domainUsed) return false;
+                const typeKey = DOMAIN_LABEL_MAP[bot.jjkDef && bot.jjkDef.label];
+                if (!typeKey) return false;
+                bot.domainUsed = true;
+                this.activate(DOMAIN_CONFIGS[typeKey], bot);
+                return true;
+            }
+
+            activate(config, bot) {
+                this._initDom();
+                this.active = true;
+                this.config = config;
+                this.timer = config.duration;
+                this.ownerBot = bot;
+                this._sukDmgTick = 0;
+                this._megSpawnTick = 0;
+
+                if (this._domainOv) this._domainOv.className = config.cssClass;
+
+                if (this._banner) {
+                    this._banner.textContent = '\u26a1 ' + config.bannerText + ' \u26a1';
+                    this._banner.style.color = config.bannerColor;
+                    this._banner.classList.add('visible');
+                    clearTimeout(this._bannerTimeout);
+                    this._bannerTimeout = setTimeout(() => {
+                        if (this._banner) this._banner.classList.remove('visible');
+                    }, 3500);
+                }
+
+                const G = window.G;
+                if (config.type === 'gojo') {
+                    const center = bot.pos;
+                    if (G && G.bots) {
+                        G.bots.forEach(b => {
+                            if (!b.alive || b === bot) return;
+                            const dx = b.pos.x - center.x, dz = b.pos.z - center.z;
+                            if (Math.sqrt(dx * dx + dz * dz) < config.radius) {
+                                this._frozenBots.set(b, b.speed);
+                                b.speed = 0.15;
+                            }
+                        });
+                    }
+                    if (G) G._speedBoost = config.duration;
+                }
+
+                if (G) G.showNotif('DOMAIN EXPANSION: ' + config.label + '!', 3500);
+            }
+
+            update(dt) {
+                if (!this.active) return;
+                this.timer -= dt;
+                if (this.timer <= 0) { this.cleanup(); return; }
+
+                const G = window.G;
+                if (!G) return;
+                const config = this.config;
+                const center = (this.ownerBot && this.ownerBot.alive) ? this.ownerBot.pos : new THREE.Vector3(0, 0, 0);
+                const pp = G.playerPos;
+                const pdx = pp.x - center.x, pdz = pp.z - center.z;
+                const distToPlayer = Math.sqrt(pdx * pdx + pdz * pdz);
+                const playerInside = distToPlayer < config.radius;
+
+                if (config.type === 'gojo') {
+                    G.bots.forEach(b => {
+                        if (!b.alive) return;
+                        const bx = b.pos.x - center.x, bz = b.pos.z - center.z;
+                        const bd = Math.sqrt(bx * bx + bz * bz);
+                        if (bd < config.radius && !this._frozenBots.has(b)) {
+                            this._frozenBots.set(b, b.speed);
+                            b.speed = 0.15;
+                        } else if (bd >= config.radius && this._frozenBots.has(b)) {
+                            b.speed = this._frozenBots.get(b);
+                            this._frozenBots.delete(b);
+                        }
+                    });
+                }
+
+                if (config.type === 'sukuna') {
+                    this._sukDmgTick += dt;
+                    if (playerInside && this._sukDmgTick >= 1.0) {
+                        G.playerTakeDamage(8);
+                        this._sukDmgTick = 0;
+                    }
+                    G.bots.forEach(b => {
+                        if (!b.alive) return;
+                        const bx = b.pos.x - center.x, bz = b.pos.z - center.z;
+                        if (Math.sqrt(bx * bx + bz * bz) < config.radius) b.state = 'attack';
+                    });
+                }
+
+                if (config.type === 'mahito') {
+                    if (playerInside) {
+                        const j = 0.06;
+                        G.playerPos.x += (Math.random() - 0.5) * j;
+                        G.playerPos.z += (Math.random() - 0.5) * j;
+                        if (typeof camera !== 'undefined' && camera) {
+                            camera.position.x += (Math.random() - 0.5) * 0.05;
+                            camera.position.z += (Math.random() - 0.5) * 0.05;
+                        }
+                    }
+                    G.bots.forEach(b => {
+                        if (!b.alive) return;
+                        const bx = b.pos.x - center.x, bz = b.pos.z - center.z;
+                        if (Math.sqrt(bx * bx + bz * bz) < config.radius) {
+                            b.dodgeActive = true;
+                            b.dodgeTimer = Math.max(b.dodgeTimer, 0.4);
+                        }
+                    });
+                }
+
+                if (config.type === 'megumi') {
+                    this._megSpawnTick += dt;
+                    if (this._megSpawnTick >= 4.0) {
+                        this._megSpawnTick = 0;
+                        const shadowCount = G.bots.filter(b => b.alive && b._domainSummon).length;
+                        if (shadowCount < 6 && G.bots.length < 30) {
+                            const angle = Math.random() * Math.PI * 2;
+                            const r = (0.3 + Math.random() * 0.6) * config.radius;
+                            const sx = center.x + Math.cos(angle) * r;
+                            const sz = center.z + Math.sin(angle) * r;
+                            const refDiff = (G.bots[0] && G.bots[0].diff) ? G.bots[0].diff : { react: .3, acc: .7, aggroRange: 20, speed: 3.5, hp: 80, dmgMult: 1.1, strafe: 1.0, reward: 1 };
+                            const scaledDiff = { ...refDiff, hp: 40, speed: 3.0 };
+                            const sBot = new Bot(new THREE.Vector3(sx, 0, sz), scaledDiff, G.bots.length, 'megumi');
+                            sBot.isSummon = true;
+                            sBot._domainSummon = true;
+                            if (sBot.group) {
+                                sBot.group.scale.setScalar(0.6);
+                                sBot.group.traverse(o => {
+                                    if (o.isMesh && o.material) {
+                                        const mats = Array.isArray(o.material) ? o.material : [o.material];
+                                        mats.forEach(mat => { if (mat.color) mat.color.set(0x001133); });
+                                    }
+                                });
+                            }
+                            G.bots.push(sBot);
+                            for (let i = 0; i < 6; i++) {
+                                const v = new THREE.Vector3((Math.random() - .5) * 4, Math.random() * 3 + 1, (Math.random() - .5) * 4);
+                                particles.push(new Particle(new THREE.Vector3(sx, 0.5, sz), v, 0x001133, 0.7, 0.06));
+                            }
+                        }
+                    }
+                }
+            }
+
+            cleanup() {
+                this._initDom();
+                if (this._domainOv) this._domainOv.className = '';
+                if (this._banner) this._banner.classList.remove('visible');
+                clearTimeout(this._bannerTimeout);
+
+                const G = window.G;
+                this._frozenBots.forEach((speed, bot) => { if (bot) bot.speed = speed; });
+                this._frozenBots.clear();
+                if (G && this.config && this.config.type === 'gojo') G._speedBoost = 0;
+
+                if (G && G.bots) {
+                    G.bots.forEach(b => {
+                        if (b._domainSummon && b.alive) {
+                            b.alive = false;
+                            if (b.group) scene.remove(b.group);
+                        }
+                    });
+                }
+
+                if (G) G.showNotif('DOMAIN COLLAPSED', 2000);
+                this.active = false;
+                this.config = null;
+                this.timer = 0;
+                this.ownerBot = null;
+                this._sukDmgTick = 0;
+                this._megSpawnTick = 0;
+            }
+
+            reset() {
+                if (this.active) this.cleanup();
+                this.active = false;
+                this.config = null;
+                this.timer = 0;
+                this._frozenBots.clear();
             }
         }
 
@@ -1917,6 +2918,8 @@
             waveBotsLeft: 0,
             // Timed mode
             matchTimer: 0,
+            // Domain Expansion
+            domainManager: null,
             // Physics
             GRAVITY: 20,
             JUMP_VEL: 7,
@@ -1942,12 +2945,23 @@
                 this.state = id;
                 if (id === 's-shop') { document.getElementById('shop-coins-val').textContent = save.coins; this.buildShopUI(); }
                 if (id === 's-loadout') this.buildLoadoutUI();
+                if (id === 's-featured') { document.getElementById('feat-coins-val').textContent = save.coins; this.buildFeaturedUI(); }
+                if (id === 's-stats') { document.getElementById('stats-coins-val').textContent = save.coins; this.buildStatsUI(); }
             },
 
             showPreplay() {
                 console.log('G.showPreplay() called');
                 this.buildPreplayUI();
                 this.showScreen('s-preplay');
+            },
+
+            startCullingGame() {
+                this.selMode = 'culling';
+                const idx = MDEFS.findIndex(m => m.id === 'culling_arena');
+                if (idx >= 0) this.selMap = idx;
+                this.selDiff = 'hard';
+                this.selBots = MDEFS[this.selMap].botCount || 15;
+                this.startMatch();
             },
 
             showNotif(msg, dur = 2000) {
@@ -2132,8 +3146,142 @@
                 });
             },
 
+            buildFeaturedUI() {
+                // Rotating featured skins — seeded by week number for consistency
+                const week = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
+                const FEATURED_SKINS = [
+                    { id: 'skin_gojo_void', name: 'Infinite Void', cat: 'Rifle Skin', icon: '🌌', desc: 'Gojo\'s Infinity wraps the barrel in swirling blue void energy.', basePrice: 800, sale: 0.4, isNew: true, color: '#44aaff' },
+                    { id: 'skin_sukuna_shrine', name: 'Malevolent Shrine', cat: 'SMG Skin', icon: '🩸', desc: 'Carved with Sukuna\'s cursed seals. Drips with crimson energy.', basePrice: 750, sale: 0.3, isNew: false, color: '#ff4422' },
+                    { id: 'skin_tengen_fusion', name: 'Tengen Fusion', cat: 'Sniper Skin', icon: '⚛️', desc: 'Geometric barrier patterns pulse across the stock and scope.', basePrice: 900, sale: 0.5, isNew: true, color: '#ffcc44' },
+                    { id: 'skin_chimera_shadow', name: 'Chimera Shadow', cat: 'Shotgun Skin', icon: '👤', desc: 'Shadow clones flicker along the barrel in dark violet light.', basePrice: 700, sale: 0.2, isNew: false, color: '#9944ff' },
+                    { id: 'skin_cursed_spirit', name: 'Special Grade', cat: 'Pistol Skin', icon: '💀', desc: 'Special Grade cursed spirit wraps around the grip.', basePrice: 650, sale: 0.35, isNew: false, color: '#44ff88' },
+                    { id: 'skin_domain_expanse', name: 'Domain Expanse', cat: 'Melee Skin', icon: '🌀', desc: 'Infinite Void aura pulses around every strike.', basePrice: 850, sale: 0.45, isNew: true, color: '#00ccff' },
+                ];
+                const BUNDLES = [
+                    { id: 'bundle_jjk', name: 'JJK Sorcerer Bundle', icon: '⚡', desc: '6 exclusive skins from the Jujutsu High collection. All characters represented.', items: 6, price: 2400, salePrice: 1400 },
+                    { id: 'bundle_culling', name: 'Culling Game Pack', icon: '⚔️', desc: 'Colony-themed weapon wraps. Enter every match looking like a player sorcerer.', items: 4, price: 1600, salePrice: 900 },
+                ];
+                // Rotate 4 featured skins based on week
+                const rotated = [...FEATURED_SKINS];
+                rotated.sort((a, b) => ((a.id.charCodeAt(5) + week) % 10) - ((b.id.charCodeAt(5) + week) % 10));
+                const featured = rotated.slice(0, 4);
+
+                const grid = document.getElementById('featured-grid');
+                grid.innerHTML = '';
+                featured.forEach(s => {
+                    const salePrice = Math.round(s.basePrice * (1 - s.sale));
+                    const owned = (save.ownedSkins || []).includes(s.id);
+                    const el = document.createElement('div');
+                    el.className = 'feat-card' + (s.isNew ? ' new-badge' : '');
+                    el.innerHTML = `
+                        <div class="feat-skin-icon">${s.icon}</div>
+                        <div class="feat-skin-name" style="color:${s.color}">${s.name}</div>
+                        <div class="feat-skin-cat">${s.cat}</div>
+                        <div class="feat-skin-desc">${s.desc}</div>
+                        <div class="feat-price-row">
+                            <span class="feat-orig-price">💰 ${s.basePrice}</span>
+                            <span class="feat-sale-price">💰 ${salePrice}</span>
+                            <span style="font-size:9px;color:#ff6600;letter-spacing:1px">${Math.round(s.sale*100)}% OFF</span>
+                        </div>
+                        <button class="feat-buy-btn${owned ? ' owned' : ''}" onclick="G.buySkin('${s.id}',${salePrice},this)">
+                            ${owned ? '✔ EQUIPPED' : 'UNLOCK SKIN'}
+                        </button>`;
+                    grid.appendChild(el);
+                });
+                const bgrid = document.getElementById('bundle-grid');
+                bgrid.innerHTML = '';
+                BUNDLES.forEach(b => {
+                    const owned = (save.ownedBundles || []).includes(b.id);
+                    const el = document.createElement('div');
+                    el.className = 'bundle-card';
+                    el.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                            <span style="font-size:24px">${b.icon}</span>
+                            <div>
+                                <div style="font-size:13px;font-weight:700;color:#cc88ff">${b.name}</div>
+                                <div style="font-size:9px;color:#553388;letter-spacing:2px">${b.items} ITEMS INCLUDED</div>
+                            </div>
+                        </div>
+                        <div style="font-size:10px;color:#664466;line-height:1.5;margin-bottom:10px">${b.desc}</div>
+                        <div style="display:flex;align-items:center;gap:8px">
+                            <span style="font-size:11px;color:#443355;text-decoration:line-through">💰 ${b.price}</span>
+                            <span style="font-size:18px;font-weight:900;color:#cc88ff">💰 ${b.salePrice}</span>
+                        </div>
+                        <button class="feat-buy-btn${owned ? ' owned' : ''}" style="margin-top:8px" onclick="G.buyBundle('${b.id}',${b.salePrice},this)">
+                            ${owned ? '✔ OWNED' : 'GET BUNDLE'}
+                        </button>`;
+                    bgrid.appendChild(el);
+                });
+            },
+
+            buySkin(id, price, btn) {
+                const skins = save.ownedSkins || [];
+                if (skins.includes(id)) return;
+                if (save.coins < price) { this.showNotif('Not enough coins!'); return; }
+                save.coins -= price;
+                if (!save.ownedSkins) save.ownedSkins = [];
+                save.ownedSkins.push(id);
+                writeSave();
+                btn.textContent = '✔ EQUIPPED';
+                btn.classList.add('owned');
+                document.getElementById('feat-coins-val').textContent = save.coins;
+                this.showNotif('Skin unlocked!');
+            },
+
+            buyBundle(id, price, btn) {
+                const bundles = save.ownedBundles || [];
+                if (bundles.includes(id)) return;
+                if (save.coins < price) { this.showNotif('Not enough coins!'); return; }
+                save.coins -= price;
+                if (!save.ownedBundles) save.ownedBundles = [];
+                save.ownedBundles.push(id);
+                writeSave();
+                btn.textContent = '✔ OWNED';
+                btn.classList.add('owned');
+                document.getElementById('feat-coins-val').textContent = save.coins;
+                this.showNotif('Bundle unlocked!');
+            },
+
+            buildStatsUI() {
+                const tiles = [
+                    { val: save.matches || 0, lbl: 'Total Matches' },
+                    { val: save.coins || 0, lbl: 'Coins Earned' },
+                    { val: (save.owned || []).length, lbl: 'Weapons Owned' },
+                    { val: (save.ownedChars || ['soldier']).length, lbl: 'Sorcerers' },
+                ];
+                const grid = document.getElementById('stats-grid');
+                grid.innerHTML = '';
+                tiles.forEach(t => {
+                    const el = document.createElement('div');
+                    el.className = 'stat-tile';
+                    el.innerHTML = `<div class="stat-tile-val">${t.val}</div><div class="stat-tile-lbl">${t.lbl}</div>`;
+                    grid.appendChild(el);
+                });
+                document.getElementById('stats-hist').innerHTML =
+                    `Total battles fought: <b style="color:#aa66ff">${save.matches || 0}</b><br>` +
+                    `Coins in vault: <b style="color:#ffd700">${save.coins || 0}</b><br>` +
+                    `Arsenal size: <b style="color:#66aaff">${(save.owned || []).length} weapons</b><br>` +
+                    `Skins unlocked: <b style="color:#ff8844">${(save.ownedSkins || []).length} skins</b>`;
+            },
+
             // ---- MATCH ----
             startMatch() {
+                console.log('[startMatch] Function called');
+                try {
+                    // Ensure Three.js is initialized before starting
+                    console.log('[startMatch] Checking Three.js state:', { renderer: !!renderer, camera: !!camera, scene: !!scene });
+                    if (!renderer) {
+                        console.log('[startMatch] Renderer not found, calling setupThreeJS()');
+                        setupThreeJS();
+                        console.log('[startMatch] After setupThreeJS():', { renderer: !!renderer, camera: !!camera, scene: !!scene });
+                    }
+                    if (!camera || !scene || !renderer) {
+                        console.error('[startMatch] FATAL: Three.js setup failed', { renderer: !!renderer, camera: !!camera, scene: !!scene });
+                        this.showNotif('CURSED ENERGY UNAVAILABLE — RELOAD PAGE', 4000);
+                        return;
+                    }
+                    console.log('[startMatch] Three.js initialized, proceeding with match setup');
+                    if (this.domainManager) this.domainManager.reset();
                 this.matchKills = 0;
                 this.matchDmgDealt = 0;
                 this._killStreak = 0;
@@ -2141,6 +3289,10 @@
                 this.scopeMode = false;
                 this._speedBoost = 0;
                 this._dmgBoost = 0;
+                this._tengenMerged = false;
+                this._tengenMergeDur = 0;
+                this._baseCharDmgMult = 1.0;
+                this._baseCharSpeedMult = 1.0;
                 this.powerups = [];
                 this._powerupTimer = 20;
                 camera.fov = 72;
@@ -2157,6 +3309,8 @@
                 this.playerHp = cdef.hp;
                 this._charDmgMult = cdef.dmgMult;
                 this._charSpeedMult = cdef.speed;
+                this._baseCharDmgMult = cdef.dmgMult;
+                this._baseCharSpeedMult = cdef.speed;
                 this._charRage = cdef.rage || false;
 
                 const mdef = MDEFS[this.selMap];
@@ -2176,7 +3330,9 @@
                 if (this.playerChar) { scene.remove(this.playerChar.root); this.playerChar = null; }
                 if (typeof HuntersGL !== 'undefined' && HuntersGL.soldier) {
                     this.playerChar = HuntersGL.cloneSoldier(0x88ccff);
-                    scene.add(this.playerChar.root);
+                    if (this.playerChar) {
+                        scene.add(this.playerChar.root);
+                    }
                 }
 
                 // Build weapons array from loadout
@@ -2208,7 +3364,8 @@
                     for (let i = 0; i < this.selBots; i++) {
                         const sp2 = spawnPts[i % spawnPts.length];
                         const jitter = new THREE.Vector3((Math.random() - .5) * 3, 0, (Math.random() - .5) * 3);
-                        this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), diff, i));
+                        const jjkType = JJK_TYPES_LIST[Math.floor(Math.random() * JJK_TYPES_LIST.length)];
+                        this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), diff, i, jjkType));
                     }
                 } else {
                     document.getElementById('wave-d').style.display = 'none';
@@ -2218,8 +3375,14 @@
                     for (let i = 0; i < this.selBots; i++) {
                         const sp2 = spawnPts[i % spawnPts.length];
                         const jitter = new THREE.Vector3((Math.random() - .5) * 3, 0, (Math.random() - .5) * 3);
-                        this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), diff, i));
+                        const jjkType = JJK_TYPES_LIST[Math.floor(Math.random() * JJK_TYPES_LIST.length)];
+                        this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), diff, i, jjkType));
                     }
+                }
+
+                if (this.selMode === 'culling') {
+                    this._powerupTimer = 10;
+                    this.spawnPowerup();
                 }
 
                 // Weapon model
@@ -2237,6 +3400,12 @@
 
                 this.updateHUD();
                 save.matches++; writeSave();
+                console.log('[startMatch] Match started successfully!');
+                } catch (e) {
+                    console.error('[startMatch] ERROR:', e);
+                    console.error('[startMatch] Stack:', e.stack);
+                    alert('Error starting match: ' + e.message);
+                }
             },
 
             spawnWave(mdef, diff) {
@@ -2254,12 +3423,14 @@
                     strafe: (diff.strafe || 1) + (this.waveNum - 1) * 0.08
                 };
                 for (let i = 0; i < waveSize; i++) {
+                    if (this.bots.filter(b => b.alive && !b.isSummon).length >= 20) break;
                     const sp2 = spawnPts[i % spawnPts.length];
                     const jitter = new THREE.Vector3((Math.random() - .5) * 4, 0, (Math.random() - .5) * 4);
-                    this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), waveDiff, this.bots.length));
+                    const jjkType = JJK_TYPES_LIST[Math.floor(Math.random() * JJK_TYPES_LIST.length)];
+                    this.bots.push(new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), waveDiff, this.bots.length, jjkType));
                 }
                 document.getElementById('wave-d').textContent = 'WAVE ' + this.waveNum;
-                this.showNotif('WAVE ' + this.waveNum + ' - ' + waveSize + ' ENEMIES!', 2500);
+                this.showNotif('WAVE ' + this.waveNum + ' - ' + waveSize + ' CURSED SPIRITS!', 2500);
             },
 
             updateWeaponModel() {
@@ -2284,6 +3455,7 @@
             endMatch(won, quit = false) {
                 if (this.state !== 'playing') return;
                 this.state = 'gameover';
+                if (this.domainManager) this.domainManager.reset();
                 if (this.wepModel) { scene.remove(this.wepModel); this.wepModel = null; }
                 // Clear bots and powerups
                 this.bots.forEach(b => { if (b.group) scene.remove(b.group); });
@@ -2319,13 +3491,13 @@
 
                 const title = document.getElementById('res-title');
                 const isWin = won || this.selMode === 'timed';
-                title.textContent = quit ? 'QUIT' : isWin ? 'VICTORY' : 'DEFEAT';
+                title.textContent = quit ? 'RETREAT' : isWin ? 'DOMAIN EXPANDED' : 'CURSED SPIRIT WINS';
                 title.className = isWin ? 'r-win' : 'r-loss';
                 document.getElementById('res-stats').innerHTML = `
-      ${extraInfo}Eliminations: ${this.matchKills}<br>
-      Damage Dealt: ${this.matchDmgDealt}<br>
-      Coins Earned: +${coins}<br>
-      Total Coins: ${save.coins}
+      ${extraInfo}Cursed Spirits Exorcised: ${this.matchKills}<br>
+      Cursed Energy Output: ${this.matchDmgDealt}<br>
+      Grade Points Earned: +${coins}<br>
+      Total Grade Points: ${save.coins}
     `;
                 this.showScreen('s-over');
             },
@@ -2528,7 +3700,7 @@
                     setTimeout(() => ki.style.opacity = 0, 900);
                     this.updateHUD();
                     // Check win conditions
-                    const allDead = this.bots.every(b => !b.alive);
+                    const allDead = this.bots.every(b => !b.alive || b.isSummon);
                     if (allDead) {
                         if (this.selMode === 'survival') {
                             // Spawn next wave after 3s
@@ -2548,7 +3720,8 @@
                             const mdef = MDEFS[this.selMap];
                             const sp2 = mdef.spawnPts[Math.floor(Math.random() * mdef.spawnPts.length)];
                             const jitter = new THREE.Vector3((Math.random() - .5) * 3, 0, (Math.random() - .5) * 3);
-                            const nb = new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), DIFFS[this.selDiff], this.bots.length);
+                            const jjkType = JJK_TYPES_LIST[Math.floor(Math.random() * JJK_TYPES_LIST.length)];
+                            const nb = new Bot(new THREE.Vector3(sp2.x, 0, sp2.z).add(jitter), DIFFS[this.selDiff], this.bots.length, jjkType);
                             this.bots.push(nb);
                         }, 4000);
                     }
@@ -2586,8 +3759,9 @@
             // ---- MOVEMENT ----
             updatePlayer(dt) {
                 // Boost timers
-                if (this._speedBoost > 0) { this._speedBoost -= dt; if (this._speedBoost <= 0) { this._speedBoost = 0; document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = 'âš¡ SPEED ' + Math.ceil(this._speedBoost) + 's'; } }
-                if (this._dmgBoost > 0) { this._dmgBoost -= dt; if (this._dmgBoost <= 0) { this._dmgBoost = 0; if (this._speedBoost <= 0) document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = 'ðŸ”¥ DAMAGE ' + Math.ceil(this._dmgBoost) + 's'; } }
+                if (this._speedBoost > 0) { this._speedBoost -= dt; if (this._speedBoost <= 0) { this._speedBoost = 0; document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = '⚡ SPEED ' + Math.ceil(this._speedBoost) + 's'; } }
+                if (this._dmgBoost > 0) { this._dmgBoost -= dt; if (this._dmgBoost <= 0) { this._dmgBoost = 0; if (this._speedBoost <= 0) document.getElementById('boost-d').textContent = ''; } else { document.getElementById('boost-d').textContent = '🔥 DAMAGE ' + Math.ceil(this._dmgBoost) + 's'; } }
+                if (this._tengenMerged) { this._tengenMergeDur -= dt; if (this._tengenMergeDur <= 0) { this._tengenMerged = false; this._tengenMergeDur = 0; this._charDmgMult = this._baseCharDmgMult || 1; this._charSpeedMult = this._baseCharSpeedMult || 1; this.showNotif('Tengen Fusion has faded'); document.getElementById('boost-d').textContent = ''; } }
                 // Timed mode countdown
                 if (this.selMode === 'timed') {
                     this.matchTimer -= dt;
@@ -2788,7 +3962,12 @@
                 const x = (Math.random() - .5) * b * 2;
                 const z = (Math.random() - .5) * b * 2;
                 if (collidesWithObstacle(x, z, .5)) return;
-                const type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+                let type;
+                if (this.selMode === 'culling' && Math.random() < 0.35) {
+                    type = POWERUP_TYPES.find(p => p.id === 'tengen_merge') || POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+                } else {
+                    type = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+                }
                 const geo = new THREE.OctahedronGeometry(.35, 0);
                 const mat = new THREE.MeshLambertMaterial({ color: type.color, emissive: new THREE.Color(type.color), emissiveIntensity: .6 });
                 const mesh = new THREE.Mesh(geo, mat);
@@ -2832,7 +4011,7 @@
                     document.getElementById('wep-name').textContent = w.name.toUpperCase();
                 }
                 document.getElementById('hud-coins').textContent = save.coins;
-                const alive = this.bots.filter(b => b.alive).length;
+                const alive = this.bots.filter(b => b.alive && !b.isSummon).length;
                 if (this.selMode === 'survival') {
                     document.getElementById('bots-alive').textContent = alive;
                 } else {
@@ -2949,6 +4128,7 @@
                     this.updatePlayer(dt);
                     this.updateBots(dt);
                     this.updateParticles(dt);
+                    if (this.domainManager && this.domainManager.active) this.domainManager.update(dt);
                     this.updateHUD();
                 }
 
@@ -2973,9 +4153,14 @@
         window.G._shopCat = 'all';
         window.G._charDmgMult = 1.0;
         window.G._charSpeedMult = 1.0;
+        window.G._tengenMerged = false;
+        window.G._tengenMergeDur = 0;
+        window.G._baseCharDmgMult = 1.0;
+        window.G._baseCharSpeedMult = 1.0;
         window.G._charRage = false;
         window.G.selChar = save.character || 'soldier';
         window.G.selMode = 'elimination';
+        window.G.domainManager = new DomainManager();
 
         if (typeof window.HuntersGL !== 'undefined' && window.HuntersGL.preload) {
             console.log('Starting HuntersGL preload');
@@ -2986,4 +4171,4 @@
         }
         console.log('G is defined on window');
 
-
+

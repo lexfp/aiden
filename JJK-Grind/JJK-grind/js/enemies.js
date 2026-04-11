@@ -46,25 +46,35 @@
       const cfg = ENEMY_TYPES[type], g = new THREE.Group();
       buildEnemyParts(cfg, type).forEach(p => { const m = new THREE.Mesh(p.geo, p.mat); m.position.set(...p.pos); m.name = p.name; m.castShadow = true; g.add(m); });
       g.position.set(x, 0, z); scene.add(g);
+      // Cache mesh references for animation (avoid getObjectByName every frame)
+      const _la = g.getObjectByName('leftArm'), _ra = g.getObjectByName('rightArm');
+      const _ll = g.getObjectByName('leftLeg'), _rl = g.getObjectByName('rightLeg');
+      const _ea = g.getObjectByName('extraArm'), _elAura = g.getObjectByName('eliteAura'), _elCrown = g.getObjectByName('eliteCrown');
+      // Cache all emissive meshes for hit flash (avoid group.traverse every frame)
+      const _emissiveMeshes = [];
+      g.traverse(c => { if (c.isMesh && c.material?.emissive) _emissiveMeshes.push(c); });
       const e = {
         type, cfg, group: g, health: cfg.hp, maxHealth: cfg.hp, dead: false, state: 'patrol', stateTimer: 0, attackCD: 0,
         patrolTarget: new THREE.Vector3(x + (Math.random() - 0.5) * 16, 0, z + (Math.random() - 0.5) * 16),
-        patrolWait: 0, knockbackVel: new THREE.Vector3(), hitFlashTimer: 0, spawnPos: new THREE.Vector3(x, 0, z)
+        patrolWait: 0, knockbackVel: new THREE.Vector3(), hitFlashTimer: 0, spawnPos: new THREE.Vector3(x, 0, z),
+        _la, _ra, _ll, _rl, _ea, _elAura, _elCrown, _emissiveMeshes
       };
       enemies.push(e); return e;
     }
+    const _tmpToP = new THREE.Vector3();
+    const _tmpAwayDir = new THREE.Vector3();
     function updateEnemies(dt) {
       const pp = player.group.position;
       enemies.forEach(e => {
         if (e.dead) return;
-        const toP = new THREE.Vector3().subVectors(pp, e.group.position); const dist = toP.length(); toP.normalize();
+        const toP = _tmpToP.subVectors(pp, e.group.position); const dist = toP.length(); toP.normalize();
         if (e.attackCD > 0) e.attackCD -= dt; if (e.hitFlashTimer > 0) e.hitFlashTimer -= dt;
         if (e.knockbackVel.lengthSq() > 0.1) { e.group.position.addScaledVector(e.knockbackVel, dt); e.knockbackVel.multiplyScalar(0.85); if (e.group.position.y > 0) e.knockbackVel.y -= 20 * dt; else { e.group.position.y = 0; e.knockbackVel.y = 0; } }
-        e.group.traverse(c => { if (!c.isMesh || !c.material?.emissive) return; if (e.hitFlashTimer > 0) { c.material.emissive.setHex(0xff4444); c.material.emissiveIntensity = e.hitFlashTimer * 8; } else c.material.emissiveIntensity = 0; });
+        if (e._emissiveMeshes) { for (let _i = 0; _i < e._emissiveMeshes.length; _i++) { const c = e._emissiveMeshes[_i]; if (e.hitFlashTimer > 0) { c.material.emissive.setHex(0xff4444); c.material.emissiveIntensity = e.hitFlashTimer * 8; } else c.material.emissiveIntensity = 0; } }
         if (e.state === 'stunned') { e.stateTimer -= dt; if (e.stateTimer <= 0) e.state = dist < 22 ? 'chase' : 'patrol'; return; }
         // Don't enter safe zone
         if (isInSafeZone(e.group.position.x, e.group.position.z) && !isInSafeZone(e.spawnPos.x, e.spawnPos.z)) {
-          const awayDir = new THREE.Vector3(e.group.position.x - SAFE_ISLAND.x, 0, e.group.position.z - SAFE_ISLAND.z).normalize();
+          const awayDir = _tmpAwayDir.set(e.group.position.x - SAFE_ISLAND.x, 0, e.group.position.z - SAFE_ISLAND.z).normalize();
           e.group.position.addScaledVector(awayDir, e.cfg.spd * dt * 2); return;
         }
         // Don't chase into safe zone
@@ -89,22 +99,20 @@
           if (e.cfg.ranged && dist < 6) e.group.position.addScaledVector(toP, -e.cfg.spd * 0.5 * dt);
           else if (!e.cfg.ranged && dist > atkR) e.group.position.addScaledVector(toP, e.cfg.spd * 0.5 * dt);
           if (e.attackCD <= 0) { e.attackCD = e.cfg.atkCD; doEnemyAtk(e, dist); }
-          const ra = e.group.getObjectByName('rightArm'); if (ra && e.attackCD > e.cfg.atkCD - 0.3) { const t = 1 - ((e.attackCD - (e.cfg.atkCD - 0.3)) / 0.3); ra.rotation.x = -Math.sin(t * Math.PI) * 1.5; }
+          if (e._ra && e.attackCD > e.cfg.atkCD - 0.3) { const t = 1 - ((e.attackCD - (e.cfg.atkCD - 0.3)) / 0.3); e._ra.rotation.x = -Math.sin(t * Math.PI) * 1.5; }
         }
         if (e.group.position.y < 0) e.group.position.y = 0;
         // Animate elite enemy aura
         if (e.isElite) {
-          const ea = e.group.getObjectByName('eliteAura');
-          if (ea) { ea.material.opacity = 0.1 + Math.sin(elapsed * 3) * 0.06; ea.scale.setScalar(1 + Math.sin(elapsed * 2) * 0.15); }
-          const ec = e.group.getObjectByName('eliteCrown');
-          if (ec) { ec.position.y = 3.2 * (e.cfg.size || 1) + Math.sin(elapsed * 2) * 0.15; ec.rotation.y += dt * 1.5; }
+          if (e._elAura) { e._elAura.material.opacity = 0.1 + Math.sin(elapsed * 3) * 0.06; e._elAura.scale.setScalar(1 + Math.sin(elapsed * 2) * 0.15); }
+          if (e._elCrown) { e._elCrown.position.y = 3.2 * (e.cfg.size || 1) + Math.sin(elapsed * 2) * 0.15; e._elCrown.rotation.y += dt * 1.5; }
         }
       });
     }
     function animEnemyWalk(e, sm) {
-      const la = e.group.getObjectByName('leftArm'), ra = e.group.getObjectByName('rightArm'), ll = e.group.getObjectByName('leftLeg'), rl = e.group.getObjectByName('rightLeg');
+      const la = e._la, ra = e._ra, ll = e._ll, rl = e._rl;
       const c = Math.sin(elapsed * 6 * sm) * 0.5; if (la) la.rotation.x = c; if (ra) ra.rotation.x = -c; if (ll) ll.rotation.x = -c; if (rl) rl.rotation.x = c;
-      if (e.type === 'transfigured') { const ea = e.group.getObjectByName('extraArm'); if (ea) ea.rotation.z = Math.sin(elapsed * 4) * 0.8; }
+      if (e.type === 'transfigured' && e._ea) e._ea.rotation.z = Math.sin(elapsed * 4) * 0.8;
     }
     function doEnemyAtk(e, dist) {
       if (player.inSafeZone) return;
@@ -115,22 +123,8 @@
       enemy.dead = true; totalKills++;
       if (typeof updateQuestProgress !== 'undefined') updateQuestProgress('kill', 1);
 
-      // Enhanced death animation - ragdoll-like tumble and fade
-      const deathDur = 0.8; let deathT = 0;
-      const tumbleDir = (Math.random() - 0.5) * 2;
-      const tumbleSpeed = 3 + Math.random() * 4;
-      const deathAnim = () => {
-        deathT += 0.016; const t = deathT / deathDur;
-        if (t >= 1) { enemy.group.visible = false; enemy.group.scale.set(1, 1, 1); enemy.group.rotation.set(0, 0, 0); return; }
-        // Ragdoll tumble - spin and fall
-        enemy.group.scale.set(1 - t * 0.4, 1 - t * 0.3 + Math.sin(t * Math.PI) * 0.2, 1 - t * 0.4);
-        enemy.group.position.y = Math.max(-0.5, enemy.group.position.y - 0.03 - t * 0.06);
-        enemy.group.rotation.x += tumbleDir * dt * tumbleSpeed;
-        enemy.group.rotation.z += tumbleDir * dt * tumbleSpeed * 0.7;
-        enemy.group.traverse(c => { if (c.isMesh && c.material) { c.material.transparent = true; c.material.opacity = Math.max(0, 1 - t * 1.3); } });
-        requestAnimationFrame(deathAnim);
-      };
-      deathAnim();
+      // Simplified death animation - quick fade/shrink (no per-frame traverse)
+      enemy.group.visible = false;
 
       // Explosion particles (more for bosses/elites)
       const particleCount = enemy.isElite ? 50 : (enemy.cfg.boss ? 40 : 18);

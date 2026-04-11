@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aisha - Autonomous Coding Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap"
+    rel="stylesheet">
+  <style>
+    /* Claude-inspired Colors */
+    :root {
+      --bg-color: #FAF9F5;
+      --sidebar-bg: #EFECE5;
+      --border-color: #E6E2D8;
+      --text-main: #2D2B2A;
+      --text-muted: #73706B;
+      --accent-color: #DA7756;
+      --accent-hover: #C56344;
+      --white: #FFFFFF;
+      --selection: rgba(218, 119, 86, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    ::selection {
+      background: var(--selection);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Sidebar */
+    #sidebar {
+      width: 280px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 20px;
+    }
+
+    .brand {
+      font-family: 'Newsreader', serif;
+      font-size: 26px;
+      font-weight: 500;
+      color: var(--text-main);
+      margin-bottom: 40px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand em {
+      font-style: italic;
+      color: var(--accent-color);
+    }
+
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    #fileList {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .file {
+      padding: 10px 14px;
+      margin-bottom: 4px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-main);
+      transition: background 0.2s ease, transform 0.1s;
+      display: flex;
+      align-items: center;
+    }
+
+    .file::before {
+      content: '📄\FE0E';
+      /* Adding variant selector for clear presentation */
+      margin-right: 10px;
+      opacity: 0.6;
+      font-size: 14px;
+      color: #73706B;
+    }
+
+    .file:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    .file:active {
+      transform: scale(0.98);
+    }
+
+    /* Main Area layout */
+    #main-wrapper {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    #main {
+      flex: 1;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 4px 40px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    /* Top Input section */
+    .input-section {
+      padding: 24px;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--white);
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      height: 110px;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      border-radius: 12px;
+      padding: 16px;
+      padding-bottom: 54px;
+      font-family: inherit;
+      font-size: 15px;
+      resize: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(218, 119, 86, 0.15);
+    }
+
+    textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    button {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      padding: 10px 18px;
+      background: var(--text-main);
+      border: none;
+      border-radius: 8px;
+      color: var(--white);
+      font-family: inherit;
+      font-weight: 500;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button:hover {
+      background: #444;
+    }
+
+    button::after {
+      content: '✨';
+      font-size: 14px;
+    }
+
+    /* Content Area (split between Log and Editor) */
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-color);
+    }
+
+    #log {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-main);
+    }
+
+    .log-line {
+      margin-bottom: 12px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #editor {
+      height: 35%;
+      min-height: 200px;
+      padding: 20px 24px;
+      background: var(--white);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #editor .section-title {
+      margin-bottom: 8px;
+    }
+
+    #fileContent {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-color);
+      padding: 16px;
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      padding-bottom: 16px;
+      /* Override the other textarea pb */
+      border: 1px solid var(--border-color);
+    }
+
+    #fileContent:focus {
+      border-color: var(--border-color);
+      box-shadow: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="sidebar">
+    <div class="brand">Aisha <em>Agent</em></div>
+    <div class="section-title">Project Files</div>
+    <div id="fileList"></div>
+  </div>
+
+  <div id="main-wrapper">
+    <div id="main">
+
+      <div class="input-section">
+        <div class="section-title" style="margin-bottom: 8px;">Workspace</div>
+        <div class="input-wrapper">
+          <textarea id="taskInput" placeholder="Describe what you want Aisha to do..."></textarea>
+          <button onclick="runAgent()">Run task</button>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <div id="log"></div>
+
+        <div id="editor">
+          <div class="section-title">File Inspector</div>
+          <textarea id="fileContent" placeholder="Select a file from the sidebar to preview its contents..."
+            readonly></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const PROJECT_DIR = "./project";
+    let files = [];
+
+    async function log(msg) {
+      const logEl = document.getElementById("log");
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      line.textContent = msg;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    async function callLLM(prompt) {
+      const res = await fetch("http://localhost:11434/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "llama3",
+          prompt: prompt,
+          stream: false
+        })
+      });
+
+      const data = await res.json();
+      return data.response;
+    }
+
+    async function loadFiles() {
+      // NOTE: Browser cannot directly read filesystem.
+      // This assumes a simple backend or preloaded file list.
+      // For demo purposes, define files manually:
+
+      files = [
+        { name: "index.js", content: "// Main application entry point\nconsole.log('App started!');" }
+      ];
+
+      renderFiles();
+    }
+
+    function renderFiles() {
+      const fileList = document.getElementById("fileList");
+      fileList.innerHTML = "";
+
+      files.forEach(file => {
+        const div = document.createElement("div");
+        div.className = "file";
+        div.innerText = file.name;
+        div.onclick = () => {
+          document.getElementById("fileContent").value = file.content;
+        };
+        fileList.appendChild(div);
+      });
+    }
+
+    async function runAgent() {
+      const taskInput = document.getElementById("taskInput");
+      const task = taskInput.value;
+      if (!task.trim()) return;
+
+      await log("▶ " + task);
+      await log("Running agent...");
+
+      const context = files.map(f =>
+        `File: ${f.name}\n${f.content}`
+      ).join("\n\n");
+
+      const prompt = `
+You are an autonomous coding agent.
+
+Task:
+${task}
+
+Project:
+${context}
+
+Return ONLY JSON:
+{
+  "file": "filename",
+  "updatedContent": "full updated file"
+}
+      `;
+
+      let outputText;
+      try {
+        outputText = await callLLM(prompt);
+      } catch (err) {
+        await log("Error connecting to LLM backend (localhost:11434). Is Ollama running?");
+        return;
+      }
+
+      await log("LLM Response:\n" + outputText);
+
+      let output;
+      try {
+        output = JSON.parse(outputText);
+      } catch (e) {
+        await log("Failed to parse JSON. Please ensure the response matches the JSON format.");
+        return;
+      }
+
+      const file = files.find(f => f.name === output.file);
+      if (file) {
+        file.content = output.updatedContent;
+        await log("✅ Updated file: " + output.file);
+        renderFiles();
+      } else {
+        await log("⚠️ File not found: " + output.file);
+      }
+    }
+
+    loadFiles();
+    log("Aisha agent ready. Describe a task to begin.");
+  </script>
+</body>
+
+</html>

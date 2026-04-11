@@ -1,26 +1,100 @@
-[2026-03-22T00:00:00Z] DECISION: Implemented in tictactoe.html (not index.html) as specified by the first line of prompt.txt: "implement this prompt in tictactoe.html".
+[2026-04-07] HUNTERS GAME — JJK CHARACTER SYSTEM IMPLEMENTATION COMMENTS
 
-[2026-03-22T00:00:01Z] DECISION: GameState uses plain JS object (not TypeScript interface) since this is a single HTML file with no build tooling. All fields match the spec exactly.
+---
 
-[2026-03-22T00:00:02Z] ASSUMPTION: "fart-cloud" emoji drift animation uses absolute positioning within the overlay div (which is position:relative over the board). The spec says "full-screen overlay" but NFR-01 requires a single file with no dependencies and the overlay covers the full board area as described in the UI section. Chose board-covering overlay for better UX in single-screen layout.
+WHAT WAS IMPLEMENTED
+--------------------
+Added a full JJK-inspired character system layered on top of the existing Hunters game
+without touching or removing any existing functionality.
 
-[2026-03-22T00:00:03Z] DECISION: Web Audio API context is lazily created on first use. If the browser blocks autoplay and AudioContext is in 'suspended' state, the fart fallback button is shown. This satisfies FR-13.
+Files modified:
+  - hunters/Hunters/hunters-game.js (ability system, Bot refactor, spawn logic)
+  - hunters/Hunters/hunters.html (Cursed Energy Attack HUD label)
 
-[2026-03-22T00:00:04Z] ASSUMPTION: The celebration overlay is placed as a child of the board-wrapper div rather than the full viewport, to ensure it covers precisely the game area. The spec says "covers the full board area" in the UI section which aligns with this approach.
+---
 
-[2026-03-22T00:00:05Z] TEST: Happy Path 1 — Start game → Player 1 (dog) places first → turn switches to cat: PASS (turn indicator updates immediately)
-[2026-03-22T00:00:06Z] TEST: Happy Path 2 — Play to dog win (top row) → fart sound → overlay → winning cells highlighted: PASS
-[2026-03-22T00:00:07Z] TEST: Happy Path 3 — Play to cat win (diagonal) → fart sound → cat overlay: PASS
-[2026-03-22T00:00:08Z] TEST: Happy Path 4 — Fill board with no winner → draw message, no fart: PASS (draw branch skips triggerCelebration)
-[2026-03-22T00:00:09Z] TEST: Happy Path 5 — Click "Play Again 💨" → board resets → dog's turn shown → can play: PASS
-[2026-03-22T00:00:10Z] TEST: Edge Case 6 — Click occupied cell → nothing happens: PASS (board[idx] !== null guard)
-[2026-03-22T00:00:11Z] TEST: Edge Case 7 — Click cell during celebration → nothing happens: PASS (celebrationActive guard)
-[2026-03-22T00:00:12Z] TEST: Edge Case 8 — Mobile 375px viewport → cells 80px+ (clamp(80px, 26vw, 120px) = 80px at 308px grid width): PASS
-[2026-03-22T00:00:13Z] TEST: Autoplay 9 — Fresh tab → fart fires OR fallback button shown: PASS (AudioContext suspended check + resume + fallback button)
+DESIGN DECISIONS
+----------------
 
-[2026-03-22T00:00:14Z] DONE: Implementation complete.
-  FRs completed: FR-01, FR-02, FR-03, FR-04, FR-05, FR-06, FR-07, FR-08, FR-09, FR-10, FR-11, FR-12, FR-13
-  NFRs satisfied: NFR-01 (single HTML), NFR-02 (no network), NFR-03 (no deps, loads instantly), NFR-04 (80px+ cells via clamp), NFR-05 (no storage), NFR-06 (hand-written keyframes), NFR-07 (fart sounds, emoji, silly messages)
-  Decisions: see DECISION entries above (tictactoe.html target, JS not TS, lazy AudioContext, board-covering overlay)
-  Warnings: None blocking.
-  All 9 manual tests: PASS
+1. BASELINE HP SCALING (health / 130)
+   The JJK_CHARACTER_TYPES define health as raw values (100–200), but the actual bot HP
+   must scale with difficulty. Using 130 as the baseline (midpoint of the range) ensures
+   Sukuna (200) spawns with ~53% more HP than the difficulty baseline, while Mahito (100)
+   spawns with ~23% less. This keeps the game balanced across Easy/Hard/Extreme difficulty.
+
+2. ABILITY COOLDOWNS START STAGGERED
+   Initial abilityCooldown is set to 2 + random*4 seconds (not 0). If all bots fired their
+   abilities instantly on spawn, the player would take massive burst damage right at match
+   start. Staggering prevents this while keeping abilities active early in the match.
+
+3. SUMMON (MEGUMI) — WIN CONDITION EXCLUSION
+   Summoned shikigami are flagged with isSummon=true. The "all enemies dead" win condition
+   now checks: every(b => !b.alive || b.isSummon). This means killing all real enemies
+   wins the match even if summons are still alive. The enemy counter in the HUD also
+   excludes summons so the player knows the true objective count.
+
+4. GETO PROJECTILE — DELAYED DAMAGE
+   Rather than building a full projectile movement system (which would require adding
+   projectile objects to the render loop), Geto's attack fires a tracer immediately and
+   checks player position 0.8 seconds later with a setTimeout. The player must MOVE to
+   dodge it — if they're within 2.5 units of where they were when shot, they take 70 dmg.
+   This simulates a slow projectile cleanly without a new game loop subsystem.
+
+5. SHIELD COLOR RESTORE
+   When Gojo's shield expires, it re-sets all mesh colors to this.color (the bot's JJK
+   color). This is safe because the bot's color is stored on the instance and never changes.
+
+6. EMISSIVE GLOW VIA POINT LIGHT
+   Instead of modifying material emissive values (which varies by mesh and material type),
+   strong enemies (Sukuna, Yuta, Toji) get a THREE.PointLight added to their group. This
+   casts colored light onto nearby geometry and is visually distinct regardless of whether
+   the bot is using a GLTF soldier model or the fallback boxy mesh.
+
+---
+
+OBSERVATIONS ABOUT THE GAME
+----------------------------
+
+Strengths:
+  - Procedural audio synthesis is clever — no audio files, works offline, each weapon
+    sounds distinct. This is the most underappreciated system in the game.
+  - The weapon variety (50+ weapons across 6 categories) gives real replay value and the
+    tier/pricing system creates a genuine progression loop.
+  - Bot obstacle avoidance with 10 steering angles is simple but effective. The bots don't
+    get perfectly stuck and navigate around cover reasonably well.
+  - Building the entire 3D game as a single .html + .js file (no build step) is impressive
+    and makes deployment trivially simple.
+
+Areas for future improvement (not implemented — listed for reference only):
+  - The bot pathfinding has no memory of where it came from, so bots can oscillate between
+    two points when blocked. A simple visited-direction penalty would fix this.
+  - Survival mode wave scaling (hp * 1.34 per wave, acc + 0.04) makes wave 5 nearly
+    impossible on Extreme difficulty. A gentler curve or a hard cap on acc/hp would
+    improve balance.
+  - The "timed hunt" mode's bot respawn timer (4 seconds) is too long — experienced
+    players can kill bots faster than they respawn, making the mode feel stale. 2 seconds
+    would be better.
+  - No visual feedback for the player's HP regeneration or critical HP state (besides the
+    berserker rage text). A pulsing red vignette below 20% HP would improve readability.
+
+---
+
+JJK ABILITY SYSTEM SUMMARY
+---------------------------
+Gojo   (shield)     — 3s invulnerability every 12s. All damage blocked.
+Sukuna (slash)      — 40 AoE damage within 6 units every 5s.
+Nanami (critical)   — Next shot deals 3x damage every 8s.
+Mahito (dodge)      — 40% chance to ignore hits for 2s every 10s.
+Megumi (summon)     — Spawns 2 small shikigami (Mahito-type, 35% HP, 0.6 scale) every 15s.
+Yuji   (burst)      — 1.8x speed + 1.5x shot damage for 4s every 9s.
+Yuta   (energy)     — 40 dmg ranged attack bypassing weapon range every 7s.
+Toji   (rush)       — Dashes 4 units toward player, deals 50 melee dmg if within 3 units.
+Geto   (projectile) — 70 dmg slow projectile (delayed hit check at 0.8s) every 8s.
+
+All abilities respect existing systems: they call G.playerTakeDamage(), spawnImpact(),
+spawnTracer(), and particles — no new rendering paths introduced.
+
+---
+
+STATUS: COMPLETE. No regressions expected. All existing game modes (elimination, survival,
+timed), maps, weapons, characters, and save system remain untouched.

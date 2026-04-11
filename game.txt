@@ -1,0 +1,95 @@
+You are an expert game engine architect, gameplay programmer, and technical designer. Build a complete, original 3D multiplayer battle royale game inspired by Fortnite, but do NOT copy proprietary assets, names, or copyrighted content. Create a fully working prototype with modular, production-quality code.
+
+OBJECTIVE:
+Create a Fortnite-style battle royale game with:
+- Third-person character controller
+- Shooting/combat system
+- Building system (walls, ramps, floors, roofs)
+- Loot system (weapons, ammo, items)
+- Inventory management
+- Storm shrinking mechanic
+- Multiplayer support (authoritative server or simulated multiplayer if real networking is not possible)
+- Basic matchmaking/lobby flow
+- Win condition (last player/team alive)
+
+TECHNICAL REQUIREMENTS:
+- Use a modern, well-structured architecture (MVC or ECS preferred)
+- Write clean, modular, reusable code
+- Separate systems clearly:
+  - Player systems
+  - Combat systems
+  - Building systems
+  - Game state management
+  - Networking layer
+- Use placeholder assets only (no copyrighted assets)
+- Include clear comments explaining complex logic
+- Ensure the project can run locally with minimal setup instructions
+
+GAMEPLAY FEATURES:
+
+Player Controller:
+- Smooth third-person movement
+- Camera follow with collision handling
+- Sprinting, jumping, crouching
+- Animation hooks (placeholders acceptable)
+
+Combat System:
+- Hitscan and/or projectile weapons
+- Weapon switching
+- Reloading mechanics
+- Damage system with health and shields
+- Basic recoil and spread
+
+Building System:
+- Grid-based placement
+- Structures: walls, floors, ramps, roofs
+- Rotation system
+- Resource cost system (wood, stone, metal)
+- Ghost preview placement before building
+
+Loot System:
+- Random loot spawning
+- Weapon rarity tiers (common → legendary)
+- Pickup interaction
+- Inventory with limited slots
+
+Storm System:
+- Shrinking safe zone over time
+- Damage outside the zone
+- Visual boundary indicator
+
+Multiplayer:
+- Client-server architecture
+- Player synchronization (position, rotation, actions)
+- If full multiplayer is not feasible, simulate multiplayer with AI bots
+
+AI Bots (optional but preferred):
+- Move toward safe zone
+- Engage enemies
+- Build defensively
+- Loot items
+
+GAME LOOP:
+Lobby → Match Start → Drop Phase → Loot Phase → Combat → Storm Phases → End Game → Winner Screen
+
+DELIVERABLES:
+- Full project codebase organized into files/modules
+- Setup and run instructions
+- Explanation of architecture
+- Breakdown of key systems
+- Instructions for extending the game
+- Any assumptions clearly documented
+
+CONSTRAINTS:
+- Do NOT use copyrighted Fortnite assets, names, or direct replicas
+- Avoid proprietary APIs unless widely available
+- Prioritize functionality over visuals, but keep code scalable and structured
+
+OUTPUT FORMAT:
+1. Provide the full project file structure
+2. Provide each file with complete code
+3. Provide setup and run instructions
+4. Provide explanation of systems
+5. Provide notes on assumptions and possible extensions
+
+If anything is unclear, make reasonable assumptions and proceed, but document those assumptions clearly before the code.
