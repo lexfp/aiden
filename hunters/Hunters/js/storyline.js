@@ -65,9 +65,16 @@
         // Try to pick a sensible map for the arc
         try {
             const midx = (typeof MDEFS !== 'undefined') ? MDEFS.findIndex(m => m.id === arc.mapId) : -1;
-            if (midx >= 0) window.G.selMap = midx;
+            if (midx >= 0) window.G.selMap = midx; else window.G.selMap = window.G.selMap || 0;
+            // Ensure valid defaults for character and difficulty so startMatch() doesn't read undefined
+            if (!window.G.selChar) {
+                if (typeof save !== 'undefined' && save.character) window.G.selChar = save.character;
+                else window.G.selChar = 'soldier';
+            }
             window.G.selMode = 'elimination';
-            window.G.selDiff = 'normal';
+            // DIFFS keys are: easy, medium, hard, extreme — choose medium as default for story arcs
+            window.G.selDiff = 'medium';
+            window.G.selBots = (typeof MDEFS !== 'undefined' && MDEFS[window.G.selMap]) ? (MDEFS[window.G.selMap].botCount || 6) : 6;
             // Kick off a normal match for the arc (game will re-check and load if needed)
             window.G.startMatch();
         } catch (e) {
