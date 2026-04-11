@@ -54,9 +54,17 @@
         }
 
         @keyframes cursed-pulse {
-            0% { background: radial-gradient(ellipse at 50% 60%, #1a003d 0%, #08001a 50%, #04020a 100%) }
-            50% { background: radial-gradient(ellipse at 50% 40%, #0d0030 0%, #0a0020 50%, #04020a 100%) }
-            100% { background: radial-gradient(ellipse at 50% 60%, #200044 0%, #0c0025 50%, #04020a 100%) }
+            0% {
+                background: radial-gradient(ellipse at 50% 60%, #1a003d 0%, #08001a 50%, #04020a 100%)
+            }
+
+            50% {
+                background: radial-gradient(ellipse at 50% 40%, #0d0030 0%, #0a0020 50%, #04020a 100%)
+            }
+
+            100% {
+                background: radial-gradient(ellipse at 50% 60%, #200044 0%, #0c0025 50%, #04020a 100%)
+            }
         }
 
         #s-menu::before {
@@ -72,8 +80,15 @@
         }
 
         @keyframes cursed-drift {
-            0% { opacity: 0.6; transform: scaleY(1) }
-            100% { opacity: 1; transform: scaleY(1.05) }
+            0% {
+                opacity: 0.6;
+                transform: scaleY(1)
+            }
+
+            100% {
+                opacity: 1;
+                transform: scaleY(1.05)
+            }
         }
 
         .title {
@@ -91,8 +106,13 @@
         }
 
         @keyframes cursed-flow {
-            0% { background-position: 0% center }
-            100% { background-position: 200% center }
+            0% {
+                background-position: 0% center
+            }
+
+            100% {
+                background-position: 200% center
+            }
         }
 
         .subtitle {
@@ -1035,116 +1055,257 @@
 
         /* ---- Domain Expansion Overlays ---- */
         #domain-ov {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 4; opacity: 0; transition: opacity 0.6s;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 4;
+            opacity: 0;
+            transition: opacity 0.6s;
         }
+
         #domain-ov.domain-gojo {
             opacity: 1;
-            background: radial-gradient(ellipse at center, rgba(0,80,200,.10) 0%, rgba(60,0,180,.35) 60%, rgba(0,0,80,.55) 100%);
+            background: radial-gradient(ellipse at center, rgba(0, 80, 200, .10) 0%, rgba(60, 0, 180, .35) 60%, rgba(0, 0, 80, .55) 100%);
             animation: dom-gojo 2.5s ease-in-out infinite alternate;
         }
+
         @keyframes dom-gojo {
-            0%   { filter: hue-rotate(0deg) brightness(1); }
-            100% { filter: hue-rotate(15deg) brightness(1.08); }
+            0% {
+                filter: hue-rotate(0deg) brightness(1);
+            }
+
+            100% {
+                filter: hue-rotate(15deg) brightness(1.08);
+            }
         }
+
         #domain-ov.domain-sukuna {
             opacity: 1;
-            background: radial-gradient(ellipse at center, rgba(120,0,0,.08) 0%, rgba(200,0,30,.30) 60%, rgba(80,0,0,.60) 100%);
+            background: radial-gradient(ellipse at center, rgba(120, 0, 0, .08) 0%, rgba(200, 0, 30, .30) 60%, rgba(80, 0, 0, .60) 100%);
             animation: dom-sukuna 0.9s ease-in-out infinite alternate;
         }
+
         @keyframes dom-sukuna {
-            0%   { opacity: 0.85; filter: brightness(1); }
-            100% { opacity: 1;    filter: brightness(1.15) saturate(1.3); }
+            0% {
+                opacity: 0.85;
+                filter: brightness(1);
+            }
+
+            100% {
+                opacity: 1;
+                filter: brightness(1.15) saturate(1.3);
+            }
         }
+
         #domain-ov.domain-mahito {
             opacity: 1;
-            background: radial-gradient(ellipse at 50% 50%, rgba(80,0,140,.12) 0%, rgba(30,100,30,.20) 50%, rgba(50,0,100,.50) 100%);
+            background: radial-gradient(ellipse at 50% 50%, rgba(80, 0, 140, .12) 0%, rgba(30, 100, 30, .20) 50%, rgba(50, 0, 100, .50) 100%);
             animation: dom-mahito 0.15s linear infinite;
         }
+
         @keyframes dom-mahito {
-            0%   { transform: translate(0,0) skew(0deg,0deg); }
-            25%  { transform: translate(1px,-1px) skew(0.3deg,0deg); }
-            50%  { transform: translate(-1px,1px) skew(0deg,-0.3deg); }
-            75%  { transform: translate(1px,1px) skew(-0.2deg,0.2deg); }
-            100% { transform: translate(0,0) skew(0deg,0deg); }
+            0% {
+                transform: translate(0, 0) skew(0deg, 0deg);
+            }
+
+            25% {
+                transform: translate(1px, -1px) skew(0.3deg, 0deg);
+            }
+
+            50% {
+                transform: translate(-1px, 1px) skew(0deg, -0.3deg);
+            }
+
+            75% {
+                transform: translate(1px, 1px) skew(-0.2deg, 0.2deg);
+            }
+
+            100% {
+                transform: translate(0, 0) skew(0deg, 0deg);
+            }
         }
+
         #domain-ov.domain-megumi {
             opacity: 1;
-            background: radial-gradient(ellipse at center, rgba(0,10,30,.20) 0%, rgba(0,0,20,.45) 60%, rgba(0,0,10,.65) 100%);
+            background: radial-gradient(ellipse at center, rgba(0, 10, 30, .20) 0%, rgba(0, 0, 20, .45) 60%, rgba(0, 0, 10, .65) 100%);
             animation: dom-megumi 4s ease-in-out infinite alternate;
         }
+
         @keyframes dom-megumi {
-            0%   { filter: brightness(0.80) saturate(0.5); }
-            100% { filter: brightness(0.65) saturate(0.3); }
+            0% {
+                filter: brightness(0.80) saturate(0.5);
+            }
+
+            100% {
+                filter: brightness(0.65) saturate(0.3);
+            }
         }
+
         #domain-banner {
-            position: fixed; top: 50%; left: 50%;
+            position: fixed;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 26px; font-weight: 900; letter-spacing: 6px;
-            text-align: center; pointer-events: none; z-index: 50;
-            opacity: 0; transition: opacity 0.4s;
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: 6px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.4s;
             text-shadow: 0 0 30px currentColor;
         }
-        #domain-banner.visible { opacity: 1; }
+
+        #domain-banner.visible {
+            opacity: 1;
+        }
 
         /* ── Featured skins cards ── */
         .feat-card {
-            background: rgba(40,8,0,.5);
-            border: 1px solid rgba(255,120,0,.25);
+            background: rgba(40, 8, 0, .5);
+            border: 1px solid rgba(255, 120, 0, .25);
             border-radius: 8px;
             padding: 18px;
             position: relative;
             transition: all .15s;
         }
-        .feat-card:hover { border-color: rgba(255,140,0,.55); box-shadow: 0 0 16px rgba(255,100,0,.15); }
+
+        .feat-card:hover {
+            border-color: rgba(255, 140, 0, .55);
+            box-shadow: 0 0 16px rgba(255, 100, 0, .15);
+        }
+
         .feat-card.new-badge::before {
             content: 'NEW';
-            position: absolute; top: 10px; right: 10px;
-            font-size: 8px; letter-spacing: 2px;
-            background: linear-gradient(90deg,#ff6600,#ffaa00);
-            color: #000; padding: 2px 6px; border-radius: 2px; font-weight: 900;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 8px;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #ff6600, #ffaa00);
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-weight: 900;
         }
-        .feat-skin-icon { font-size: 36px; margin-bottom: 8px; }
-        .feat-skin-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-        .feat-skin-cat { font-size: 9px; letter-spacing: 3px; color: #884422; text-transform: uppercase; margin-bottom: 8px; }
-        .feat-skin-desc { font-size: 10px; color: #775544; line-height: 1.5; margin-bottom: 12px; }
-        .feat-price-row { display: flex; align-items: center; gap: 8px; }
-        .feat-orig-price { font-size: 11px; color: #554433; text-decoration: line-through; }
-        .feat-sale-price { font-size: 16px; font-weight: 900; color: #ffaa44; }
+
+        .feat-skin-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .feat-skin-name {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .feat-skin-cat {
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: #884422;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .feat-skin-desc {
+            font-size: 10px;
+            color: #775544;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .feat-price-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feat-orig-price {
+            font-size: 11px;
+            color: #554433;
+            text-decoration: line-through;
+        }
+
+        .feat-sale-price {
+            font-size: 16px;
+            font-weight: 900;
+            color: #ffaa44;
+        }
+
         .feat-buy-btn {
-            margin-top: 10px; width: 100%;
-            padding: 8px; font-size: 10px; letter-spacing: 2px;
-            background: linear-gradient(90deg,rgba(180,60,0,.4),rgba(220,100,0,.3));
-            border: 1px solid rgba(255,120,0,.4); border-radius: 3px;
-            color: #ffaa44; cursor: pointer; font-weight: 700; text-transform: uppercase;
+            margin-top: 10px;
+            width: 100%;
+            padding: 8px;
+            font-size: 10px;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, rgba(180, 60, 0, .4), rgba(220, 100, 0, .3));
+            border: 1px solid rgba(255, 120, 0, .4);
+            border-radius: 3px;
+            color: #ffaa44;
+            cursor: pointer;
+            font-weight: 700;
+            text-transform: uppercase;
             transition: all .12s;
         }
-        .feat-buy-btn:hover { background: linear-gradient(90deg,rgba(220,80,0,.6),rgba(255,140,0,.5)); border-color: rgba(255,160,0,.7); }
-        .feat-buy-btn.owned { background: rgba(0,150,80,.12); border-color: rgba(0,200,100,.25); color: #66ffaa; cursor: default; }
+
+        .feat-buy-btn:hover {
+            background: linear-gradient(90deg, rgba(220, 80, 0, .6), rgba(255, 140, 0, .5));
+            border-color: rgba(255, 160, 0, .7);
+        }
+
+        .feat-buy-btn.owned {
+            background: rgba(0, 150, 80, .12);
+            border-color: rgba(0, 200, 100, .25);
+            color: #66ffaa;
+            cursor: default;
+        }
+
         .bundle-card {
-            background: rgba(20,5,30,.5);
-            border: 1px solid rgba(150,60,255,.2);
+            background: rgba(20, 5, 30, .5);
+            border: 1px solid rgba(150, 60, 255, .2);
             border-radius: 8px;
             padding: 16px;
             transition: all .15s;
         }
-        .bundle-card:hover { border-color: rgba(180,80,255,.4); box-shadow: 0 0 14px rgba(120,0,255,.12); }
+
+        .bundle-card:hover {
+            border-color: rgba(180, 80, 255, .4);
+            box-shadow: 0 0 14px rgba(120, 0, 255, .12);
+        }
+
         /* ── Stats screen ── */
         .stat-tile {
-            background: rgba(60,0,120,.07);
-            border: 1px solid rgba(120,50,255,.15);
+            background: rgba(60, 0, 120, .07);
+            border: 1px solid rgba(120, 50, 255, .15);
             border-radius: 6px;
             padding: 16px;
             text-align: center;
         }
-        .stat-tile-val { font-size: 32px; font-weight: 900; color: #aa66ff; }
-        .stat-tile-lbl { font-size: 9px; letter-spacing: 3px; color: #553388; margin-top: 4px; text-transform: uppercase; }
+
+        .stat-tile-val {
+            font-size: 32px;
+            font-weight: 900;
+            color: #aa66ff;
+        }
+
+        .stat-tile-lbl {
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: #553388;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
 
         /* ── Culling Game homepage card ── */
         .culling-card {
             position: relative;
             width: 380px;
-            background: linear-gradient(135deg, rgba(30,5,0,.92) 0%, rgba(18,2,8,.95) 60%, rgba(10,0,20,.92) 100%);
+            background: linear-gradient(135deg, rgba(30, 5, 0, .92) 0%, rgba(18, 2, 8, .95) 60%, rgba(10, 0, 20, .92) 100%);
             border: 1px solid transparent;
             border-radius: 8px;
             padding: 18px 36px;
@@ -1152,19 +1313,30 @@
             cursor: pointer;
             text-align: center;
             background-clip: padding-box;
-            box-shadow: 0 0 0 1px rgba(200,80,0,.35), 0 0 30px rgba(220,60,0,.15), inset 0 1px 0 rgba(255,100,0,.08);
+            box-shadow: 0 0 0 1px rgba(200, 80, 0, .35), 0 0 30px rgba(220, 60, 0, .15), inset 0 1px 0 rgba(255, 100, 0, .08);
             animation: culling-glow 3s ease-in-out infinite alternate;
             transition: transform .15s, box-shadow .15s;
         }
+
         .culling-card:hover {
             transform: scale(1.04);
-            box-shadow: 0 0 0 1px rgba(255,120,0,.7), 0 0 50px rgba(255,80,0,.35), inset 0 1px 0 rgba(255,150,0,.15);
+            box-shadow: 0 0 0 1px rgba(255, 120, 0, .7), 0 0 50px rgba(255, 80, 0, .35), inset 0 1px 0 rgba(255, 150, 0, .15);
         }
+
         @keyframes culling-glow {
-            0%   { box-shadow: 0 0 0 1px rgba(200,60,0,.3),  0 0 24px rgba(200,40,0,.12); }
-            50%  { box-shadow: 0 0 0 1px rgba(220,100,0,.5), 0 0 40px rgba(220,60,0,.22); }
-            100% { box-shadow: 0 0 0 1px rgba(180,40,0,.35), 0 0 28px rgba(180,30,0,.14); }
+            0% {
+                box-shadow: 0 0 0 1px rgba(200, 60, 0, .3), 0 0 24px rgba(200, 40, 0, .12);
+            }
+
+            50% {
+                box-shadow: 0 0 0 1px rgba(220, 100, 0, .5), 0 0 40px rgba(220, 60, 0, .22);
+            }
+
+            100% {
+                box-shadow: 0 0 0 1px rgba(180, 40, 0, .35), 0 0 28px rgba(180, 30, 0, .14);
+            }
         }
+
         .culling-badge {
             font-size: 9px;
             letter-spacing: 4px;
@@ -1172,6 +1344,7 @@
             color: #cc6600;
             margin-bottom: 10px;
         }
+
         .culling-title {
             font-size: 32px;
             font-weight: 900;
@@ -1182,9 +1355,10 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: cursed-flow 3s linear infinite;
-            filter: drop-shadow(0 0 10px rgba(255,100,0,.4));
+            filter: drop-shadow(0 0 10px rgba(255, 100, 0, .4));
             margin-bottom: 8px;
         }
+
         .culling-desc {
             font-size: 11px;
             letter-spacing: 1.5px;
@@ -1192,6 +1366,7 @@
             margin-bottom: 16px;
             line-height: 1.6;
         }
+
         .culling-cta {
             font-size: 12px;
             font-weight: 700;
@@ -1207,6 +1382,7 @@
             pointer-events: none;
             overflow: hidden;
         }
+
         .float-rune {
             position: absolute;
             bottom: -40px;
@@ -1214,14 +1390,29 @@
             opacity: 0;
             color: rgba(180, 60, 0, 0.35);
             animation: rune-drift 8s ease-in infinite;
-            text-shadow: 0 0 12px rgba(255,80,0,.3);
+            text-shadow: 0 0 12px rgba(255, 80, 0, .3);
         }
+
         @keyframes rune-drift {
-            0%   { opacity: 0;    transform: translateY(0)    rotate(0deg);   }
-            10%  { opacity: .55; }
-            80%  { opacity: .3;  }
-            100% { opacity: 0;    transform: translateY(-110vh) rotate(30deg); }
+            0% {
+                opacity: 0;
+                transform: translateY(0) rotate(0deg);
+            }
+
+            10% {
+                opacity: .55;
+            }
+
+            80% {
+                opacity: .3;
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-110vh) rotate(30deg);
+            }
         }
+
         /* ── Homepage secondary grid ── */
         .home-grid {
             display: grid;
@@ -1230,9 +1421,10 @@
             margin-top: 8px;
             width: 380px;
         }
+
         .home-grid-btn {
-            background: rgba(60,0,120,.07);
-            border: 1px solid rgba(150,80,255,.18);
+            background: rgba(60, 0, 120, .07);
+            border: 1px solid rgba(150, 80, 255, .18);
             border-radius: 6px;
             padding: 12px 10px;
             cursor: pointer;
@@ -1244,26 +1436,50 @@
             transition: all .15s;
             pointer-events: auto;
         }
+
         .home-grid-btn:hover {
-            background: rgba(80,0,180,.16);
-            border-color: rgba(150,80,255,.45);
-            box-shadow: 0 0 12px rgba(100,0,255,.15);
+            background: rgba(80, 0, 180, .16);
+            border-color: rgba(150, 80, 255, .45);
+            box-shadow: 0 0 12px rgba(100, 0, 255, .15);
         }
-        .hgb-icon { font-size: 20px; }
-        .hgb-label { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
-        .hgb-sub { font-size: 9px; color: #7755bb; letter-spacing: 1px; }
+
+        .hgb-icon {
+            font-size: 20px;
+        }
+
+        .hgb-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .hgb-sub {
+            font-size: 9px;
+            color: #7755bb;
+            letter-spacing: 1px;
+        }
+
         /* colony sigil decoration above title */
         .home-sigil {
             font-size: 22px;
             letter-spacing: 14px;
             color: rgba(180, 60, 0, 0.35);
             margin-bottom: 4px;
-            text-shadow: 0 0 20px rgba(255,80,0,.2);
+            text-shadow: 0 0 20px rgba(255, 80, 0, .2);
             animation: sigil-pulse 4s ease-in-out infinite alternate;
         }
+
         @keyframes sigil-pulse {
-            0%   { opacity: .25; letter-spacing: 16px; }
-            100% { opacity: .55; letter-spacing: 20px; }
+            0% {
+                opacity: .25;
+                letter-spacing: 16px;
+            }
+
+            100% {
+                opacity: .55;
+                letter-spacing: 20px;
+            }
         }
     </style>
 </head>
@@ -1282,8 +1498,10 @@
             <span class="float-rune" style="left:72%;animation-delay:0.7s;animation-duration:9.5s">&#10022;</span>
             <span class="float-rune" style="left:82%;animation-delay:4.0s;animation-duration:11s">&#9876;</span>
             <span class="float-rune" style="left:91%;animation-delay:1.8s;animation-duration:8.5s">&#9728;</span>
-            <span class="float-rune" style="left:33%;animation-delay:6.5s;animation-duration:13s;font-size:16px">&#9889;</span>
-            <span class="float-rune" style="left:66%;animation-delay:3.8s;animation-duration:10s;font-size:16px">&#9889;</span>
+            <span class="float-rune"
+                style="left:33%;animation-delay:6.5s;animation-duration:13s;font-size:16px">&#9889;</span>
+            <span class="float-rune"
+                style="left:66%;animation-delay:3.8s;animation-duration:10s;font-size:16px">&#9889;</span>
         </div>
         <div class="home-sigil">&#9960; &#10022; &#9960;</div>
         <div class="title">HUNTERS</div>
@@ -1296,6 +1514,16 @@
             <div class="culling-cta">ENTER COLONY &#8594;</div>
         </div>
         <!-- Standard entry -->
+        <!-- New Storyline Card (homescreen-only) -->
+        <div class="culling-card"
+            style="background:linear-gradient(180deg,#112233,#331122);cursor:pointer;margin-top:12px"
+            onclick="G.startStoryline()">
+            <div class="culling-badge">🧩 STORYLINE — CHAPTERS LIVE</div>
+            <div class="culling-title">STORYLINE MODE</div>
+            <div class="culling-desc">Play the canonical story arc: Yuji, Sukuna, Shibuya, and beyond.<br>Progress saves
+                between sessions.</div>
+            <div class="culling-cta">PLAY STORYLINE &#8594;</div>
+        </div>
         <button class="btn btn-p" onclick="G.showPreplay()" style="margin-top:2px">OTHER MISSIONS</button>
         <!-- Secondary grid -->
         <div class="home-grid">
@@ -1335,7 +1563,9 @@
             <div class="bc-row" id="bc-row"></div>
             <div class="sec-lbl">SORCERER</div>
             <div class="char-row" id="char-row"></div>
-            <button class="btn btn-p" onclick="console.log('[BUTTON] Click detected'); if(typeof G !== 'undefined' && G.startMatch) { console.log('[BUTTON] Calling G.startMatch()'); G.startMatch(); } else { console.error('[BUTTON] G.startMatch not available'); alert('Game not loaded yet, please wait...'); }">&#9889; EXPAND DOMAIN</button>
+            <button class="btn btn-p"
+                onclick="console.log('[BUTTON] Click detected'); if(typeof G !== 'undefined' && G.startMatch) { console.log('[BUTTON] Calling G.startMatch()'); G.startMatch(); } else { console.error('[BUTTON] G.startMatch not available'); alert('Game not loaded yet, please wait...'); }">&#9889;
+                EXPAND DOMAIN</button>
             <button class="btn btn-s" style="margin-top:8px" onclick="G.showScreen('s-menu')">BACK</button>
         </div>
     </div>
@@ -1380,17 +1610,25 @@
     </div>
 
     <!-- FEATURED SKINS SCREEN -->
-    <div id="s-featured" class="screen" style="background:linear-gradient(160deg,#06030f 0%,#1a0508 60%,#04020a 100%);overflow-y:auto;padding:40px;align-items:flex-start;justify-content:flex-start">
+    <div id="s-featured" class="screen"
+        style="background:linear-gradient(160deg,#06030f 0%,#1a0508 60%,#04020a 100%);overflow-y:auto;padding:40px;align-items:flex-start;justify-content:flex-start">
         <div class="shop-wrap">
             <div class="shop-hdr">
-                <div class="shop-title" style="background:linear-gradient(90deg,#ff8800,#ffcc44);-webkit-background-clip:text;-webkit-text-fill-color:transparent">&#10024; FEATURED SKINS</div>
+                <div class="shop-title"
+                    style="background:linear-gradient(90deg,#ff8800,#ffcc44);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+                    &#10024; FEATURED SKINS</div>
                 <div class="shop-coins">&#128176; <span id="feat-coins-val">0</span></div>
             </div>
-            <div style="font-size:10px;letter-spacing:3px;color:#884422;margin-bottom:20px;text-transform:uppercase">Colony Season — Rotating Weekly</div>
-            <div id="featured-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px"></div>
+            <div style="font-size:10px;letter-spacing:3px;color:#884422;margin-bottom:20px;text-transform:uppercase">
+                Colony Season — Rotating Weekly</div>
+            <div id="featured-grid"
+                style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px"></div>
             <div style="margin-top:32px">
-                <div style="font-size:10px;letter-spacing:3px;color:#664422;margin-bottom:12px;text-transform:uppercase">&#9960; Cursed Skin Bundles</div>
-                <div id="bundle-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px"></div>
+                <div
+                    style="font-size:10px;letter-spacing:3px;color:#664422;margin-bottom:12px;text-transform:uppercase">
+                    &#9960; Cursed Skin Bundles</div>
+                <div id="bundle-grid"
+                    style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px"></div>
             </div>
             <div style="margin-top:24px;display:flex;gap:12px">
                 <button class="btn btn-s" onclick="G.showScreen('s-menu')">BACK</button>
@@ -1400,14 +1638,16 @@
     </div>
 
     <!-- STATS SCREEN -->
-    <div id="s-stats" class="screen" style="background:linear-gradient(160deg,#06030f 0%,#0d0025 60%,#04020a 100%);overflow-y:auto;padding:40px;align-items:flex-start;justify-content:flex-start">
+    <div id="s-stats" class="screen"
+        style="background:linear-gradient(160deg,#06030f 0%,#0d0025 60%,#04020a 100%);overflow-y:auto;padding:40px;align-items:flex-start;justify-content:flex-start">
         <div class="shop-wrap">
             <div class="shop-hdr">
                 <div class="shop-title">&#128202; BATTLE RECORD</div>
                 <div class="shop-coins">&#128176; <span id="stats-coins-val">0</span></div>
             </div>
             <div id="stats-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px"></div>
-            <div style="font-size:10px;letter-spacing:3px;color:#5544aa;margin-bottom:12px;text-transform:uppercase">Match History</div>
+            <div style="font-size:10px;letter-spacing:3px;color:#5544aa;margin-bottom:12px;text-transform:uppercase">
+                Match History</div>
             <div id="stats-hist" style="font-size:12px;color:#665588;letter-spacing:1px;line-height:2"></div>
             <div style="margin-top:24px">
                 <button class="btn btn-s" onclick="G.showScreen('s-menu')">BACK</button>
@@ -1441,7 +1681,8 @@
         <div id="ammo-d">
             <div id="ammo-c">17</div>
             <div id="ammo-m">/ 17</div>
-            <div id="cursed-lbl" style="font-size:9px;color:#8888ff;letter-spacing:2px;opacity:0.7">&#9889; CURSED ENERGY ATTACK</div>
+            <div id="cursed-lbl" style="font-size:9px;color:#8888ff;letter-spacing:2px;opacity:0.7">&#9889; CURSED
+                ENERGY ATTACK</div>
             <div id="wep-name">GLOCK 17</div>
         </div>
         <div id="coins-d">ðŸ’° <span id="hud-coins">0</span></div>
@@ -1461,7 +1702,8 @@
     <div id="scope-ov"></div>
     <div id="domain-ov"></div>
     <div id="notif"></div>
-    <div id="ptr-msg">CLICK TO CHANNEL CURSED ENERGY<br><small style="font-size:10px;color:#6644aa;letter-spacing:2px">ESC TO DISENGAGE</small>
+    <div id="ptr-msg">CLICK TO CHANNEL CURSED ENERGY<br><small
+            style="font-size:10px;color:#6644aa;letter-spacing:2px">ESC TO DISENGAGE</small>
     </div>
 
     <!-- Three.js r160: GLTF + RoomEnvironment + SkeletonUtils (same stack as three.js examples) -->
@@ -1474,8 +1716,7 @@
     }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<<<<<<< HEAD
-    <script type="module">
+    <<<<<<< HEAD <script type="module">
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -1484,96 +1725,96 @@
         window.DRACOLoader = DRACOLoader;
         window.RoomEnvironment = RoomEnvironment;
         window.SkeletonUtils = SkeletonUtils;
-    </script>
-=======
->>>>>>> 31920568b8b5d628f705aeea90cf3e475023bca9
-    <script>
-        // Minimal G fallback for UI responsiveness before full script loads
-        window._minimalG = {
-            showScreen: function(id) {
-                console.log('[UI] showing screen', id);
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                document.getElementById('hud').classList.remove('active');
-                const el = document.getElementById(id);
-                if (el) el.classList.add('active');
-            },
-            showPreplay: function() { this.showScreen('s-preplay'); },
-            startMatch: function() { 
-                console.log('[CLICK] startMatch called, checking game state...');
-                console.log('[CHECK] window.G type:', typeof window.G);
-                console.log('[CHECK] window.G.startMatch exists?', typeof (window.G?.startMatch));
-                console.log('[CHECK] is real game loaded?', window.G !== window._minimalG && window.G && typeof window.G.renderLoop === 'function');
-                
-                // Check if real game is loaded
-                if (window.G && window.G !== window._minimalG && typeof window.G.renderLoop === 'function') {
-                    console.log('[SUCCESS] Real game found, calling startMatch()');
-                    window.G.startMatch();
-                } else {
-                    console.log('[LOADING] Game scripts loading, retrying...');
-                    // Show user feedback
-                    if (window.G && window.G.showNotif) {
-                        window.G.showNotif('Loading game...');
+        </script>
+        =======
+        >>>>>>> 31920568b8b5d628f705aeea90cf3e475023bca9
+        <script>
+            // Minimal G fallback for UI responsiveness before full script loads
+            window._minimalG = {
+                showScreen: function (id) {
+                    console.log('[UI] showing screen', id);
+                    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                    document.getElementById('hud').classList.remove('active');
+                    const el = document.getElementById(id);
+                    if (el) el.classList.add('active');
+                },
+                showPreplay: function () { this.showScreen('s-preplay'); },
+                startMatch: function () {
+                    console.log('[CLICK] startMatch called, checking game state...');
+                    console.log('[CHECK] window.G type:', typeof window.G);
+                    console.log('[CHECK] window.G.startMatch exists?', typeof (window.G?.startMatch));
+                    console.log('[CHECK] is real game loaded?', window.G !== window._minimalG && window.G && typeof window.G.renderLoop === 'function');
+
+                    // Check if real game is loaded
+                    if (window.G && window.G !== window._minimalG && typeof window.G.renderLoop === 'function') {
+                        console.log('[SUCCESS] Real game found, calling startMatch()');
+                        window.G.startMatch();
+                    } else {
+                        console.log('[LOADING] Game scripts loading, retrying...');
+                        // Show user feedback
+                        if (window.G && window.G.showNotif) {
+                            window.G.showNotif('Loading game...');
+                        }
+                        // Retry after 300ms
+                        setTimeout(() => this.startMatch(), 300);
                     }
-                    // Retry after 300ms
-                    setTimeout(() => this.startMatch(), 300);
-                }
-            },
-            init: function() { console.log('[INIT] Minimal G initialized'); }
-        };
-        window.G = window.G || window._minimalG;
-        console.log('[SETUP] Fallback G ready');
-    </script>
-    <script type="module">
-        // Load game scripts regardless of CDN availability
-        async function loadScript(src) {
-            return new Promise((resolve, reject) => {
-                const s = document.createElement('script');
-                s.src = src;
-                s.onload = resolve;
-                s.onerror = reject;
-                document.body.appendChild(s);
-            });
-        }
-
-        // Try to load Three.js ESM addons within 4 seconds.
-        // If CDN is slow or unreachable, game still launches with box-bot fallback.
-        try {
-            await Promise.race([
-                (async () => {
-                    const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
-                    const { RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js');
-                    const { SkeletonUtils } = await import('three/addons/utils/SkeletonUtils.js');
-                    window.GLTFLoader = GLTFLoader;
-                    window.RoomEnvironment = RoomEnvironment;
-                    window.SkeletonUtils = SkeletonUtils;
-                })(),
-                new Promise(r => setTimeout(r, 4000)) // 4-second CDN timeout
-            ]);
-        } catch (e) {
-            console.warn('[Hunters] Three.js addons unavailable, using fallback:', e.message || e);
-        }
-
-        // Always load game scripts — with or without GLTF support
-        try {
-            console.log('[Hunters] Loading hunters-gl.js...');
-            await loadScript('hunters-gl.js');
-            console.log('[Hunters] hunters-gl.js loaded successfully');
-        } catch (e) {
-            console.error('[Hunters] Failed to load hunters-gl.js:', e);
-        }
-        
-        try {
-            console.log('[Hunters] Loading hunters-game.js...');
-            await loadScript('hunters-game.js');
-            console.log('[Hunters] hunters-game.js loaded successfully');
-            console.log('[Hunters] G object is now:', typeof window.G, window.G === window._minimalG ? '(fallback)' : '(real game)');
-        } catch (e) {
-            console.error('[Hunters] CRITICAL: Failed to load hunters-game.js:', e);
-            if (window.G && window.G.showNotif) {
-                window.G.showNotif('ERROR: Game scripts failed to load. Check console.');
+                },
+                init: function () { console.log('[INIT] Minimal G initialized'); }
+            };
+            window.G = window.G || window._minimalG;
+            console.log('[SETUP] Fallback G ready');
+        </script>
+        <script type="module">
+            // Load game scripts regardless of CDN availability
+            async function loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    const s = document.createElement('script');
+                    s.src = src;
+                    s.onload = resolve;
+                    s.onerror = reject;
+                    document.body.appendChild(s);
+                });
             }
-        }
-    </script>
+
+            // Try to load Three.js ESM addons within 4 seconds.
+            // If CDN is slow or unreachable, game still launches with box-bot fallback.
+            try {
+                await Promise.race([
+                    (async () => {
+                        const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+                        const { RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js');
+                        const { SkeletonUtils } = await import('three/addons/utils/SkeletonUtils.js');
+                        window.GLTFLoader = GLTFLoader;
+                        window.RoomEnvironment = RoomEnvironment;
+                        window.SkeletonUtils = SkeletonUtils;
+                    })(),
+                    new Promise(r => setTimeout(r, 4000)) // 4-second CDN timeout
+                ]);
+            } catch (e) {
+                console.warn('[Hunters] Three.js addons unavailable, using fallback:', e.message || e);
+            }
+
+            // Always load game scripts — with or without GLTF support
+            try {
+                console.log('[Hunters] Loading hunters-gl.js...');
+                await loadScript('hunters-gl.js');
+                console.log('[Hunters] hunters-gl.js loaded successfully');
+            } catch (e) {
+                console.error('[Hunters] Failed to load hunters-gl.js:', e);
+            }
+
+            try {
+                console.log('[Hunters] Loading hunters-game.js...');
+                await loadScript('hunters-game.js');
+                console.log('[Hunters] hunters-game.js loaded successfully');
+                console.log('[Hunters] G object is now:', typeof window.G, window.G === window._minimalG ? '(fallback)' : '(real game)');
+            } catch (e) {
+                console.error('[Hunters] CRITICAL: Failed to load hunters-game.js:', e);
+                if (window.G && window.G.showNotif) {
+                    window.G.showNotif('ERROR: Game scripts failed to load. Check console.');
+                }
+            }
+        </script>
 </body>
 
 </html>

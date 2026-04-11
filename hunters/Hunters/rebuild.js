@@ -22,14 +22,14 @@ console.log(`GAME_MODES: ${gamemodesStart}-${gamemodesEnd}`);
 console.log(`POWERUP_TYPES: ${powerupStart}-${powerupEnd}`);
 
 // Rebuild arrays
-const newGameModes =  [
+const newGameModes = [
     "        // GAME MODE DEFINITIONS",
     "        // ============================================================",
     "        const GAME_MODES = [",
     "            { id: 'elimination', name: 'Extermination', icon: '☠️', desc: 'Eliminate all cursed spirits' },",
     "            { id: 'survival', name: 'Domain Siege', icon: '🌊', desc: 'Survive 5 waves of curses' },",
     "            { id: 'timed', name: 'Cursed Hunt', icon: '⏱️', desc: 'Most exorcisms in 2 min' },",
-    "            { id: 'culling', name: 'Culling Game', icon: '⚔️', desc: 'Merge with Tengen and dominate' },",
+    // Note: culling mode is homescreen-only and should not be inserted into GAME_MODES by rebuild
     "        ];"
 ];
 
@@ -57,4 +57,4 @@ let newLines = [
 
 // Write back
 fs.writeFileSync(path, newLines.join('\n'), 'utf8');
-console.log('✓ Fixed syntax and added culling mode + tengen powerup');
+console.log('✓ Fixed syntax and updated GAME_MODES (left out homescreen-only modes) + tengen powerup');

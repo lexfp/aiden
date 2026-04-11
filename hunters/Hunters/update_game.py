@@ -4,23 +4,10 @@ import re
 with open('hunters-game.js', 'r', encoding='utf-8') as f:
     content = f.read()
 
-# Add culling game mode if not present
-if "id: 'culling'" not in content:
-    content = content.replace(
-        "{ id: 'timed', name: 'Cursed Hunt'",
-        "{ id: 'timed', name: 'Cursed Hunt'",
-        1
-    )
-    # Find the line with timed mode and add culling after it
-    lines = content.split('\n')
-    new_lines = []
-    for i, line in enumerate(lines):
-        new_lines.append(line)
-        if "id: 'timed'" in line and 'Cursed Hunt' in line:
-            # Add the culling mode on the next line before the closing bracket
-            indent = '            '
-            new_lines.append(f"{indent}{{ id: 'culling', name: 'Culling Game', icon: '⚔️', desc: 'Merge with Tengen and dominate' }},")
-    content = '\n'.join(new_lines)
+# NOTE: Culling is intentionally a homescreen-only special event.
+# Do not inject a 'culling' entry into GAME_MODES here. The homescreen
+# feature card remains and is handled by the UI (G.startCullingGame()).
+# Previous behavior auto-inserted a culling entry; that is now disabled.
 
 # Add Tengen merge power-up if not present
 if "id: 'tengen_merge'" not in content:
