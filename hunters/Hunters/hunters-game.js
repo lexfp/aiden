@@ -87,12 +87,79 @@
         // ============================================================
         // GAME MODE DEFINITIONS
         // ============================================================
-        const GAME_MODES = [
+const GAME_MODES = [
             { id: 'elimination', name: 'Extermination', icon: '☠️', desc: 'Eliminate all cursed spirits' },
             { id: 'survival', name: 'Domain Siege', icon: '🌊', desc: 'Survive 5 waves of curses' },
             { id: 'timed', name: 'Cursed Hunt', icon: '⏱️', desc: 'Most exorcisms in 2 min' },
             { id: 'culling', name: 'Culling Game', icon: '⚔️', desc: 'Merge with Tengen and dominate' },
+            { id: 'storyline', name: 'JJK Storyline', icon: '📖', desc: 'Relive the Jujutsu Kaisen saga through 5 chapters' },
         ];
+
+        // ============================================================
+        // STORYLINE MODE: 5 sequential JJK arcs
+        // ============================================================
+        const STORY_CHAPTERS = [
+            {
+                id: 0, name: '1. Introduction & Training', map: 'arena', 
+                desc: 'Yuji joins Jujutsu High. Train with Gojo, Megumi, Nobara.',
+                bots: 4, diff: 'easy', duration: 90, waves: 3,
+                bosses: ['yuji'], dialogues: ['"I can do this all day!" - Gojo']
+            },
+            {
+                id: 1, name: '2. Cursed Womb Arc', map: 'warehouse', 
+                desc: 'Special grade curses emerge. Yuji becomes Sukuna vessel.',
+                bots: 6, diff: 'medium', duration: 120, waves: 4,
+                bosses: ['mahito'], dialogues: ['"Your soul is mine..." - Mahito']
+            },
+            {
+                id: 2, name: '3. Shibuya Incident', map: 'rooftop', 
+                desc: 'Gojo sealed. Chaos engulfs Shibuya.',
+                bots: 8, diff: 'hard', duration: 150, waves: 5,
+                bosses: ['geto'], dialogues: ['"Kenjaku awakens..."']
+            },
+            {
+                id: 3, name: '4. Culling Game', map: 'culling_arena', 
+                desc: 'Perfect Preparation complete. Enter the colonies.',
+                bots: 12, diff: 'hard', duration: 180, waves: 6,
+                bosses: ['sukuna'], dialogues: ['"Tengen fusion activated"']
+            },
+            {
+                id: 4, name: '5. Shinjuku Showdown', map: 'downtown', 
+                desc: 'Final battle vs Kenjaku & Sukuna.',
+                bots: 15, diff: 'extreme', duration: 240, waves: 8,
+                bosses: ['sukuna'], dialogues: ['"This is the end."']
+            }
+        ];
+
+        let saveStoryProgress = () => {
+            if (typeof save === 'undefined') return;
+            const storyKey = SAVE_KEY + '_story';
+            try {
+                localStorage.setItem(storyKey, JSON.stringify({
+                    chapter: G.storyChapter || 0,
+                    progress: G.storyProgress || 0
+                }));
+            } catch(e) {}
+            writeCloudSave();
+        };
+
+        let loadStoryProgress = () => {
+            const storyKey = SAVE_KEY + '_story';
+            try {
+                const data = localStorage.getItem(storyKey);
+                if (data) {
+                    const prog = JSON.parse(data);
+                    G.storyChapter = prog.chapter || 0;
+                    G.storyProgress = prog.progress || 0;
+                } else {
+                    G.storyChapter = 0;
+                    G.storyProgress = 0;
+                }
+            } catch(e) {
+                G.storyChapter = 0;
+                G.storyProgress = 0;
+            }
+        };
         // ============================================================
         // POWERUP DEFINITIONS
         // ============================================================
@@ -220,8 +287,8 @@
             },
             {
                 id: 'culling_arena', name: 'Culling Arena', icon: '⚔️', size: 'GIANT',
-                floor: 0x151505, wall: 0x1a1a12, accent: 0xff8800,
-                ambient: 0x0a0a08, fog: [0x151505, .015],
+                floor: 0x1a1a14, wall: 0x28251e, accent: 0xddaa33,
+                ambient: 0x060608, fog: [0x080810, .009],
                 botCount: 15,
                 generator: 'culling',
                 bounds: 200,
@@ -402,8 +469,151 @@
         }
         function writeSave() {
             try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { }
+            writeCloudSave();
         }
         loadSave();
+        loadStoryProgress();
+
+        // ============================================================
+        // AUTH SYSTEM
+        // ============================================================
+        const AUTH_TOKEN_KEY = 'hunters_auth_token';
+        let authToken = null, authUsername = null, authIsGuest = false;
+        let _authTab = 'login';
+
+        window.authSwitchTab = function(tab) {
+            _authTab = tab;
+            document.getElementById('auth-tab-login').classList.toggle('active', tab === 'login');
+            document.getElementById('auth-tab-register').classList.toggle('active', tab === 'register');
+            document.getElementById('auth-form-login').style.display    = tab === 'login' ? '' : 'none';
+            document.getElementById('auth-form-register').style.display = tab === 'register' ? '' : 'none';
+            document.getElementById('auth-error').textContent = '';
+        };
+
+        window.authSubmit = async function() {
+            const btn    = document.getElementById('auth-submit-btn');
+            const errEl  = document.getElementById('auth-error');
+            const loadEl = document.getElementById('auth-loading');
+            errEl.textContent = '';
+            btn.disabled = true;
+            if (loadEl) loadEl.style.display = 'block';
+            try {
+                if (_authTab === 'login') {
+                    const u = document.getElementById('auth-login-user').value.trim();
+                    const p = document.getElementById('auth-login-pass').value;
+                    await loginUser(u, p);
+                } else {
+                    const u = document.getElementById('auth-reg-user').value.trim();
+                    const p = document.getElementById('auth-reg-pass').value;
+                    await registerUser(u, p);
+                }
+                loadSave();
+                loadStoryProgress();
+                await loadCloudSave(_authTab === 'register');
+                window._authDidLoad = true;
+                if (G && G.showScreen) { G.showScreen('s-menu'); updateUsernameDisplay(); }
+            } catch(e) {
+                errEl.textContent = e.message || 'Something went wrong';
+            } finally {
+                btn.disabled = false;
+                if (loadEl) loadEl.style.display = 'none';
+            }
+        };
+
+        window.authGuest = function() {
+            authIsGuest = true;
+            authToken = null;
+            authUsername = null;
+            loadSave();
+            loadStoryProgress();
+            window._authDidLoad = true;
+            if (G && G.showScreen) { G.showScreen('s-menu'); updateUsernameDisplay(); }
+        };
+
+        async function apiPost(endpoint, body) {
+            let r;
+            try { r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }
+            catch(e) { throw new Error('Could not reach server'); }
+            let d;
+            try { d = await r.json(); } catch(e) { throw new Error('Server error — try again later'); }
+            if (!r.ok) throw new Error(d.error || 'Request failed');
+            return d;
+        }
+
+        async function loginUser(username, password) {
+            const d = await apiPost('/api/auth/login', { username, password });
+            authToken = d.token;
+            authUsername = d.username;
+            authIsGuest = false;
+            localStorage.setItem(AUTH_TOKEN_KEY, d.token);
+            localStorage.setItem('hunters_auth_user', d.username);
+        }
+
+        async function registerUser(username, password) {
+            const d = await apiPost('/api/auth/register', { username, password });
+            authToken = d.token;
+            authUsername = d.username;
+            authIsGuest = false;
+            localStorage.setItem(AUTH_TOKEN_KEY, d.token);
+            localStorage.setItem('hunters_auth_user', d.username);
+        }
+
+        async function loadCloudSave(isFirstLogin) {
+            if (!authToken) return;
+            try {
+                const r = await fetch('/api/save', {
+                    headers: { 'Authorization': 'Bearer ' + authToken }
+                });
+                if (!r.ok) return;
+                let d;
+                try { d = await r.json(); } catch(e) { return; }
+                if (!d) return;
+                if (d.save) {
+                    const serverEmpty = !d.save.kills && (!d.save.coins || d.save.coins <= 500) && (!d.save.owned || d.save.owned.length <= 2);
+                    const localHasProgress = save.kills > 0 || save.coins > 500 || save.owned.length > 2;
+                    if (isFirstLogin && serverEmpty && localHasProgress) {
+                        await writeCloudSave();
+                        return;
+                    }
+                    Object.assign(save, d.save);
+                    try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e) {}
+                }
+                if (d.storySave) {
+                    G.storyChapter  = d.storySave.chapter  || 0;
+                    G.storyProgress = d.storySave.progress || 0;
+                    try { localStorage.setItem(SAVE_KEY + '_story', JSON.stringify(d.storySave)); } catch(e) {}
+                }
+            } catch(e) {
+                console.warn('[Auth] Could not load cloud save:', e);
+            }
+        }
+
+        async function writeCloudSave() {
+            if (!authToken || authIsGuest) return;
+            try {
+                await fetch('/api/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + authToken
+                    },
+                    body: JSON.stringify({
+                        save,
+                        storySave: { chapter: G.storyChapter || 0, progress: G.storyProgress || 0 }
+                    })
+                });
+            } catch(e) {}
+        }
+
+        function updateUsernameDisplay() {
+            const el  = document.getElementById('menu-username');
+            const sub = document.getElementById('menu-username-sub');
+            const btn = document.getElementById('logout-btn');
+            const name = authIsGuest ? 'GUEST' : (authUsername || '').toUpperCase();
+            if (el)  el.textContent = name;
+            if (sub) sub.textContent = authIsGuest ? 'Guest Mode' : (authUsername || '');
+            if (btn) btn.style.display = (authIsGuest || authUsername) ? '' : 'none';
+        }
 
         // ============================================================
         // AUDIO SYSTEM
@@ -1566,75 +1776,128 @@
 
         function generateCulling() {
             const obs = [];
-            // Giant tournament arena — Culling Game colony grounds
-            // Note: central floor is handled by the PlaneGeometry in buildMap(); no obstacle here
+            window._cullingLampPositions = [];
 
-            // Observation platforms around perimeter - elevated stone slabs
-            const platformRadius = 130;
-            for (let i = 0; i < 8; i++) {
-                const angle = (i / 8) * Math.PI * 2;
-                const px = Math.cos(angle) * platformRadius;
-                const pz = Math.sin(angle) * platformRadius;
-                obs.push({ x: px, z: pz, w: 22, d: 22, h: 2.5, c: 0x2a1a10 });
-            }
+            const buildingColors = [0x3a3a32, 0x4a3a2e, 0x3a3228, 0x2e3230, 0x3e3428, 0x2a2820, 0x3a2e22];
+            const rnd = () => Math.random();
 
-            // Rock formations for tactical cover - dark volcanic stone
-            for (let i = 0; i < 8; i++) {
-                const angle = (i / 8) * Math.PI * 2 + Math.PI / 16;
-                const rx = Math.cos(angle) * 90;
-                const rz = Math.sin(angle) * 90;
-                for (let j = 0; j < 3; j++) {
-                    const offset = (j - 1) * 15;
-                    obs.push({
-                        x: rx + Math.cos(angle + Math.PI / 2) * offset,
-                        z: rz + Math.sin(angle + Math.PI / 2) * offset,
-                        w: 8 + Math.random() * 4,
-                        d: 8 + Math.random() * 4,
-                        h: 5 + Math.random() * 8,
-                        c: 0x180e06
-                    });
+            // Build a hollow enterable building from 4 wall segments.
+            // One random side gets a 2.2-unit door gap; other sides have 10% ruin chance (fully missing).
+            function addBuilding(bx, bz, w, d, h, col) {
+                const wt = 0.7;
+                const doorW = 2.2;
+                const doorSide = Math.floor(rnd() * 4);
+                const hv = () => h * (0.55 + rnd() * 0.45); // broken height variation
+
+                // Side 0: front wall (-Z face, spans X)
+                if (doorSide === 0) {
+                    const pw = (w - doorW) / 2;
+                    if (pw > 0.4) {
+                        obs.push({ x: bx - (w + doorW) / 4, z: bz - d / 2, w: pw, d: wt, h, c: col });
+                        obs.push({ x: bx + (w + doorW) / 4, z: bz - d / 2, w: pw, d: wt, h, c: col });
+                    }
+                } else if (rnd() > 0.1) {
+                    obs.push({ x: bx, z: bz - d / 2, w: w, d: wt, h: hv(), c: col });
+                }
+
+                // Side 1: back wall (+Z face, spans X)
+                if (doorSide === 1) {
+                    const pw = (w - doorW) / 2;
+                    if (pw > 0.4) {
+                        obs.push({ x: bx - (w + doorW) / 4, z: bz + d / 2, w: pw, d: wt, h, c: col });
+                        obs.push({ x: bx + (w + doorW) / 4, z: bz + d / 2, w: pw, d: wt, h, c: col });
+                    }
+                } else if (rnd() > 0.1) {
+                    obs.push({ x: bx, z: bz + d / 2, w: w, d: wt, h: hv(), c: col });
+                }
+
+                // Side 2: left wall (-X face, spans Z)
+                if (doorSide === 2) {
+                    const pd = (d - doorW) / 2;
+                    if (pd > 0.4) {
+                        obs.push({ x: bx - w / 2, z: bz - (d + doorW) / 4, w: wt, d: pd, h, c: col });
+                        obs.push({ x: bx - w / 2, z: bz + (d + doorW) / 4, w: wt, d: pd, h, c: col });
+                    }
+                } else if (rnd() > 0.1) {
+                    obs.push({ x: bx - w / 2, z: bz, w: wt, d: d, h: hv(), c: col });
+                }
+
+                // Side 3: right wall (+X face, spans Z)
+                if (doorSide === 3) {
+                    const pd = (d - doorW) / 2;
+                    if (pd > 0.4) {
+                        obs.push({ x: bx + w / 2, z: bz - (d + doorW) / 4, w: wt, d: pd, h, c: col });
+                        obs.push({ x: bx + w / 2, z: bz + (d + doorW) / 4, w: wt, d: pd, h, c: col });
+                    }
+                } else if (rnd() > 0.1) {
+                    obs.push({ x: bx + w / 2, z: bz, w: wt, d: d, h: hv(), c: col });
+                }
+
+                // Interior debris (60% chance)
+                if (rnd() < 0.6) {
+                    obs.push({ x: bx + (rnd() - 0.5) * (w * 0.5), z: bz + (rnd() - 0.5) * (d * 0.5), w: 0.8 + rnd() * 2, d: 0.8 + rnd() * 2, h: 0.3 + rnd() * 1.5, c: 0x252520 });
                 }
             }
 
-            // Center arena elevated pillars — ancient stone, slightly warm tinted
-            for (let i = 0; i < 6; i++) {
-                const angle = (i / 6) * Math.PI * 2;
-                const pillarRad = 35;
-                obs.push({
-                    x: Math.cos(angle) * pillarRad,
-                    z: Math.sin(angle) * pillarRad,
-                    w: 5,
-                    d: 5,
-                    h: 14,
-                    c: 0x221208
-                });
+            // 5×5 city block grid — blocks at X/Z ∈ {-120,-60,0,60,120}
+            // Each block has 4 quadrants at ±14 offset; each quadrant spawns a building with 65% chance.
+            const blockPositions = [-120, -60, 0, 60, 120];
+            for (const bx of blockPositions) {
+                for (const bz of blockPositions) {
+                    // Skip center (player spawn zone)
+                    if (Math.abs(bx) < 25 && Math.abs(bz) < 25) continue;
+                    const quadrants = [[-14, -14], [14, -14], [-14, 14], [14, 14]];
+                    for (const [qx, qz] of quadrants) {
+                        if (rnd() > 0.65) continue;
+                        const ox = bx + qx + (rnd() - 0.5) * 8;
+                        const oz = bz + qz + (rnd() - 0.5) * 8;
+                        const bw = 8 + rnd() * 8;
+                        const bd = 8 + rnd() * 8;
+                        const bh = 4 + rnd() * 9;
+                        const col = buildingColors[Math.floor(rnd() * buildingColors.length)];
+                        addBuilding(ox, oz, bw, bd, bh, col);
+                    }
+                }
             }
 
-            // Scattered debris and battle ruins
-            for (let i = 0; i < 28; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const radius = 30 + Math.random() * 140;
-                obs.push({
-                    x: Math.cos(angle) * radius,
-                    z: Math.sin(angle) * radius,
-                    w: 4 + Math.random() * 6,
-                    d: 4 + Math.random() * 6,
-                    h: 2 + Math.random() * 5,
-                    c: 0x1a1008
-                });
+            // Street rubble — random debris scattered across the map
+            for (let i = 0; i < 65; i++) {
+                const angle = rnd() * Math.PI * 2;
+                const r = 10 + rnd() * 175;
+                const rx = Math.cos(angle) * r;
+                const rz = Math.sin(angle) * r;
+                if (Math.abs(rx) < 6 && Math.abs(rz) < 6) continue;
+                obs.push({ x: rx, z: rz, w: 0.4 + rnd() * 3.5, d: 0.4 + rnd() * 3.5, h: 0.2 + rnd() * 1.8, c: 0x23221e });
             }
 
-            // Colony boundary marker pillars — tall, imposing, at perimeter
-            for (let i = 0; i < 8; i++) {
-                const angle = (i / 8) * Math.PI * 2;
-                obs.push({
-                    x: Math.cos(angle) * 185,
-                    z: Math.sin(angle) * 185,
-                    w: 4,
-                    d: 4,
-                    h: 28,
-                    c: 0x3a1400
-                });
+            // Street lamp posts along N-S and E-W corridors
+            // Streets run at X/Z = -150,-90,-30,30,90,150 (between the block grid lines)
+            const streetLines = [-150, -90, -30, 30, 90, 150];
+            let lampIndex = 0;
+
+            // N-S streets (constant X, lamp posts at intervals along Z)
+            for (const sx of streetLines) {
+                for (let lz = -165; lz <= 165; lz += 28) {
+                    const jx = (rnd() - 0.5) * 3;
+                    obs.push({ x: sx + jx, z: lz, w: 0.3, d: 0.3, h: 5.5, c: 0x1c1c1a });
+                    // Every other lamp has a working light
+                    if (lampIndex % 2 === 0) {
+                        window._cullingLampPositions.push([sx + jx, 5.2, lz]);
+                    }
+                    lampIndex++;
+                }
+            }
+
+            // E-W streets (constant Z, lamp posts at intervals along X)
+            for (const sz of streetLines) {
+                for (let lx = -165; lx <= 165; lx += 28) {
+                    const jz = (rnd() - 0.5) * 3;
+                    obs.push({ x: lx, z: sz + jz, w: 0.3, d: 0.3, h: 5.5, c: 0x1c1c1a });
+                    if (lampIndex % 2 === 0) {
+                        window._cullingLampPositions.push([lx, 5.2, sz + jz]);
+                    }
+                    lampIndex++;
+                }
             }
 
             return obs;
@@ -1858,71 +2121,35 @@
                 }
             }
             if (mdef.id === 'culling_arena') {
-                // Dawn/dusk sky — deep crimson horizon
-                scene.background = new THREE.Color(0x160608);
-                scene.fog = new THREE.FogExp2(0x100406, 0.006);
+                // Dead-of-night broken city sky
+                scene.background = new THREE.Color(0x080c18);
+                scene.fog = new THREE.FogExp2(0x080c18, 0.006);
 
-                // Overpowered sunset directional light from low angle
-                sun.color.set(0xff5522);
-                sun.intensity = 2.2;
-                sun.position.set(60, 25, -100);
+                // Cold moonlight as primary directional
+                sun.color.set(0x6688cc);
+                sun.intensity = 1.8;
+                sun.position.set(-60, 80, 40);
 
-                // Cold moonlight fill from opposite side
-                const moon = new THREE.DirectionalLight(0x3366cc, 0.7);
-                moon.position.set(-50, 70, 50);
-                moon.userData.isMap = true;
-                scene.add(moon);
+                // Secondary moon fill from opposite angle
+                const moonFill = new THREE.DirectionalLight(0x99aabb, 0.9);
+                moonFill.position.set(40, 30, -60);
+                moonFill.userData.isMap = true;
+                scene.add(moonFill);
 
-                // Warmer ambient
-                amb.color.set(0x180a04);
-                amb.intensity = 3.2;
+                // Dim blue-grey ambient — enough to see the city layout
+                amb.color.set(0x0d0f14);
+                amb.intensity = 4.5;
 
-                // 4 torchlight point lights at cardinal edges of arena floor
-                [[80,4,0],[-80,4,0],[0,4,80],[0,4,-80]].forEach(p => {
-                    const t = new THREE.PointLight(0xff4400, 5, 80);
-                    t.position.set(...p);
-                    t.userData.isMap = true;
-                    scene.add(t);
+                // Street lamp PointLights — flickering warm yellow
+                const lampPositions = window._cullingLampPositions || [];
+                lampPositions.forEach(([lx, ly, lz]) => {
+                    const lamp = new THREE.PointLight(0xddbb44, 4.0, 28);
+                    lamp.position.set(lx, ly, lz);
+                    lamp.userData.isMap = true;
+                    lamp.userData.flicker = true;
+                    lamp.userData.flickPhase = Math.random() * 6.28;
+                    scene.add(lamp);
                 });
-
-                // 4 corner area-fill lights — deep orange, mid-height
-                [[120,12,120],[-120,12,120],[120,12,-120],[-120,12,-120]].forEach(p => {
-                    const c = new THREE.PointLight(0xff2200, 2.5, 120);
-                    c.position.set(...p);
-                    c.userData.isMap = true;
-                    scene.add(c);
-                });
-
-                // Ground sigil outer ring — glowing cursed rune circle
-                const sigilGeo = new THREE.TorusGeometry(48, 0.55, 8, 64);
-                const sigilMat = new THREE.MeshStandardMaterial({
-                    color: 0x220800, emissive: 0xff2200, emissiveIntensity: 0.55, roughness: 0.9, metalness: 0.1
-                });
-                const sigil = new THREE.Mesh(sigilGeo, sigilMat);
-                sigil.rotation.x = -Math.PI / 2;
-                sigil.position.y = 0.06;
-                sigil.userData.isMap = true;
-                scene.add(sigil);
-
-                // Inner sigil ring
-                const sigil2 = new THREE.Mesh(
-                    new THREE.TorusGeometry(22, 0.35, 8, 48),
-                    new THREE.MeshStandardMaterial({ color: 0x1a0500, emissive: 0xff4400, emissiveIntensity: 0.45, roughness: 0.9 })
-                );
-                sigil2.rotation.x = -Math.PI / 2;
-                sigil2.position.y = 0.06;
-                sigil2.userData.isMap = true;
-                scene.add(sigil2);
-
-                // Tiny innermost rune dot
-                const sigil3 = new THREE.Mesh(
-                    new THREE.TorusGeometry(8, 0.2, 8, 32),
-                    new THREE.MeshStandardMaterial({ color: 0x110300, emissive: 0xff6600, emissiveIntensity: 0.6, roughness: 0.9 })
-                );
-                sigil3.rotation.x = -Math.PI / 2;
-                sigil3.position.y = 0.06;
-                sigil3.userData.isMap = true;
-                scene.add(sigil3);
             }
         }
 
@@ -2897,6 +3124,9 @@
             selBots: 3,
             selMode: 'elimination',
             selChar: 'soldier',
+            // Storyline state
+            storyChapter: 0,
+            storyProgress: 0,
             // Stats
             matchKills: 0,
             matchDmgDealt: 0,
@@ -2929,13 +3159,30 @@
 
             init() {
                 console.log('G.init() started');
+                if (!window._authDidLoad) { loadSave(); loadStoryProgress(); }
+                this.selChar = save.character || 'soldier';
                 setupThreeJS();
                 this.buildPreplayUI();
                 this.buildShopUI();
                 this.buildLoadoutUI();
                 this.setupInput();
                 this.renderLoop(0);
+                saveStoryProgress();  // Initial save after load
+                this._logout = function() {
+                    localStorage.removeItem(AUTH_TOKEN_KEY);
+                    localStorage.removeItem('hunters_auth_user');
+                    authToken = null; authUsername = null; authIsGuest = false;
+                    window._authDidLoad = false;
+                    G.showScreen('s-auth');
+                    updateUsernameDisplay();
+                };
+                if (window._pendingGoToMenu) {
+                    window._pendingGoToMenu = false;
+                    this.showScreen('s-menu');
+                    updateUsernameDisplay();
+                }
             },
+
 
             // ---- UI ----
             showScreen(id) {
@@ -2961,6 +3208,17 @@
                 if (idx >= 0) this.selMap = idx;
                 this.selDiff = 'hard';
                 this.selBots = MDEFS[this.selMap].botCount || 15;
+                this.startMatch();
+            },
+
+            startStorylineChapter() {
+                this.selMode = 'storyline';
+                const chap = STORY_CHAPTERS[Math.min(this.storyChapter || 0, STORY_CHAPTERS.length - 1)];
+                const mapIdx = MDEFS.findIndex(m => m.id === chap.map);
+                this.selMap = mapIdx >= 0 ? mapIdx : 0;
+                this.selDiff = chap.diff;
+                this.selBots = chap.bots;
+                this.selChapter = this.storyChapter;
                 this.startMatch();
             },
 
@@ -3030,6 +3288,30 @@
                     };
                     cr.appendChild(c);
                 });
+                // Chapter row — only visible for storyline mode
+                const chapRow = document.getElementById('chapter-row');
+                const chapSec = chapRow ? chapRow.previousElementSibling : null;
+                if (chapRow) {
+                    chapRow.innerHTML = '';
+                    const isStoryMode = this.selMode === 'storyline';
+                    chapRow.style.display = isStoryMode ? 'flex' : 'none';
+                    if (chapSec) chapSec.style.display = isStoryMode ? '' : 'none';
+                    if (isStoryMode) {
+                        STORY_CHAPTERS.forEach((chap, i) => {
+                            const unlocked = i <= (this.storyChapter || 0);
+                            const sel = i === (this.storyChapter || 0);
+                            const c = document.createElement('div');
+                            c.className = 'gcard' + (sel ? ' sel' : '') + (unlocked ? '' : ' locked');
+                            c.style.opacity = unlocked ? '1' : '0.45';
+                            c.style.cursor = unlocked ? 'pointer' : 'default';
+                            c.innerHTML = `<div class="gcard-icon">${unlocked ? (sel ? '▶' : '✓') : '🔒'}</div><div class="gcard-name" style="font-size:10px">${chap.name}</div><div class="gcard-desc">${chap.desc}</div>`;
+                            if (unlocked) {
+                                c.onclick = () => { this.storyChapter = i; this.buildPreplayUI(); };
+                            }
+                            chapRow.appendChild(c);
+                        });
+                    }
+                }
             },
 
             buildShopUI() {
@@ -3282,6 +3564,21 @@
                     }
                     console.log('[startMatch] Three.js initialized, proceeding with match setup');
                     if (this.domainManager) this.domainManager.reset();
+                    // Storyline mode: override with current chapter settings
+                    if (this.selMode === 'storyline') {
+                        const chap = STORY_CHAPTERS[Math.min(this.storyChapter || 0, STORY_CHAPTERS.length - 1)];
+                        console.log('[STORYLINE] Starting chapter', chap.name, 'map:', chap.map);
+                        const mapIdx = MDEFS.findIndex(m => m.id === chap.map);
+                        this.selMap = mapIdx >= 0 ? mapIdx : 0;
+                        this.selDiff = chap.diff;
+                        this.selBots = chap.bots;
+                        this.chapterProgress = 0;
+                        this.chapterRequired = chap.bots * chap.waves;
+                        this.chapterKills = 0;
+                        document.getElementById('story-hud').style.display = 'block';
+                        this.updateStoryHUD();
+                        this.showNotif(chap.dialogues ? chap.dialogues[0] || 'Chapter ' + (this.storyChapter + 1) + ': ' + chap.name : chap.name, 4000);
+                    }
                 this.matchKills = 0;
                 this.matchDmgDealt = 0;
                 this._killStreak = 0;
@@ -3466,6 +3763,7 @@
                 this.locked = false;
                 document.getElementById('wave-d').style.display = 'none';
                 document.getElementById('timer-d').style.display = 'none';
+                document.getElementById('story-hud').style.display = 'none';
 
                 let coins = 0;
                 const diff = DIFFS[this.selDiff];
@@ -3476,6 +3774,17 @@
                         coins = Math.round(coins * this.waveNum);
                         extraInfo = `Waves Survived: ${this.waveNum}<br>`;
                         if (this.waveNum > (save.bestWave || 0)) { save.bestWave = this.waveNum; extraInfo += `NEW BEST WAVE!<br>`; }
+                    }
+                    if (this.selMode === 'storyline') {
+                        const chap = STORY_CHAPTERS[Math.min(this.storyChapter || 0, STORY_CHAPTERS.length - 1)];
+                        extraInfo = `Chapter: ${chap.name}<br>`;
+                        if (this.storyChapter < STORY_CHAPTERS.length - 1) {
+                            this.storyChapter++;
+                            extraInfo += 'Next chapter unlocked!<br>';
+                        } else {
+                            extraInfo += 'All chapters complete!<br>';
+                        }
+                        saveStoryProgress();
                     }
                     save.wins++;
                     playWin();
@@ -4026,6 +4335,16 @@
                 }
             },
 
+            updateStoryHUD() {
+                const chapNameEl = document.getElementById('story-chap-name');
+                const fillEl = document.getElementById('story-fill');
+                if (!chapNameEl || !fillEl) return;
+                const chap = STORY_CHAPTERS[Math.min(this.storyChapter || 0, STORY_CHAPTERS.length - 1)];
+                chapNameEl.textContent = chap ? chap.name : '';
+                const pct = this.chapterRequired > 0 ? Math.min(100, Math.round((this.chapterKills || 0) / this.chapterRequired * 100)) : 0;
+                fillEl.style.width = pct + '%';
+            },
+
             // ---- INPUT ----
             setupInput() {
                 document.addEventListener('keydown', e => {
@@ -4135,9 +4454,19 @@
                 const pulseT = time * .0012;
                 scene.children.forEach(obj => {
                     if (!obj.isPointLight || !obj.userData.isMap) return;
-                    obj.intensity = (obj.userData.baseIntensity || obj.intensity);
                     if (!obj.userData.baseIntensity) obj.userData.baseIntensity = obj.intensity;
-                    obj.intensity = obj.userData.baseIntensity * (0.9 + Math.sin(pulseT + obj.position.x * .08 + obj.position.z * .08) * .12);
+                    if (obj.userData.flicker) {
+                        // Erratic multi-frequency flicker for broken street lamps
+                        const fp = obj.userData.flickPhase || 0;
+                        const ft = time * 0.006;
+                        const v = Math.sin(ft + fp) * 0.5
+                                + Math.sin(ft * 3.3 + fp * 1.7) * 0.3
+                                + Math.sin(ft * 8.1 + fp * 0.8) * 0.2;
+                        const norm = (v + 1) * 0.5; // 0..1
+                        obj.intensity = obj.userData.baseIntensity * Math.max(0, norm * 1.8 - 0.4);
+                    } else {
+                        obj.intensity = obj.userData.baseIntensity * (0.9 + Math.sin(pulseT + obj.position.x * .08 + obj.position.z * .08) * .12);
+                    }
                 });
 
                 renderer.render(scene, camera);
@@ -4162,13 +4491,49 @@
         window.G.selMode = 'elimination';
         window.G.domainManager = new DomainManager();
 
-        if (typeof window.HuntersGL !== 'undefined' && window.HuntersGL.preload) {
-            console.log('Starting HuntersGL preload');
-            window.HuntersGL.preload().then(function () { console.log('Preload done'); window.G.init(); }).catch(function (e) { console.warn('Preload failed', e); window.G.init(); });
-        } else {
-            console.log('No HuntersGL, initing G directly');
-            window.G.init();
-        }
+        (async function startWithAuth() {
+            const stored = localStorage.getItem(AUTH_TOKEN_KEY);
+            if (stored) {
+                try {
+                    const parts = stored.split('.');
+                    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                    if (payload.exp && Date.now() < payload.exp) {
+                        authToken    = stored;
+                        authUsername = payload.username;
+                        loadSave();
+                        loadStoryProgress();
+                        await loadCloudSave(false);
+                        window._authDidLoad = true;
+                        const afterInit = function() {
+                            window.G.showScreen('s-menu');
+                            updateUsernameDisplay();
+                        };
+                        if (typeof window.HuntersGL !== 'undefined' && window.HuntersGL.preload) {
+                            console.log('Starting HuntersGL preload');
+                            window.HuntersGL.preload()
+                                .then(function() { console.log('Preload done'); window.G.init(); afterInit(); })
+                                .catch(function(e) { console.warn('Preload failed', e); window.G.init(); afterInit(); });
+                        } else {
+                            console.log('No HuntersGL, initing G directly');
+                            window.G.init(); afterInit();
+                        }
+                        return;
+                    }
+                } catch(e) {}
+                localStorage.removeItem(AUTH_TOKEN_KEY);
+                localStorage.removeItem('hunters_auth_user');
+            }
+            // No valid token — s-auth screen is already active in HTML
+            if (typeof window.HuntersGL !== 'undefined' && window.HuntersGL.preload) {
+                console.log('Starting HuntersGL preload');
+                window.HuntersGL.preload()
+                    .then(function() { console.log('Preload done'); window.G.init(); })
+                    .catch(function(e) { console.warn('Preload failed', e); window.G.init(); });
+            } else {
+                console.log('No HuntersGL, initing G directly');
+                window.G.init();
+            }
+        })();
         console.log('G is defined on window');
 
 

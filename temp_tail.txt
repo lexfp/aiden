@@ -1,0 +1,7 @@
+﻿At line:1 char:131
++ ... en/hunters/Hunters/hunters-game.js' | Select-Object -Skip 3240) -join
++                                                                          ~
+You must provide a value expression following the '-join' operator.
+    + CategoryInfo          : ParserError: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : ExpectedValueExpression
+ 
