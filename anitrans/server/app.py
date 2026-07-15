@@ -16,7 +16,7 @@ from torch import nn
 from torchvision import models, transforms
 
 ROOT = Path(__file__).resolve().parent.parent
-SITE = ROOT.parent / "site"
+SITE = ROOT.parent  # the portfolio site lives at the repo root (deployed via GitHub Pages)
 MODEL_PATH = ROOT / "model" / "anitrans.pt"
 
 # The 12 cat breeds in the Oxford-IIIT Pet dataset; the other 25 are dogs.
@@ -82,23 +82,21 @@ async def predict(file: UploadFile = File(...)):
     return {"predictions": results}
 
 
-# The portfolio site lives in ../site and shares this server so /predict works
-# from the same origin.
-PAGES = {
-    "/": "index.html",
-    "/breed-detector": "breed-detector.html",
-    "/rift": "rift.html",
-    "/animal-translator": "animal-translator.html",
-    "/about": "about.html",
-}
+# The portfolio site shares this server locally so /predict works from the
+# same origin. In production the same files are served by GitHub Pages.
+PAGES = ["index", "breed-detector", "rift", "animal-translator", "about"]
 
-for route, filename in PAGES.items():
-    def make_handler(path: Path):
-        def handler():
-            return FileResponse(path)
-        return handler
 
-    app.get(route, include_in_schema=False)(make_handler(SITE / filename))
+def make_handler(path: Path):
+    def handler():
+        return FileResponse(path)
+    return handler
 
+
+app.get("/", include_in_schema=False)(make_handler(SITE / "index.html"))
+for page in PAGES:
+    handler = make_handler(SITE / f"{page}.html")
+    app.get(f"/{page}", include_in_schema=False)(handler)
+    app.get(f"/{page}.html", include_in_schema=False)(handler)
 
 app.mount("/assets", StaticFiles(directory=SITE / "assets"), name="assets")

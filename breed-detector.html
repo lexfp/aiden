@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AniTrans Breed Detector — Aiden</title>
+<title>AniTrans Breed Detector — Kestrel Labs</title>
 <meta name="description" content="Upload a photo of your cat or dog and a self-trained ResNet-50 model tells you the breed. 37 breeds, photos never stored.">
 <script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
-<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="assets/site.css">
 <style>
   /* The original AniTrans upload card, unchanged — uses the site's shared theme variables. */
   .detector-wrap { display: flex; flex-direction: column; align-items: center; }
@@ -49,12 +49,12 @@
 
 <nav class="nav" id="site-nav">
   <div class="nav-inner">
-    <a class="brand" href="/">Aiden<span class="dot">.</span></a>
+    <a class="brand" href="index.html">Kestrel <span class="dot">Labs</span></a>
     <ul class="nav-links">
-      <li><a href="/breed-detector" class="active">Breed Detector <span class="badge badge-live">Live</span></a></li>
-      <li><a href="/rift">Rift <span class="badge badge-game">Game</span></a></li>
-      <li><a href="/animal-translator">Animal Translator <span class="badge badge-soon">Soon</span></a></li>
-      <li><a href="/about">About</a></li>
+      <li><a href="breed-detector.html" class="active">Breed Detector <span class="badge badge-live">Live</span></a></li>
+      <li><a href="rift.html">Rift <span class="badge badge-game">Game</span></a></li>
+      <li><a href="animal-translator.html">Animal Translator <span class="badge badge-soon">Soon</span></a></li>
+      <li><a href="about.html">About</a></li>
     </ul>
     <div class="nav-right">
       <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark/light mode">☀️</button>
@@ -63,10 +63,10 @@
     </div>
   </div>
   <div class="mobile-menu">
-    <a href="/breed-detector" class="active">Breed Detector <span class="badge badge-live">Live</span></a>
-    <a href="/rift">Rift <span class="badge badge-game">Game</span></a>
-    <a href="/animal-translator">Animal Translator <span class="badge badge-soon">Soon</span></a>
-    <a href="/about">About</a>
+    <a href="breed-detector.html" class="active">Breed Detector <span class="badge badge-live">Live</span></a>
+    <a href="rift.html">Rift <span class="badge badge-game">Game</span></a>
+    <a href="animal-translator.html">Animal Translator <span class="badge badge-soon">Soon</span></a>
+    <a href="about.html">About</a>
     <a href="https://github.com/lexfp/aiden">GitHub ↗</a>
   </div>
 </nav>
@@ -74,7 +74,7 @@
 <main>
   <header class="page-header">
     <h1>🐾 AniTrans <span class="grad">Breed Detector</span></h1>
-    <p class="sub">Take or upload a photo of your cat or dog and I'll guess the breed.</p>
+    <p class="sub">Take or upload a photo of your cat or dog and our model will guess the breed.</p>
   </header>
 
   <div class="detector-wrap">
@@ -111,7 +111,7 @@
   <section class="prose" style="margin-top: 2.5rem;">
     <h2 class="section-title" style="margin-top: 0;">How it works</h2>
     <p class="muted">
-      Under the hood is a <strong style="color:var(--text)">ResNet-50</strong> I fine-tuned myself with transfer
+      Under the hood is a <strong style="color:var(--text)">ResNet-50</strong> we fine-tuned in-house with transfer
       learning: the ImageNet backbone is mostly frozen, and the last stage plus a new classification head are
       trained on pet photos. It recognizes the <strong style="color:var(--text)">37 breeds</strong> (25 dog, 12 cat)
       in the Oxford-IIIT Pet dataset and returns its top five guesses with confidence scores.
@@ -123,22 +123,26 @@
 <footer class="footer">
   <div class="footer-inner">
     <div>
-      <p class="footer-name">Aiden<span style="color:var(--accent)">.</span></p>
-      <p class="footer-tag">Student developer building ML tools and games.</p>
+      <p class="footer-name">Kestrel <span style="color:var(--accent)">Labs</span></p>
+      <p class="footer-tag">An independent software studio building ML tools and games.</p>
     </div>
     <ul class="footer-links">
-      <li><a href="/">Home</a></li>
-      <li><a href="/breed-detector">Breed Detector</a></li>
-      <li><a href="/rift">Rift</a></li>
-      <li><a href="/animal-translator">Animal Translator</a></li>
-      <li><a href="/about">About</a></li>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="breed-detector.html">Breed Detector</a></li>
+      <li><a href="rift.html">Rift</a></li>
+      <li><a href="animal-translator.html">Animal Translator</a></li>
+      <li><a href="about.html">About</a></li>
       <li><a href="https://github.com/lexfp/aiden">GitHub</a></li>
     </ul>
   </div>
 </footer>
 
-<script src="/assets/site.js"></script>
+<script src="assets/site.js"></script>
 <script>
+  // On GitHub Pages there is no backend — point this at a hosted AniTrans server
+  // (e.g. 'https://your-api-host/predict') to make predictions work there.
+  const PREDICT_URL = '/predict';
+
   const dropzone = document.getElementById('dropzone');
   const cameraView = document.getElementById('camera-view');
   const video = document.getElementById('camera-stream');
@@ -234,7 +238,7 @@
     form.append('file', file, file.name || 'photo.jpg');
 
     try {
-      const res = await fetch('/predict', { method: 'POST', body: form });
+      const res = await fetch(PREDICT_URL, { method: 'POST', body: form });
       if (!res.ok) {
         const detail = (await res.json()).detail || res.statusText;
         throw new Error(detail);
