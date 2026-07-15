@@ -1,0 +1,20 @@
+[package]
+name = "testkit"
+version = "0.1.0"
+edition = "2021"
+description = "Rift agent-testing kit: gym-style env, replay engine, scenario + monkey bots. Never shipped in the release binary."
+
+[dependencies]
+sim = { path = "../sim" }
+network = { path = "../network" }
+rand = "0.8"
+rand_chacha = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+ureq = { version = "2", default-features = false, features = ["json"], optional = true }
+
+[features]
+# HttpEnv (the live agent-mode HTTP client). Off by default so the shipped
+# binary, which depends on testkit for its DTOs, does not link ureq.
+http = ["dep:ureq"]

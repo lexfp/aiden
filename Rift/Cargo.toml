@@ -1,0 +1,31 @@
+[package]
+authors = ["Cristian Cobzarenco <cristi.cobzarenco@gmail.com>"]
+description = "Rift — a Doom engine built in pure Rust."
+name = "rift"
+version = "0.0.9"
+edition = "2021"
+
+[[bin]]
+name = "rift"
+
+[dependencies]
+sim = { path = "sim" }
+network = { path = "network" }
+game = { path = "game", optional = true }
+
+env_logger = "0.8.3"
+structopt = "0.3.21"
+dirs = "5"
+
+[dependencies.log]
+features = ["release_max_level_info"]
+version = "0.4.8"
+
+[features]
+# The graphical client is on by default; build the headless server with
+# `--no-default-features` so it needs no GPU/GL system libraries.
+default = ["client"]
+client = ["dep:game", "game/agent"]
+
+[workspace]
+members = ["sim", "network", "game", "testkit", "math"]

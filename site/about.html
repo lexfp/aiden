@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Aiden</title>
+<meta name="description" content="About Aiden — a student developer building machine-learning tools and games.">
+<script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+
+<nav class="nav" id="site-nav">
+  <div class="nav-inner">
+    <a class="brand" href="/">Aiden<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="/breed-detector">Breed Detector <span class="badge badge-live">Live</span></a></li>
+      <li><a href="/rift">Rift <span class="badge badge-game">Game</span></a></li>
+      <li><a href="/animal-translator">Animal Translator <span class="badge badge-soon">Soon</span></a></li>
+      <li><a href="/about" class="active">About</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark/light mode">☀️</button>
+      <a class="gh-btn" href="https://github.com/lexfp/aiden">GitHub</a>
+      <button class="icon-btn hamburger" id="hamburger" aria-label="Menu">☰</button>
+    </div>
+  </div>
+  <div class="mobile-menu">
+    <a href="/breed-detector">Breed Detector <span class="badge badge-live">Live</span></a>
+    <a href="/rift">Rift <span class="badge badge-game">Game</span></a>
+    <a href="/animal-translator">Animal Translator <span class="badge badge-soon">Soon</span></a>
+    <a href="/about" class="active">About</a>
+    <a href="https://github.com/lexfp/aiden">GitHub ↗</a>
+  </div>
+</nav>
+
+<main>
+  <header class="page-header">
+    <h1>About <span class="grad">me</span></h1>
+  </header>
+
+  <section class="prose">
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <p>
+        Hi, I'm <strong>Aiden</strong> — a student developer who likes building things end to end:
+        training the model, writing the server, and shipping the page you're looking at.
+      </p>
+      <p style="margin-top: 0.8rem;">
+        My current projects are <a href="/breed-detector">AniTrans</a>, a pet breed detector powered
+        by a ResNet-50 I fine-tuned myself, and <a href="/rift">Rift</a>, a multiplayer spaceship
+        fleet-battle game written in pure Rust — from the combat simulation to the networking to the UI.
+      </p>
+    </div>
+
+    <h2 class="section-title">Skills</h2>
+    <div class="card skills-strip" style="margin-bottom: 1.5rem;">
+      <span class="tag">Python</span>
+      <span class="tag">PyTorch</span>
+      <span class="tag">Rust</span>
+      <span class="tag">FastAPI</span>
+      <span class="tag">JavaScript</span>
+      <span class="tag">HTML &amp; CSS</span>
+      <span class="tag">SQLite</span>
+      <span class="tag">Git</span>
+      <span class="tag">Transfer learning</span>
+      <span class="tag">Client/server networking</span>
+    </div>
+
+    <h2 class="section-title">Get in touch</h2>
+    <div class="card">
+      <ul style="list-style: none; padding: 0; display: grid; gap: 0.6rem;">
+        <li>🐙 <a href="https://github.com/lexfp/aiden">github.com/lexfp/aiden</a></li>
+        <li>✉️ <a href="mailto:ai3@quincycoders.org">ai3@quincycoders.org</a></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <p class="footer-name">Aiden<span style="color:var(--accent)">.</span></p>
+      <p class="footer-tag">Student developer building ML tools and games.</p>
+    </div>
+    <ul class="footer-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/breed-detector">Breed Detector</a></li>
+      <li><a href="/rift">Rift</a></li>
+      <li><a href="/animal-translator">Animal Translator</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="https://github.com/lexfp/aiden">GitHub</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script src="/assets/site.js"></script>
+</body>
+</html>

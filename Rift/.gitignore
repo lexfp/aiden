@@ -1,0 +1,13 @@
+target/
+
+# Lavish spec-review artifacts — transient, never committed
+.lavish/
+.lavish-axi/
+
+# Vendored local-axi tooling: dependencies are installed locally, never committed.
+# The tool's own tools/local-axi/.gitignore keeps its prebuilt dist/ tracked.
+node_modules/
+tools/local-axi/node_modules/
+
+# Personal Claude Code settings
+.claude/settings.local.json

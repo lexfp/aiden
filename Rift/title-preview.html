@@ -1,0 +1,292 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rift — Title Screen Preview</title>
+<style>
+  :root {
+    --ground:   #050507;
+    --text:     #F0E9DA;
+    --accent:   #FF5A1A;
+    --accent-2: #FFF1D6;
+    --display: 'Trebuchet MS', 'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif;
+    --mono: 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  }
+
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--text);
+    overflow: hidden;
+    font-family: var(--display);
+  }
+
+  /* The live shader — same one the native title screen runs. */
+  #gl {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 0;
+  }
+
+  .stage {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+    padding: 6vh 5vw;
+    box-sizing: border-box;
+  }
+
+  /* Title sits a touch above centre, matching the in-game layout (~0.42h). */
+  .title {
+    margin: 0;
+    margin-top: -8vh;
+    font-weight: 700;
+    font-size: clamp(4.5rem, 19vw, 17rem);
+    line-height: 0.9;
+    letter-spacing: 0.22em;
+    /* Letter-spacing pads the right edge; nudge back to true centre. */
+    text-indent: 0.22em;
+    color: #FFF6E9;
+    text-shadow:
+      0 0 2px rgba(255,241,214,0.7),
+      0 0 22px rgba(255,120,40,0.55),
+      0 0 60px rgba(255,70,18,0.45),
+      0 6px 40px rgba(0,0,0,0.6);
+  }
+
+  .subtitle {
+    margin: 1.6rem 0 0;
+    font-size: clamp(0.7rem, 1.5vw, 1.05rem);
+    letter-spacing: 0.62em;
+    text-indent: 0.62em;
+    font-weight: 400;
+    color: rgba(240,233,218,0.82);
+    text-shadow: 0 0 18px rgba(0,0,0,0.8);
+  }
+
+  .prompt {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: 16vh;
+    z-index: 1;
+    text-align: center;
+    font-size: clamp(0.85rem, 1.7vw, 1.15rem);
+    letter-spacing: 0.42em;
+    text-indent: 0.42em;
+    color: var(--accent-2);
+    text-shadow: 0 0 16px rgba(255,90,26,0.6);
+    animation: blink 1.35s steps(1, end) infinite;
+    pointer-events: none;
+  }
+
+  @keyframes blink { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0; } }
+
+  /* Quiet chrome so it's clearly a preview of the in-game screen. */
+  .tag {
+    position: fixed;
+    z-index: 2;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(240,233,218,0.45);
+  }
+  .tag.tl { top: 1.4rem; left: 1.6rem; }
+  .tag.br { bottom: 1.4rem; right: 1.6rem; color: rgba(240,233,218,0.32); }
+  .tag b { color: var(--accent); font-weight: 600; }
+
+  .stage.leaving .title,
+  .stage.leaving .subtitle,
+  body.leaving .prompt { opacity: 0; transition: opacity 0.35s ease; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .prompt { animation: none; }
+  }
+</style>
+
+<canvas id="gl"></canvas>
+
+<div class="stage" id="stage">
+  <h1 class="title">RIFT</h1>
+  <p class="subtitle">A DOOM ENGINE IN PURE RUST</p>
+</div>
+<div class="prompt" id="prompt">PRESS&nbsp;&nbsp;ENTER&nbsp;&nbsp;TO&nbsp;&nbsp;DESCEND</div>
+
+<div class="tag tl">Rift · in-game title screen — live preview</div>
+<div class="tag br">same shader as the native build · <b>press enter / click</b> to descend</div>
+
+<script>
+(function () {
+  const canvas = document.getElementById('gl');
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  const stage = document.getElementById('stage');
+
+  const VERT = `
+    attribute vec2 a_pos;
+    varying vec2 v_uv;
+    void main() {
+      v_uv = a_pos * 0.5 + 0.5;
+      gl_Position = vec4(a_pos, 0.0, 1.0);
+    }`;
+
+  // Faithful port of game/src/title.rs FRAGMENT_SRC (GLSL 140 -> GLSL ES 1.00).
+  const FRAG = `
+    precision highp float;
+    varying vec2 v_uv;
+    uniform float u_time;
+    uniform float u_fade;
+    uniform float u_aspect;
+
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float noise(vec2 p) {
+      vec2 i = floor(p); vec2 f = fract(p);
+      f = f * f * (3.0 - 2.0 * f);
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+      return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+    }
+    float fbm(vec2 p) {
+      float v = 0.0; float a = 0.5;
+      for (int i = 0; i < 5; i++) { v += a * noise(p); p *= 2.0; a *= 0.5; }
+      return v;
+    }
+    void main() {
+      vec2 uv = v_uv;
+      vec2 p = uv - 0.5;
+      p.x *= u_aspect;
+      float t = u_time;
+
+      float warp = (fbm(vec2(uv.y * 4.0, t * 0.25)) - 0.5) * 0.06 * exp(-abs(p.x) * 3.0);
+      vec2 wuv = uv + vec2(warp, 0.0);
+
+      float fog = fbm(vec2(wuv.x * 3.0, wuv.y * 3.0 - t * 0.06));
+      fog += 0.5 * fbm(vec2(wuv.x * 6.0 + 5.0, wuv.y * 6.0 - t * 0.13));
+      fog = clamp(fog * 0.5, 0.0, 1.0);
+
+      float flicker = 0.82 + 0.12 * sin(t * 3.1) + 0.06 * sin(t * 13.0) + 0.04 * sin(t * 27.0);
+      float vmask = smoothstep(0.0, 0.32, uv.y) * smoothstep(1.0, 0.6, uv.y);
+      float seam = exp(-abs(p.x) * 24.0) * flicker * mix(0.5, 1.0, vmask);
+      float halo = exp(-abs(p.x) * 4.5) * 0.55 * mix(0.6, 1.0, vmask);
+      float shaft = exp(-abs(p.x) * 1.4) * 0.18 * (0.35 + 0.65 * fog);
+
+      vec3 core_col = vec3(1.0, 0.96, 0.88);
+      vec3 ember_col = vec3(1.0, 0.36, 0.09);
+      vec3 deep_col = vec3(0.45, 0.06, 0.04);
+
+      vec3 col = mix(vec3(0.05, 0.022, 0.016), vec3(0.012, 0.013, 0.022), uv.y);
+      col += ember_col * shaft;
+      col += ember_col * halo * (0.4 + 0.6 * fog);
+      col += ember_col * seam * 1.25;
+      col += core_col * pow(seam, 2.0) * 1.7;
+      col += ember_col * fog * fog * 0.18;
+
+      float ground = smoothstep(0.0, 0.32, 0.32 - uv.y);
+      col += deep_col * ground * (0.5 + 0.5 * fog) * 0.9;
+
+      for (int i = 0; i < 10; i++) {
+        float fi = float(i);
+        float seed = hash(vec2(fi, 3.0));
+        float ey = fract(seed + t * (0.04 + 0.05 * seed));
+        float sway = 0.10 * sin(fi * 7.0 + t * (0.4 + 0.5 * seed));
+        float ex = (seed - 0.5) * 0.7 + sway * ey;
+        vec2 e = vec2((uv.x - 0.5) * u_aspect - ex, uv.y - ey);
+        float size = mix(2600.0, 900.0, seed);
+        float bright = (0.5 + 0.7 * seed) * (1.0 - ey) * (0.4 + 0.6 * fog);
+        col += ember_col * exp(-dot(e, e) * size) * bright;
+      }
+
+      col *= smoothstep(1.2, 0.25, length(p));
+      col = col / (col + vec3(1.0));
+      col = pow(col, vec3(0.85));
+      gl_FragColor = vec4(col * u_fade, 1.0);
+    }`;
+
+  function compile(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.error(gl.getShaderInfoLog(s));
+    }
+    return s;
+  }
+
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uFade = gl.getUniformLocation(prog, 'u_fade');
+  const uAspect = gl.getUniformLocation(prog, 'u_aspect');
+
+  let aspect = 1;
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.floor(window.innerWidth * dpr);
+    const h = Math.floor(window.innerHeight * dpr);
+    canvas.width = w; canvas.height = h;
+    gl.viewport(0, 0, w, h);
+    aspect = w / h;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const start = performance.now();
+  // Descend transition state: mirrors the in-game fade-out on keypress.
+  let leaving = 0;      // timestamp when "descend" began, else 0
+  const LEAVE = 700;    // ms fade-to-black, then re-enter
+
+  function frame(now) {
+    let t = (now - start) / 1000;
+    if (reduce) t = 7.5; // a representative still frame
+    let fade = Math.min(t / 0.9, 1); // intro reveal (matches u_fade in-game)
+
+    if (leaving) {
+      const k = (now - leaving) / LEAVE;
+      if (k < 0.5) fade *= Math.max(0, 1 - k / 0.5);          // fade out
+      else if (k < 1) fade *= (k - 0.5) / 0.5;                 // fade back in
+      else { leaving = 0; stage.classList.remove('leaving'); document.body.classList.remove('leaving'); }
+    }
+
+    gl.uniform1f(uTime, t);
+    gl.uniform1f(uFade, fade);
+    gl.uniform1f(uAspect, aspect);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    if (!reduce || leaving) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  function descend() {
+    if (leaving) return;
+    leaving = performance.now();
+    stage.classList.add('leaving');
+    document.body.classList.add('leaving');
+    if (reduce) requestAnimationFrame(frame);
+  }
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); descend(); }
+  });
+  window.addEventListener('pointerdown', descend);
+})();
+</script>

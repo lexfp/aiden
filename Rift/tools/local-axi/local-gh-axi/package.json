@@ -1,0 +1,35 @@
+{
+  "name": "local-gh-axi",
+  "version": "0.1.22-local.1",
+  "description": "Vendored copy of gh-axi (AXI-style gh CLI wrapper, TOON output). Clean — no telemetry. Requires the `gh` CLI at runtime. See ../AUDIT.md.",
+  "type": "module",
+  "bin": {
+    "local-gh-axi": "./dist/bin/gh-axi.js"
+  },
+  "files": [
+    "dist",
+    "skills/gh-axi",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "private": true,
+  "_vendored": {
+    "upstream": "gh-axi@0.1.22",
+    "patches": [
+      "deps: axi-sdk-js + @toon-format/toon repointed to local vendored copies"
+    ],
+    "notes": [
+      "CLEAN — no telemetry/network in own code (audit 2026-06-23).",
+      "Requires external `gh` CLI at runtime.",
+      "`local-gh-axi setup hooks` writes ~/.claude via axi-sdk-js — opt-in, never automatic."
+    ]
+  },
+  "dependencies": {
+    "@toon-format/toon": "file:../local-toon",
+    "axi-sdk-js": "file:../local-axi-sdk"
+  }
+}

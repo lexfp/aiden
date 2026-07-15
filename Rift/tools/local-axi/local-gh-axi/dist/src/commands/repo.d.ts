@@ -1,0 +1,3 @@
+import type { RepoContext } from '../context.js';
+export declare const REPO_HELP = "usage: gh-axi repo <subcommand> [flags]\nsubcommands[6]:\n  view, create <name>, edit, clone <repo>, fork [repo], list [owner]\nflags{create}:\n  --public, --private, --internal, --description, --clone, --template\nflags{edit}:\n  --description, --visibility, --default-branch, --enable-issues, --enable-wiki\nflags{fork}:\n  --clone, --remote\nflags{list}:\n  --limit <n> (default 30), --visibility, --language, --archived\nexamples:\n  gh-axi repo view\n  gh-axi repo create my-project --public --description \"A new project\"\n  gh-axi repo list --visibility public --language TypeScript";
+export declare function repoCommand(args: string[], ctx?: RepoContext): Promise<string>;

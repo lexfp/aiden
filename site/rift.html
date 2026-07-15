@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rift — Aiden</title>
+<meta name="description" content="Rift is a spaceship fleet-battle game built in pure Rust. Command a fleet, master tactical formations, climb 11 military ranks, and battle across a shared galaxy.">
+<script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+
+<nav class="nav" id="site-nav">
+  <div class="nav-inner">
+    <a class="brand" href="/">Aiden<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="/breed-detector">Breed Detector <span class="badge badge-live">Live</span></a></li>
+      <li><a href="/rift" class="active">Rift <span class="badge badge-game">Game</span></a></li>
+      <li><a href="/animal-translator">Animal Translator <span class="badge badge-soon">Soon</span></a></li>
+      <li><a href="/about">About</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark/light mode">☀️</button>
+      <a class="gh-btn" href="https://github.com/lexfp/aiden">GitHub</a>
+      <button class="icon-btn hamburger" id="hamburger" aria-label="Menu">☰</button>
+    </div>
+  </div>
+  <div class="mobile-menu">
+    <a href="/breed-detector">Breed Detector <span class="badge badge-live">Live</span></a>
+    <a href="/rift" class="active">Rift <span class="badge badge-game">Game</span></a>
+    <a href="/animal-translator">Animal Translator <span class="badge badge-soon">Soon</span></a>
+    <a href="/about">About</a>
+    <a href="https://github.com/lexfp/aiden">GitHub ↗</a>
+  </div>
+</nav>
+
+<main>
+  <header class="page-header">
+    <h1>🚀 <span class="grad">Rift</span></h1>
+    <p class="sub">
+      A spaceship fleet-battle game built in pure Rust. Buy and refit warships, build a fleet,
+      pick a tactical formation, climb 11 military ranks, and battle other pilots across a
+      shared galaxy with ELO ranking — or play solo offline.
+    </p>
+  </header>
+
+  <!-- Screenshots -->
+  <div class="shot-grid">
+    <img src="/assets/rift1.png" alt="Rift — hangar and fleet management screen">
+    <img src="/assets/rift2.png" alt="Rift — fleet battle in progress">
+  </div>
+
+  <!-- Features -->
+  <h2 class="section-title">Features</h2>
+  <ul class="feature-list">
+    <li><strong>Fleet management</strong> — <span>buy, sell, repair, and field up to 20 ships drawn from a 30-hull catalog across six tiers.</span></li>
+    <li><strong>Tactical battles</strong> — <span>choose Aggressive, Defensive, or Tactical formations; shields, evasion rolls, and per-ship fire rate decide everything from 1v1 duels to 20v20 fleet clashes.</span></li>
+    <li><strong>Ranks &amp; economy</strong> — <span>climb 11 military ranks from Recruit to Fleet Admiral, each unlocking stat bonuses and bigger fleets; earn credits through rank-gated work between battles.</span></li>
+    <li><strong>Shared galaxy</strong> — <span>fight real pilots with ELO ranking and a live leaderboard, while autonomous NPC fleets patrol around the clock.</span></li>
+    <li><strong>Solo mode</strong> — <span>play fully offline with a local save; the exact same game rules run whether you're online or not.</span></li>
+    <li><strong>Pure Rust</strong> — <span>every system — simulation, networking, UI — written from scratch, running native on Windows, macOS, and Linux.</span></li>
+  </ul>
+
+  <!-- GitHub -->
+  <div style="text-align: center; margin-top: 2.5rem;">
+    <a class="btn-accent" href="https://github.com/lexfp/aiden/tree/main/Rift">View on GitHub</a>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <p class="footer-name">Aiden<span style="color:var(--accent)">.</span></p>
+      <p class="footer-tag">Student developer building ML tools and games.</p>
+    </div>
+    <ul class="footer-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/breed-detector">Breed Detector</a></li>
+      <li><a href="/rift">Rift</a></li>
+      <li><a href="/animal-translator">Animal Translator</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="https://github.com/lexfp/aiden">GitHub</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script src="/assets/site.js"></script>
+</body>
+</html>

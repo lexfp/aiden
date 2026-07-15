@@ -1,0 +1,6 @@
+# PyTorch is installed separately with the CUDA index:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+fastapi
+uvicorn[standard]
+python-multipart
+pillow

@@ -1,0 +1,37 @@
+{
+  "name": "local-chrome-devtools-axi",
+  "version": "0.1.24-local.1",
+  "description": "Vendored copy of chrome-devtools-axi (AXI browser-automation CLI). Own code clean — no telemetry. Runtime mcp pinned. See ../AUDIT.md.",
+  "type": "module",
+  "bin": {
+    "local-chrome-devtools-axi": "dist/bin/chrome-devtools-axi.js"
+  },
+  "files": [
+    "dist",
+    "skills/chrome-devtools-axi",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "private": true,
+  "_vendored": {
+    "upstream": "chrome-devtools-axi@0.1.24",
+    "patches": [
+      "bridge.js: runtime spawn pinned chrome-devtools-mcp@latest -> @1.4.0 (no floating browser download)",
+      "deps: axi-sdk-js + @toon-format/toon repointed to local; @modelcontextprotocol/sdk pinned exact"
+    ],
+    "notes": [
+      "Own code CLEAN — no telemetry/network (audit 2026-06-23).",
+      "RUNTIME: spawns `npx chrome-devtools-mcp@1.4.0` (pulls Chromium) on first browser command. Set CHROME_DEVTOOLS_AXI_BROWSER_URL to attach to system Chrome and avoid any download.",
+      "`setup hooks` writes ~/.claude / ~/.codex via axi-sdk-js — opt-in, never automatic."
+    ]
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "@toon-format/toon": "file:../local-toon",
+    "axi-sdk-js": "file:../local-axi-sdk"
+  }
+}

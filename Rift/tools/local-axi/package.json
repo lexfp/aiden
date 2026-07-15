@@ -1,0 +1,20 @@
+{
+  "name": "local-axi",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Vendored, telemetry-free, audited local copies of the axi.md ecosystem tools (lavish-axi, axi-sdk-js, TOON) plus our own AXI toolkit. Self-contained and portable across projects. See AUDIT.md.",
+  "license": "MIT",
+  "workspaces": [
+    "local-toon",
+    "local-axi-sdk",
+    "local-lavishaxi",
+    "local-axi-toolkit",
+    "local-gh-axi",
+    "local-chrome-devtools-axi"
+  ],
+  "bin": {
+    "local-lavishaxi": "local-lavishaxi/dist/cli.mjs",
+    "local-gh-axi": "local-gh-axi/dist/bin/gh-axi.js",
+    "local-chrome-devtools-axi": "local-chrome-devtools-axi/dist/bin/chrome-devtools-axi.js"
+  }
+}

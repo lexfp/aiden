@@ -1,0 +1,11 @@
+{
+  "seed": 7,
+  "actions": [
+    { "Register": { "nickname": "Mechanic", "password": "pwd" } },
+    { "Buy": { "ship_id": 1 } },
+    { "Activate": { "ship_number": 77 } },
+    { "Battle": { "opponent_id": 1, "formation": "Aggressive" } },
+    { "Repair": { "ship_number": 77 } }
+  ],
+  "expect": { "credits": 500, "rank": "Recruit" }
+}

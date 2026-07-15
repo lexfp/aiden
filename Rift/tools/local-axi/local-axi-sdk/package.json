@@ -1,0 +1,44 @@
+{
+  "name": "axi-sdk-js",
+  "version": "0.1.7",
+  "description": "Shared Node.js primitives for building AXI CLIs",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kunchenguid/axi.git",
+    "directory": "packages/axi-sdk-js"
+  },
+  "keywords": [
+    "axi",
+    "agent",
+    "cli",
+    "sdk",
+    "toon",
+    "node"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "private": true,
+  "_vendored": "Vendored from axi-sdk-js@0.1.7 (prebuilt dist). Clean: no telemetry, no network. Dev deps/scripts removed. See ../AUDIT.md.",
+  "dependencies": {
+    "@toon-format/toon": "file:../local-toon"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  }
+}

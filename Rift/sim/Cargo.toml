@@ -1,0 +1,13 @@
+[package]
+name = "sim"
+version = "0.1.0"
+authors = ["Aiden"]
+edition = "2021"
+description = "Rift — pure game rules (ships, fleets, combat, ranks, economy). No I/O."
+
+[dependencies]
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+proptest = "1"

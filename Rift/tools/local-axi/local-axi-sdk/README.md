@@ -1,0 +1,125 @@
+<h1 align="center">axi-sdk-js</h1>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/axi-sdk-js"><img alt="npm" src="https://img.shields.io/npm/v/axi-sdk-js?style=flat-square" /></a>
+  <a href="https://github.com/kunchenguid/axi/actions/workflows/axi-sdk-js-ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/kunchenguid/axi/axi-sdk-js-ci.yml?style=flat-square&label=ci" /></a>
+  <a href="https://github.com/kunchenguid/axi/actions/workflows/axi-sdk-js-release-please.yml"><img alt="Release" src="https://img.shields.io/github/actions/workflow/status/kunchenguid/axi/axi-sdk-js-release-please.yml?style=flat-square&label=release" /></a>
+  <a href="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue?style=flat-square"><img alt="Platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-blue?style=flat-square" /></a>
+  <a href="https://x.com/kunchenguid"><img alt="X" src="https://img.shields.io/badge/X-@kunchenguid-black?style=flat-square" /></a>
+  <a href="https://discord.gg/Wsy2NpnZDu"><img alt="Discord" src="https://img.shields.io/discord/1439901831038763092?style=flat-square&label=discord" /></a>
+</p>
+
+<h3 align="center">Ship AXIs without rewriting the boring parts.</h3>
+
+Every Node-based AXI ends up redoing the same work: top-level dispatch, structured errors, TOON output, and optional hook installation for a few agents.
+
+`axi-sdk-js` pulls those shared runtime pieces into one package.
+Your AXI can stay focused on business logic, work with plain JavaScript objects, and let the runtime handle official TOON serialization.
+If you want agent session context plumbing, wire `installSessionStartHooks()` into an explicit setup command.
+
+`runAxiCli()` assumes a command-first CLI shape: `<bin> <command> ...args ...flags`. Bare `--help` is still supported, but flags are not allowed before the top-level command.
+
+If your executable boundary needs to normalize loader-specific arguments before dispatch, pass `argv` explicitly to `runAxiCli()` instead of relying on `process.argv.slice(2)`.
+
+## Quick Start
+
+```sh
+$ npm install axi-sdk-js
+added 1 package
+```
+
+```ts
+import { runAxiCli } from "axi-sdk-js";
+
+await runAxiCli({
+  description: "Manage GitHub state in the current repository",
+  version: "1.2.3",
+  argv: process.argv.slice(2),
+  topLevelHelp: TOP_LEVEL_HELP,
+  resolveContext: ({ command, args }) =>
+    command === "issue" || command === "pr"
+      ? resolveRepoFromArgs(args)
+      : undefined,
+  home: async () => ({
+    issues: [{ number: 12, title: "Fix auth bug", state: "open" }],
+    help: ["Run `gh-axi issue view <number>` for details"],
+  }),
+  commands: {
+    issue: issueCommand,
+    pr: prCommand,
+  },
+});
+```
+
+## Reference
+
+`axi-sdk-js` is a library package. In normal use, `runAxiCli()` should be the main entry point.
+
+| API           | Description                                                                                                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `runAxiCli()` | Shared runtime for command-first dispatch, bare `--help`/`--version` fast paths, lazy context resolution, home header injection, TOON serialization, and standardized errors |
+
+### Advanced Exports
+
+Most AXI authors should not need these directly.
+
+| API                                      | Description                                                                                     |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `AxiError`                               | Throw structured AXI errors from command handlers                                               |
+| `installSessionStartHooks()`             | Install or repair Claude Code hooks, Codex hooks, and OpenCode ambient context plugins directly |
+| `resolvePortableHookCommand()`           | Resolve a hook command to a safe binary name or absolute path                                   |
+| `PortableHookCommandContext`             | Context for resolving portable hook commands                                                    |
+| `shouldInstallHooksForNodeAxiExecPath()` | Check whether an executable path is safe for hook installation                                  |
+
+### Session Hook Setup
+
+`runAxiCli()` does not install hooks during normal CLI execution.
+Hook installation should be exposed through an explicit user-invoked setup command, for example `my-axi setup hooks`.
+
+```ts
+import { installSessionStartHooks, runAxiCli } from "axi-sdk-js";
+
+await runAxiCli({
+  // ...other options
+  commands: {
+    setup: async (args) => {
+      if (args[0] !== "hooks") {
+        return {
+          error: "Unknown setup command",
+          help: "Run `my-axi setup hooks`",
+        };
+      }
+
+      installSessionStartHooks();
+      return { setup: "hooks installed or already up to date" };
+    },
+  },
+});
+```
+
+Calling `installSessionStartHooks()` without identity options infers the current CLI from `process.argv[1]`.
+Packaged entrypoints such as `dist/bin/gh-axi.js` infer `marker: "gh-axi"`, `binaryNames: ["gh-axi"]`, and a safety policy that skips development TypeScript entrypoints.
+Pass explicit options when your setup command needs custom behavior:
+
+```ts
+await installSessionStartHooks({
+  marker: "my-axi",
+  binaryNames: ["my-axi"],
+});
+```
+
+Claude Code and Codex receive native `SessionStart` hooks, while OpenCode receives a managed plugin in `~/.config/opencode/plugins/` that injects the AXI home view as ambient model context.
+
+### Hook Command Portability
+
+Hook commands use a plain binary name such as `gh-axi` only when that name contains the hook marker and `binaryNames` resolves through the current `PATH` to the same executable; otherwise they use the absolute `execPath`.
+
+For custom wrappers, pass `binaryNames: ["my-axi"]` to `installSessionStartHooks()`.
+
+## Development
+
+```sh
+pnpm install # Install workspace dependencies
+pnpm --dir packages/axi-sdk-js test # Run tests
+pnpm --dir packages/axi-sdk-js run build # Build dist output
+```

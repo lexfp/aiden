@@ -1,0 +1,34 @@
+{
+  "name": "local-lavishaxi",
+  "version": "0.1.31-local.1",
+  "description": "Vendored, telemetry-free copy of lavish-axi (HTML artifact review editor). See ../AUDIT.md.",
+  "type": "module",
+  "bin": {
+    "local-lavishaxi": "dist/cli.mjs"
+  },
+  "files": [
+    "dist",
+    "skills/lavish",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "private": true,
+  "_vendored": {
+    "upstream": "lavish-axi@0.1.31",
+    "patches": [
+      "telemetry: Umami beacon to a.kunchenguid.com hard-disabled in dist/cli.mjs",
+      "dependency: axi-sdk-js repointed to local vendored copy",
+      "assets: DaisyUI/Tailwind served from vendored dist/design (no CDN at runtime)"
+    ]
+  },
+  "dependencies": {
+    "axi-sdk-js": "file:../local-axi-sdk",
+    "express": "5.2.1",
+    "chokidar": "4.0.3",
+    "open": "10.2.0"
+  }
+}

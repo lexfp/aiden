@@ -1,0 +1,3 @@
+import type { RepoContext } from '../context.js';
+export declare const API_HELP = "usage: gh-axi api [<method>] <path>\ndescription: Make an authenticated GitHub API request. Defaults to GET if no method specified.\nmethods[6]:\n  GET, POST, PUT, PATCH, DELETE, HEAD\nflags[3]:\n  --field <key=value> (repeatable), --header <key:value> (repeatable), --paginate\nexamples:\n  gh-axi api /repos/{owner}/{repo}\n  gh-axi api POST /repos/{owner}/{repo}/issues --field title=\"Bug report\"\n  gh-axi api /repos/{owner}/{repo}/pulls --paginate";
+export declare function apiCommand(args: string[], ctx?: RepoContext): Promise<string>;

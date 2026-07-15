@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rift.rivi.us/sitemap.xml

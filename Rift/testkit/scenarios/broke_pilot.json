@@ -1,0 +1,10 @@
+{
+  "seed": 11,
+  "actions": [
+    { "Register": { "nickname": "BrokePilot", "password": "pwd" } },
+    { "Buy": { "ship_id": 1 } },
+    { "Buy": { "ship_id": 1 } }
+  ],
+  "tolerate_rejections": true,
+  "expect": { "credits": 500, "rank": "Recruit" }
+}

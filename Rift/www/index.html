@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rift — A Spaceship Fleet-Battle Game in Pure Rust</title>
+  <meta name="description" content="Rift is a spaceship fleet-battle game built in pure Rust. Command a fleet, master tactical formations, climb 11 military ranks, and battle pilots across a shared galaxy with ELO ranking. Runs native on Windows, macOS, and Linux — online or solo.">
+  <link rel="canonical" href="https://rift.rivi.us/">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="FurryCoder67">
+  <meta name="keywords" content="Rift game, spaceship fleet game, Rust game, fleet battle, space strategy, multiplayer space game, ELO PvP">
+  <meta name="theme-color" content="#08080A">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Rift">
+  <meta property="og:url" content="https://rift.rivi.us/">
+  <meta property="og:title" content="Rift — A Spaceship Fleet-Battle Game in Pure Rust">
+  <meta property="og:description" content="Command a fleet, master tactical formations, climb the ranks, and battle pilots across a shared galaxy. Built in pure Rust, runs native on every desktop.">
+  <meta property="og:image" content="https://rift.rivi.us/og-image.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Rift — A Spaceship Fleet-Battle Game in Pure Rust">
+  <meta name="twitter:description" content="Command a fleet, master tactical formations, climb the ranks, and battle pilots across a shared galaxy.">
+  <meta name="twitter:image" content="https://rift.rivi.us/og-image.png">
+
+  <!-- Icons -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Rift",
+    "description": "A spaceship fleet-battle game built in pure Rust. Command a fleet, master tactical formations, climb 11 military ranks, and battle across a shared galaxy with ELO ranking.",
+    "url": "https://rift.rivi.us/",
+    "applicationCategory": "GameApplication",
+    "genre": ["Strategy", "Space Combat"],
+    "operatingSystem": "Windows, macOS, Linux",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Person", "name": "FurryCoder67" },
+    "codeRepository": "https://github.com/FurryCoder67/Rift"
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:        #08080A;
+      --surface:    #0F0F12;
+      --surface-2:  #161619;
+      --border:     #232328;
+      --text:       #DAD2BC;
+      --text-dim:   #7A7260;
+      --text-muted: #48403A;
+      --red:        #C41A1A;
+      --red-bright: #E52A2A;
+      --red-glow:   rgba(196,26,26,0.35);
+      --amber:      #D48820;
+      --display:    'Bebas Neue', 'Arial Narrow', Impact, sans-serif;
+      --mono:       'IBM Plex Mono', 'Courier New', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--ink);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 1rem;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+
+    /* ── NAV ────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2.5rem;
+      background: linear-gradient(to bottom, rgba(8,8,10,0.95), transparent);
+    }
+
+    .nav-logo {
+      font-family: var(--display);
+      font-size: 1.7rem;
+      letter-spacing: 0.06em;
+      color: var(--text);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-gh {
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.9rem;
+      border-radius: 1px;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .nav-gh:hover { border-color: var(--text-muted) !important; color: var(--text) !important; }
+
+    /* ── HERO ───────────────────────────────── */
+    .hero {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 640px;
+      display: flex;
+      align-items: flex-end;
+      overflow: hidden;
+    }
+
+    #starfield {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .hero-fade {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to right, rgba(8,8,10,0.95) 0%, rgba(8,8,10,0.65) 50%, rgba(8,8,10,0.1) 100%),
+        linear-gradient(to bottom, rgba(8,8,10,0.6) 0%, transparent 25%, transparent 65%, rgba(8,8,10,1) 100%);
+      z-index: 2;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 3;
+      padding: 0 2.5rem 5rem;
+      max-width: 720px;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.6rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.4rem;
+    }
+
+    .hero-title {
+      font-family: var(--display);
+      font-size: clamp(7rem, 18vw, 14rem);
+      line-height: 0.86;
+      letter-spacing: 0.02em;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-sub {
+      font-size: 0.875rem;
+      color: var(--text-dim);
+      max-width: 460px;
+      line-height: 1.75;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* ── BUTTONS ────────────────────────────── */
+    .btn {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0.75rem 1.8rem;
+      border-radius: 1px;
+      cursor: pointer;
+      display: inline-block;
+      transition: all 0.15s;
+    }
+
+    .btn-red {
+      background: var(--red);
+      color: var(--text);
+      border: 1px solid var(--red);
+    }
+
+    .btn-red:hover {
+      background: var(--red-bright);
+      border-color: var(--red-bright);
+      box-shadow: 0 0 28px var(--red-glow);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
+
+    /* ── STATS ──────────────────────────────── */
+    .stats {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stats-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .stat {
+      padding: 2.5rem 0 2.5rem 2rem;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat:first-child { padding-left: 0; }
+    .stat:last-child { border-right: none; }
+
+    .stat-num {
+      font-family: var(--display);
+      font-size: 2.8rem;
+      line-height: 1;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 680px) {
+      .stats-inner { grid-template-columns: repeat(2, 1fr); }
+      .stat:nth-child(2) { border-right: none; }
+      .stat:nth-child(3) { border-right: 1px solid var(--border); padding-left: 0; }
+    }
+
+    /* ── SECTION SHELL ──────────────────────── */
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 6rem 2.5rem;
+    }
+
+    .divider { border: none; border-top: 1px solid var(--border); }
+
+    .label {
+      font-size: 0.58rem;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.6rem;
+    }
+
+    .heading {
+      font-family: var(--display);
+      font-size: clamp(2.6rem, 5.5vw, 4.2rem);
+      letter-spacing: 0.03em;
+      line-height: 0.95;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    .intro {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      max-width: 540px;
+      line-height: 1.8;
+      margin-bottom: 3rem;
+    }
+
+    /* ── DOWNLOAD ───────────────────────────── */
+    .dl-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 640px) { .dl-grid { grid-template-columns: 1fr; } }
+
+    .dl-btn {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      padding: 2.5rem 2rem;
+      background: var(--surface);
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+    }
+
+    .dl-btn:hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .dl-btn.detected {
+      background: var(--surface-2);
+      color: var(--text);
+      border-left-color: var(--red);
+    }
+
+    .dl-os {
+      font-family: var(--display);
+      font-size: 2rem;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      color: inherit;
+    }
+
+    .dl-file {
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .dl-btn.detected .dl-file { color: var(--text-dim); }
+
+    .dl-tag {
+      display: inline-block;
+      font-size: 0.52rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.5rem;
+      background: var(--red);
+      color: var(--text);
+      border-radius: 1px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .dl-btn.detected .dl-tag { opacity: 1; }
+
+    .wad-note {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.75;
+      padding: 1.1rem 1.4rem;
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--text-muted);
+      border-radius: 1px;
+    }
+
+    .wad-note strong { color: var(--text-dim); }
+
+    /* ── FEATURES ───────────────────────────── */
+    #features {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+
+    @media (max-width: 860px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .feature-grid { grid-template-columns: 1fr; } }
+
+    .feature-card {
+      padding: 2rem 1.75rem;
+      border-right: 1px solid var(--border);
+      background: var(--ink);
+    }
+
+    .feature-card:last-child { border-right: none; }
+
+    @media (max-width: 860px) {
+      .feature-card:nth-child(2n) { border-right: none; }
+      .feature-card { border-bottom: 1px solid var(--border); }
+      .feature-card:nth-last-child(-n+2) { border-bottom: none; }
+    }
+
+    @media (max-width: 480px) {
+      .feature-card { border-right: none; }
+      .feature-card:last-child { border-bottom: none; }
+    }
+
+    .feature-tag {
+      font-size: 0.56rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--red);
+      display: block;
+      margin-bottom: 0.9rem;
+    }
+
+    .feature-title {
+      font-family: var(--display);
+      font-size: 1.55rem;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      color: var(--text);
+      margin-bottom: 0.65rem;
+    }
+
+    .feature-body {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.72;
+    }
+
+    .feature-body code {
+      color: var(--text);
+      background: var(--surface-2);
+      padding: 0.1em 0.3em;
+      border-radius: 2px;
+    }
+
+    /* ── MULTIPLAYER ────────────────────────── */
+    .mp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+    }
+
+    @media (max-width: 680px) { .mp-grid { grid-template-columns: 1fr; } }
+
+    .mp-card {
+      background: var(--surface);
+      padding: 2.5rem 2.25rem;
+    }
+
+    .mp-label {
+      font-size: 0.56rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.5rem;
+    }
+
+    .mp-card h3 {
+      font-family: var(--display);
+      font-size: 2rem;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      color: var(--text);
+      margin-bottom: 0.9rem;
+    }
+
+    .mp-card p {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.78;
+      margin-bottom: 1.25rem;
+    }
+
+    .code-block {
+      background: var(--ink);
+      border: 1px solid var(--border);
+      border-radius: 1px;
+      padding: 0.9rem 1.2rem;
+      font-size: 0.82rem;
+      color: var(--amber);
+      overflow-x: auto;
+    }
+
+    .mp-tip {
+      margin-top: 1rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .mp-tip strong { color: var(--text-dim); }
+
+    /* ── FOOTER ─────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .footer-logo {
+      font-family: var(--display);
+      font-size: 1.4rem;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 0.64rem;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      transition: color 0.12s;
+    }
+
+    .footer-links a:hover { color: var(--text-dim); }
+
+    .footer-note {
+      width: 100%;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+
+    /* ── RESPONSIVE ─────────────────────────── */
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .hero-inner { padding: 0 1.5rem 4rem; }
+      .section { padding: 4.5rem 1.5rem; }
+      footer { padding: 2rem 1.5rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">RIFT</span>
+  <ul class="nav-links">
+    <li><a href="#install">Download</a></li>
+    <li><a href="#features">Game</a></li>
+    <li><a href="#multiplayer">Multiplayer</a></li>
+    <li><a href="https://github.com/FurryCoder67/Rift" class="nav-gh">GitHub ↗</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <canvas id="starfield" aria-hidden="true"></canvas>
+  <div class="hero-fade" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <p class="hero-eyebrow">Fleet Command &nbsp;·&nbsp; Pure Rust &nbsp;·&nbsp; Multiplayer</p>
+    <h1 class="hero-title">RIFT</h1>
+    <p class="hero-sub">
+      Command a fleet of warships across a shared galaxy. Buy and refit hulls,
+      pick your formation, climb eleven military ranks, and settle it in battle —
+      a native game built in pure Rust.
+    </p>
+    <div class="hero-cta">
+      <a href="#install" class="btn btn-red">Download</a>
+      <a href="#multiplayer" class="btn btn-ghost">Multiplayer setup</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="stats">
+  <div class="stats-inner">
+    <div class="stat">
+      <div class="stat-num">30</div>
+      <div class="stat-label">Ships, six tiers</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">11</div>
+      <div class="stat-label">Military ranks</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">20v20</div>
+      <div class="stat-label">Fleet battles</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Platforms</div>
+    </div>
+  </div>
+</div>
+
+<!-- DOWNLOAD -->
+<hr class="divider">
+<div id="install" class="section">
+  <p class="label">// Download</p>
+  <h2 class="heading">Pick your platform</h2>
+  <p class="intro">
+    Pre-built binaries for every desktop. No data files, no setup — install it,
+    pick a callsign, and you're commanding a fleet.
+  </p>
+
+  <div class="dl-grid">
+    <a class="dl-btn" id="dl-windows"
+       href="https://rift.rivi.us/rift-setup.exe"
+       download>
+      <span class="dl-os">Windows</span>
+      <span class="dl-file">rift-setup.exe &nbsp;·&nbsp; installer</span>
+      <span class="dl-tag">Your platform</span>
+    </a>
+    <a class="dl-btn" id="dl-linux"
+       href="https://rift.rivi.us/rift-linux.tar.gz"
+       download>
+      <span class="dl-os">Linux</span>
+      <span class="dl-file">rift-linux.tar.gz &nbsp;·&nbsp; x64</span>
+      <span class="dl-tag">Your platform</span>
+    </a>
+    <a class="dl-btn" id="dl-mac"
+       href="https://rift.rivi.us/rift-mac.dmg"
+       download>
+      <span class="dl-os">macOS</span>
+      <span class="dl-file">rift-mac.dmg &nbsp;·&nbsp; Universal</span>
+      <span class="dl-tag">Your platform</span>
+    </a>
+  </div>
+
+  <div class="wad-note">
+    <strong>Online or solo:</strong>
+    Rift connects to the shared galaxy by default so you can battle other pilots.
+    Prefer to play alone? Launch with <code style="color:var(--text-dim)">--offline</code>
+    and your fleet is saved locally — no account, no connection required.
+  </div>
+</div>
+
+<!-- FEATURES -->
+<hr class="divider">
+<div id="features">
+  <div class="section">
+    <p class="label">// The Game</p>
+    <h2 class="heading">Build a fleet. Win the galaxy.</h2>
+    <p class="intro">
+      Every system — fleets, combat, ranks, the economy — written from scratch in Rust,
+      and the exact same rules run whether you play solo or online.
+    </p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <span class="feature-tag">Fleet</span>
+        <p class="feature-title">Fleet Management</p>
+        <p class="feature-body">Buy, sell, repair, and field up to 20 ships drawn from 30 hulls across six tiers — from the nimble Falcon to the endgame Leviathan.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-tag">Combat</span>
+        <p class="feature-title">Tactical Battles</p>
+        <p class="feature-body">Choose Aggressive, Defensive, or Tactical formations. Shield-reduced damage, evasion rolls, and per-ship fire rate decide 1v1 duels up to 20v20 fleet clashes.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-tag">Progress</span>
+        <p class="feature-title">Ranks &amp; Economy</p>
+        <p class="feature-body">Climb 11 ranks from Recruit to Fleet Admiral, each unlocking stat bonuses and bigger fleets. Earn credits through rank-gated work between battles.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-tag">Online</span>
+        <p class="feature-title">Shared Galaxy</p>
+        <p class="feature-body">Fight real pilots with ELO ranking and a live leaderboard. Autonomous NPC fleets patrol the galaxy around the clock, so there's always a target.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MULTIPLAYER -->
+<hr class="divider">
+<div id="multiplayer" class="section">
+  <p class="label">// Multiplayer</p>
+  <h2 class="heading">Play together</h2>
+  <p class="intro">
+    Multiplayer is on by default. You join the shared galaxy the moment you launch —
+    register a pilot and your fleet, ELO, and rank persist on the server.
+  </p>
+
+  <div class="mp-grid">
+    <div class="mp-card">
+      <p class="mp-label">Automatic</p>
+      <h3>Just run the game</h3>
+      <p>No server address to hunt down. Rift connects to the shared galaxy on launch. Sign in, build your fleet, and challenge anyone on the leaderboard.</p>
+      <p class="mp-tip">
+        <strong>--name YourCallsign</strong> to set your pilot name &nbsp;·&nbsp;
+        <strong>--offline</strong> to play solo.
+      </p>
+    </div>
+    <div class="mp-card">
+      <p class="mp-label">Self-hosted</p>
+      <h3>Run your own server</h3>
+      <p>The server needs no GPU or window. SSH into any machine — including a cloud instance — and run one command to host your own galaxy.</p>
+      <div class="code-block">./rift server --port 7777</div>
+      <p class="mp-tip">
+        Open port <strong>7777 TCP</strong> inbound, then have others connect with<br>
+        <strong>--connect your-ip:7777</strong>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<hr class="divider">
+<footer>
+  <span class="footer-logo">RIFT</span>
+  <ul class="footer-links">
+    <li><a href="https://github.com/FurryCoder67/Rift">GitHub</a></li>
+    <li><a href="https://github.com/FurryCoder67/Rift/issues">Report a bug</a></li>
+    <li><a href="https://rustup.rs">Install Rust</a></li>
+  </ul>
+  <p class="footer-note">Built in pure Rust. Command your fleet. Take the galaxy.</p>
+</footer>
+
+<script>
+/* ── STARFIELD + DRIFTING FLEET ─────────────────────────────── */
+(function () {
+  var canvas = document.getElementById('starfield');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var W = 0, H = 0, stars = [], ships = [];
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function resize() {
+    W = canvas.width = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+    stars = [];
+    var count = Math.min(220, Math.floor(W * H / 6000));
+    for (var i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        z: rand(0.2, 1),        // depth → size + speed
+      });
+    }
+    ships = [];
+    for (var s = 0; s < 5; s++) {
+      ships.push({
+        x: rand(0, W), y: rand(H * 0.1, H * 0.8),
+        v: rand(8, 22), size: rand(6, 14),
+      });
+    }
+  }
+
+  function drawShip(sh) {
+    ctx.save();
+    ctx.translate(sh.x, sh.y);
+    ctx.beginPath();
+    ctx.moveTo(sh.size, 0);
+    ctx.lineTo(-sh.size * 0.7, sh.size * 0.55);
+    ctx.lineTo(-sh.size * 0.3, 0);
+    ctx.lineTo(-sh.size * 0.7, -sh.size * 0.55);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(212,136,26,0.16)';
+    ctx.strokeStyle = 'rgba(212,136,26,0.55)';
+    ctx.lineWidth = 1;
+    ctx.fill();
+    ctx.stroke();
+    // engine glow
+    ctx.beginPath();
+    ctx.arc(-sh.size * 0.5, 0, 1.6, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(229,42,42,0.8)';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  var last = null;
+  function frame(ts) {
+    if (!last) last = ts;
+    var dt = Math.min((ts - last) / 1000, 0.1);
+    last = ts;
+
+    ctx.clearRect(0, 0, W, H);
+
+    for (var i = 0; i < stars.length; i++) {
+      var st = stars[i];
+      if (!reduced) {
+        st.x -= (10 + st.z * 40) * dt;
+        if (st.x < 0) { st.x = W; st.y = Math.random() * H; }
+      }
+      var r = st.z * 1.6;
+      ctx.beginPath();
+      ctx.arc(st.x, st.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(218,210,188,' + (0.25 + st.z * 0.5) + ')';
+      ctx.fill();
+    }
+
+    for (var s = 0; s < ships.length; s++) {
+      var sh = ships[s];
+      if (!reduced) {
+        sh.x += sh.v * dt;
+        if (sh.x - sh.size > W) { sh.x = -sh.size * 2; sh.y = rand(H * 0.1, H * 0.8); }
+      }
+      drawShip(sh);
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(frame);
+})();
+
+/* ── PLATFORM DETECTION ──────────────────────────────────── */
+(function () {
+  var ua = navigator.userAgent || '';
+  var platform = navigator.platform || '';
+  var id = null;
+
+  if (/Win/i.test(platform) || /Windows/i.test(ua))        id = 'dl-windows';
+  else if (/Mac/i.test(platform) || /Mac OS/i.test(ua))    id = 'dl-mac';
+  else if (/Linux|X11/i.test(platform) || /Linux/i.test(ua)) id = 'dl-linux';
+
+  if (id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.classList.add('detected');
+  }
+})();
+</script>
+</body>
+</html>

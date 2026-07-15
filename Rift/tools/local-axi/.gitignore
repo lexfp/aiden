@@ -1,0 +1,9 @@
+node_modules/
+*.log
+.lavish/
+
+# The vendored packages ship prebuilt dist/ — that IS the code we ship here, so it
+# must be tracked, overriding the repo-wide `dist/` ignore. (node_modules stays
+# ignored: git cannot re-include paths whose parent dir is excluded.)
+!**/dist/
+!**/dist/**

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animal Translator — Aiden</title>
+<meta name="description" content="Coming soon: point your camera at your pet and get a read on their mood and what they want.">
+<script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+
+<nav class="nav" id="site-nav">
+  <div class="nav-inner">
+    <a class="brand" href="/">Aiden<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="/breed-detector">Breed Detector <span class="badge badge-live">Live</span></a></li>
+      <li><a href="/rift">Rift <span class="badge badge-game">Game</span></a></li>
+      <li><a href="/animal-translator" class="active">Animal Translator <span class="badge badge-soon">Soon</span></a></li>
+      <li><a href="/about">About</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark/light mode">☀️</button>
+      <a class="gh-btn" href="https://github.com/lexfp/aiden">GitHub</a>
+      <button class="icon-btn hamburger" id="hamburger" aria-label="Menu">☰</button>
+    </div>
+  </div>
+  <div class="mobile-menu">
+    <a href="/breed-detector">Breed Detector <span class="badge badge-live">Live</span></a>
+    <a href="/rift">Rift <span class="badge badge-game">Game</span></a>
+    <a href="/animal-translator" class="active">Animal Translator <span class="badge badge-soon">Soon</span></a>
+    <a href="/about">About</a>
+    <a href="https://github.com/lexfp/aiden">GitHub ↗</a>
+  </div>
+</nav>
+
+<main>
+  <header class="page-header">
+    <span class="pill">Coming soon</span>
+    <h1>🔮 Animal <span class="grad">Translator</span></h1>
+    <p class="sub">
+      The next step for AniTrans: point your camera at your cat or dog and get a read on their
+      mood and what they want — hungry, playful, sleepy, or plotting something. It needs a
+      labeled dataset of pet behavior, so it's still in training.
+    </p>
+  </header>
+
+  <div class="card" style="max-width: 520px; margin: 0 auto; text-align: center;">
+    <h2 style="margin-bottom: 0.4rem;">Get notified</h2>
+    <p class="muted" style="margin-bottom: 1.2rem;">Drop your email and I'll let you know when it launches.</p>
+    <form class="notify-form" id="notify-form">
+      <input type="email" id="notify-email" placeholder="you@example.com" required>
+      <button type="submit" class="btn-accent">Notify me</button>
+    </form>
+    <p class="notify-success" id="notify-success">✅ You're on the list! I'll email you when the translator goes live.</p>
+  </div>
+
+  <p style="text-align: center; margin-top: 2.5rem;" class="muted">
+    In the meantime, the <a href="/breed-detector">Breed Detector</a> is live — see if it can guess your pet's breed.
+  </p>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <p class="footer-name">Aiden<span style="color:var(--accent)">.</span></p>
+      <p class="footer-tag">Student developer building ML tools and games.</p>
+    </div>
+    <ul class="footer-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/breed-detector">Breed Detector</a></li>
+      <li><a href="/rift">Rift</a></li>
+      <li><a href="/animal-translator">Animal Translator</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="https://github.com/lexfp/aiden">GitHub</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script src="/assets/site.js"></script>
+<script>
+  document.getElementById('notify-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    this.style.display = 'none';
+    document.getElementById('notify-success').style.display = 'block';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "seed": 7,
+  "actions": [
+    { "Register": { "nickname": "Campaigner", "password": "pwd" } },
+    { "Buy": { "ship_id": 1 } },
+    { "Activate": { "ship_number": 77 } },
+    { "Battle": { "opponent_id": 1, "formation": "Aggressive" } }
+  ],
+  "expect": { "credits": 500, "rank": "Recruit" }
+}

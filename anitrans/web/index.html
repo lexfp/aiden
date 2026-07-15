@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AniTrans — What breed is your pet?</title>
+<style>
+  :root {
+    --bg: #0f1115; --card: #1a1d24; --text: #e8eaed; --muted: #9aa0a6;
+    --accent: #7c9cff; --bar: #2a2f3a;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f6f7f9; --card: #ffffff; --text: #1a1d24; --muted: #5f6368; --bar: #e8eaf1; }
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; padding: 3rem 1rem;
+  }
+  h1 { font-size: 2rem; margin-bottom: .3rem; }
+  .subtitle { color: var(--muted); margin-bottom: 2rem; text-align: center; }
+  .card {
+    background: var(--card); border-radius: 16px; padding: 1.5rem;
+    width: 100%; max-width: 480px; box-shadow: 0 4px 24px rgba(0,0,0,.15);
+  }
+  #dropzone {
+    border: 2px dashed var(--muted); border-radius: 12px;
+    padding: 2rem 1rem; text-align: center;
+    transition: border-color .2s, background .2s;
+  }
+  #dropzone.dragover { border-color: var(--accent); background: rgba(124,156,255,.08); }
+  #dropzone p { color: var(--muted); margin-bottom: 1rem; }
+  .btn-row { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: .65rem 1.25rem; border-radius: 10px; cursor: pointer;
+    font-size: 1rem; border: none; background: var(--accent); color: #0f1115;
+    font-weight: 600;
+  }
+  .btn.secondary { background: none; border: 1px solid var(--muted); color: var(--text); font-weight: 400; }
+  .btn.secondary:hover { border-color: var(--accent); }
+  #camera-view { display: none; text-align: center; }
+  #camera-stream { width: 100%; border-radius: 12px; margin-bottom: 1rem; background: #000; }
+  #preview { max-width: 100%; border-radius: 12px; display: none; margin-bottom: 1rem; }
+  #results { margin-top: 1.25rem; display: none; }
+  .pred { margin-bottom: .8rem; }
+  .pred-label { display: flex; justify-content: space-between; font-size: .95rem; margin-bottom: .25rem; }
+  .pred-label .pct { color: var(--muted); }
+  .species { font-size: .8rem; color: var(--muted); margin-left: .4rem; }
+  .bar { height: 8px; background: var(--bar); border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 4px; width: 0; transition: width .5s ease; }
+  .top-pred .pred-label { font-size: 1.15rem; font-weight: 600; }
+  #status { color: var(--muted); margin-top: 1rem; text-align: center; display: none; }
+  #error { color: #ff8a80; margin-top: 1rem; text-align: center; display: none; }
+  #reset { display: none; margin: 1.25rem auto 0; }
+</style>
+</head>
+<body>
+  <h1>🐾 AniTrans</h1>
+  <p class="subtitle">Take or upload a photo of your cat or dog and I'll guess the breed.</p>
+
+  <div class="card">
+    <img id="preview" alt="your pet">
+
+    <div id="dropzone">
+      <p><strong>Drop a photo here</strong>, or</p>
+      <div class="btn-row">
+        <button class="btn" id="camera-btn">📷 Take a photo</button>
+        <button class="btn secondary" id="upload-btn">🖼️ Upload a photo</button>
+      </div>
+    </div>
+
+    <div id="camera-view">
+      <video id="camera-stream" autoplay playsinline></video>
+      <div class="btn-row">
+        <button class="btn" id="snap-btn">📸 Snap</button>
+        <button class="btn secondary" id="cancel-camera-btn">Cancel</button>
+      </div>
+    </div>
+
+    <input type="file" id="file-input" accept="image/*" hidden>
+    <!-- fallback: on phones this opens the native camera directly -->
+    <input type="file" id="capture-input" accept="image/*" capture="environment" hidden>
+
+    <p id="status">Thinking…</p>
+    <p id="error"></p>
+    <div id="results"></div>
+    <button id="reset" class="btn secondary">Try another photo</button>
+  </div>
+
+<script>
+  const dropzone = document.getElementById('dropzone');
+  const cameraView = document.getElementById('camera-view');
+  const video = document.getElementById('camera-stream');
+  const fileInput = document.getElementById('file-input');
+  const captureInput = document.getElementById('capture-input');
+  const preview = document.getElementById('preview');
+  const results = document.getElementById('results');
+  const status = document.getElementById('status');
+  const error = document.getElementById('error');
+  const resetBtn = document.getElementById('reset');
+
+  let stream = null;
+
+  // --- Upload ---
+  document.getElementById('upload-btn').addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => fileInput.files[0] && handleFile(fileInput.files[0]));
+  captureInput.addEventListener('change', () => captureInput.files[0] && handleFile(captureInput.files[0]));
+
+  // --- Drag & drop ---
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+
+  // --- Camera ---
+  document.getElementById('camera-btn').addEventListener('click', async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      // No webcam API (or not a secure context) — on phones this still opens the camera app.
+      captureInput.click();
+      return;
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 } },
+        audio: false,
+      });
+      video.srcObject = stream;
+      dropzone.style.display = 'none';
+      cameraView.style.display = 'block';
+      error.style.display = 'none';
+    } catch (err) {
+      captureInput.click(); // permission denied or no camera — fall back to file picker
+    }
+  });
+
+  document.getElementById('snap-btn').addEventListener('click', () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    stopCamera();
+    canvas.toBlob(blob => handleFile(blob), 'image/jpeg', 0.92);
+  });
+
+  document.getElementById('cancel-camera-btn').addEventListener('click', () => {
+    stopCamera();
+    dropzone.style.display = 'block';
+  });
+
+  function stopCamera() {
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+    }
+    video.srcObject = null;
+    cameraView.style.display = 'none';
+  }
+
+  // --- Reset ---
+  resetBtn.addEventListener('click', () => {
+    preview.style.display = 'none';
+    results.style.display = 'none';
+    error.style.display = 'none';
+    resetBtn.style.display = 'none';
+    dropzone.style.display = 'block';
+    fileInput.value = '';
+    captureInput.value = '';
+  });
+
+  // --- Predict ---
+  async function handleFile(file) {
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    dropzone.style.display = 'none';
+    error.style.display = 'none';
+    results.style.display = 'none';
+    status.style.display = 'block';
+
+    const form = new FormData();
+    form.append('file', file, file.name || 'photo.jpg');
+
+    try {
+      const res = await fetch('/predict', { method: 'POST', body: form });
+      if (!res.ok) {
+        const detail = (await res.json()).detail || res.statusText;
+        throw new Error(detail);
+      }
+      render((await res.json()).predictions);
+    } catch (err) {
+      error.textContent = err.message;
+      error.style.display = 'block';
+    } finally {
+      status.style.display = 'none';
+      resetBtn.style.display = 'block';
+    }
+  }
+
+  function render(preds) {
+    results.innerHTML = '';
+    preds.forEach((p, i) => {
+      const div = document.createElement('div');
+      div.className = 'pred' + (i === 0 ? ' top-pred' : '');
+      div.innerHTML = `
+        <div class="pred-label">
+          <span>${p.breed}<span class="species">${p.species === 'cat' ? '🐱' : '🐶'}</span></span>
+          <span class="pct">${(p.confidence * 100).toFixed(1)}%</span>
+        </div>
+        <div class="bar"><div class="bar-fill"></div></div>`;
+      results.appendChild(div);
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          div.querySelector('.bar-fill').style.width = (p.confidence * 100) + '%';
+        })
+      );
+    });
+    results.style.display = 'block';
+  }
+</script>
+</body>
+</html>
