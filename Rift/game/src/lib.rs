@@ -12,10 +12,13 @@ mod icons;
 mod ship_art;
 pub mod theme;
 
+#[cfg(not(target_arch = "wasm32"))]
 use network::{GameApi, LocalApi, RemoteApi};
+#[cfg(not(target_arch = "wasm32"))]
 use std::path::PathBuf;
 
 /// How to launch the client.
+#[cfg(not(target_arch = "wasm32"))]
 pub struct GameConfig {
     /// Server to connect to. `None` runs offline against a local save.
     pub server_addr: Option<String>,
@@ -34,6 +37,7 @@ pub struct GameConfig {
 }
 
 /// Build the backend and run the app. Blocks until the window closes.
+#[cfg(not(target_arch = "wasm32"))]
 pub fn run(config: GameConfig) -> Result<(), String> {
     let save_path = config.save_path.to_string_lossy().to_string();
 

@@ -1,0 +1,17 @@
+{
+  "name": "Rift — Fleet Battles",
+  "short_name": "Rift",
+  "description": "A spaceship fleet-battle game. Build a fleet, pick your formation, climb 11 military ranks, and take the galaxy.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#08080A",
+  "theme_color": "#08080A",
+  "categories": ["games"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -28,4 +28,4 @@ default = ["client"]
 client = ["dep:game", "game/agent"]
 
 [workspace]
-members = ["sim", "network", "game", "testkit", "math"]
+members = ["sim", "network", "game", "testkit", "math", "web"]

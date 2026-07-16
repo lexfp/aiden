@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Rift — Fleet Battles</title>
+  <meta name="description" content="Rift: a spaceship fleet-battle game for your phone. Build a fleet, climb the ranks, take the galaxy.">
+  <meta name="theme-color" content="#08080A">
+
+  <!-- Installable web app -->
+  
+  
+  
+  
+  
+  
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+  <!-- iPhone: Add to Home Screen -->
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Rift">
+
+  <!-- The game itself -->
+  
+<script type="module">
+import init, * as bindings from './rift-web.js';
+const wasm = await init({ module_or_path: './rift-web_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #08080A;
+      overscroll-behavior: none;
+      position: fixed; /* stop iOS Safari rubber-banding the page */
+      inset: 0;
+    }
+
+    #rift_canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      touch-action: none; /* the game handles all gestures */
+      outline: none;
+    }
+
+    #loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      color: #DAD2BC;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.3em;
+      font-size: 0.8rem;
+      background: #08080A;
+      z-index: 10;
+    }
+
+    #loading .bolt {
+      width: 64px;
+      height: 64px;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+  </style>
+<link rel="modulepreload" href="./rift-web.js" crossorigin="anonymous" integrity="sha384-0NBg6qh0at3I9Rq1KBI1qhC6N6Iml+v83x+LMeudsXyy5T1xN4VTHg3ezz+LIEkD"><link rel="preload" href="./rift-web_bg.wasm" crossorigin="anonymous" integrity="sha384-dFGewCi+fa4W4ufW+S0dA7tjNZqfKCglazLijaiLa/uSgOCYDdssIlogBYLZtKJM" as="fetch" type="application/wasm"></head>
+<body>
+  <canvas id="rift_canvas"></canvas>
+  <div id="loading">
+    <svg class="bolt" viewBox="0 0 64 64"><path d="M40 12 L26 32 L36 32 L24 52 L46 28 L34 28 Z" fill="#C41A1A"/></svg>
+    LOADING RIFT
+  </div>
+
+  <script>
+    // Hide the loader once the wasm app has taken over the canvas.
+    window.addEventListener('TrunkApplicationStarted', function () {
+      var el = document.getElementById('loading');
+      if (el) el.remove();
+    });
+
+    // Offline support + installability.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
+</body>
+</html>

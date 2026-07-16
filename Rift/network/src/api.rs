@@ -2,9 +2,12 @@
 //! local [`World`] in-process) or online (sending requests to a server). The
 //! screens never need to know which.
 
+#[cfg(not(target_arch = "wasm32"))]
 use crate::client::Client;
+#[cfg(not(target_arch = "wasm32"))]
+use crate::protocol::{Request, Response};
 use crate::protocol::{
-    BattleResultDto, BattleSummary, LeaderboardEntry, OpponentInfo, PlayerSnapshot, Request, Response,
+    BattleResultDto, BattleSummary, LeaderboardEntry, OpponentInfo, PlayerSnapshot,
 };
 use crate::world::World;
 use sim::ship::ShipTemplate;
@@ -48,13 +51,32 @@ pub struct LocalApi {
 impl LocalApi {
     /// Open a local single-player world at `path` (a save-file path, or
     /// ":memory:" for a throwaway world).
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn open(path: &str) -> Result<Self, String> {
         Ok(LocalApi { world: World::open(path)?, user_id: None })
     }
 
     /// Open a deterministic local world: all randomness is seeded from `seed`.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn open_seeded(path: &str, seed: u64) -> Result<Self, String> {
         Ok(LocalApi { world: World::open_seeded(path, seed)?, user_id: None })
+    }
+
+    /// Open an in-memory single-player world, restoring `save_json` when given
+    /// (a previous [`LocalApi::export_save`]). Used by the mobile/web build,
+    /// which keeps the save in localStorage.
+    pub fn open_mem(save_json: Option<&str>) -> Result<Self, String> {
+        let world = match save_json {
+            Some(json) => World::from_json(json)?,
+            None => World::open_mem()?,
+        };
+        Ok(LocalApi { world, user_id: None })
+    }
+
+    /// Serialize the whole in-memory world so the caller can persist it.
+    /// Errors on the SQLite backend (which persists itself).
+    pub fn export_save(&self) -> Result<String, String> {
+        self.world.to_json()
     }
 
     fn id(&self) -> Result<u32, String> {
@@ -141,10 +163,12 @@ impl GameApi for LocalApi {
 }
 
 /// Online backend: forwards every call to the server as an RPC.
+#[cfg(not(target_arch = "wasm32"))]
 pub struct RemoteApi {
     client: Client,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl RemoteApi {
     pub fn connect(addr: &str) -> Result<Self, String> {
         Ok(RemoteApi { client: Client::connect(addr)? })
@@ -161,6 +185,7 @@ impl RemoteApi {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl GameApi for RemoteApi {
     fn register(&mut self, nickname: &str, password: &str) -> Result<PlayerSnapshot, String> {
         self.snapshot_call(Request::Register { nickname: nickname.into(), password: password.into() })

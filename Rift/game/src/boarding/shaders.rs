@@ -5,7 +5,15 @@
 
 pub const MAX_LIGHTS: usize = 8;
 
-pub const VERT: &str = r#"#version 330 core
+/// Per-target GLSL preamble: desktop GL gets 330 core, WebGL2 gets ES 3.00
+/// (which requires explicit fragment precision; the precision statements are
+/// legal no-ops on desktop). The renderer prepends this to both stages.
+#[cfg(not(target_arch = "wasm32"))]
+pub const GLSL_HEADER: &str = "#version 330 core\n";
+#[cfg(target_arch = "wasm32")]
+pub const GLSL_HEADER: &str = "#version 300 es\nprecision highp float;\nprecision highp int;\n";
+
+pub const VERT: &str = r#"
 layout(location = 0) in vec3 a_pos;
 layout(location = 1) in vec3 a_normal;
 layout(location = 2) in vec3 a_albedo;
@@ -24,7 +32,7 @@ void main() {
 }
 "#;
 
-pub const FRAG: &str = r#"#version 330 core
+pub const FRAG: &str = r#"
 in vec3 v_pos;
 in vec3 v_normal;
 in vec3 v_albedo;

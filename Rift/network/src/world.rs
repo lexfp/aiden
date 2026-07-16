@@ -1,6 +1,8 @@
-//! The authoritative game world, persisted in SQLite. Both the dedicated server
-//! and the offline single-player client drive the exact same `World` so the
-//! rules never diverge.
+//! The authoritative game world. Both the dedicated server and the offline
+//! single-player client drive the exact same `World` so the rules never
+//! diverge. Two storage backends exist behind one API: SQLite on native
+//! (server + desktop dev builds), and a serializable in-memory store used by
+//! the mobile/web build, which persists it as JSON (e.g. to localStorage).
 
 use crate::protocol::{
     BattleResultDto, BattleSummary, LeaderboardEntry, OpponentInfo, PlayerSnapshot,
@@ -8,20 +10,78 @@ use crate::protocol::{
 use rand::rngs::StdRng;
 use rand::{RngCore, SeedableRng};
 use rand_chacha::ChaCha8Rng;
+#[cfg(not(target_arch = "wasm32"))]
 use rusqlite::{params, Connection, OptionalExtension};
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use sim::economy;
 use sim::ship::{OwnedShip, ShipStatus};
 use sim::user::{Formation, User};
 use sim::{combat, SHIPYARD_REPAIR_COOLDOWN_SECONDS};
 use std::cell::RefCell;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Result type for world operations; the `String` is a user-facing message.
 pub type WorldResult<T> = Result<T, String>;
 
+// -- storage backends --------------------------------------------------------
+
+/// One user row of the in-memory store.
+#[derive(Clone, Serialize, Deserialize)]
+struct MemUser {
+    user_id: u32,
+    nickname: String,
+    password_hash: String,
+    last_work_at: i64,
+    data: User,
+}
+
+/// One owned-ship row of the in-memory store.
+#[derive(Clone, Serialize, Deserialize)]
+struct MemShip {
+    ship_number: u32,
+    user_id: u32,
+    last_repair_at: i64,
+    data: OwnedShip,
+}
+
+/// One battle-history row of the in-memory store.
+#[derive(Clone, Serialize, Deserialize)]
+struct MemBattle {
+    battle_id: i64,
+    timestamp: i64,
+    winner_user_id: Option<u32>,
+    user1_id: u32,
+    user2_id: u32,
+    data: BattleResultDto,
+}
+
+/// The whole world as plain data — serializable, so the web build can stash it
+/// in localStorage between sessions. Mirrors the SQLite schema exactly.
+#[derive(Default, Serialize, Deserialize)]
+struct MemDb {
+    next_user_id: u32,
+    next_ship_number: u32,
+    next_battle_id: i64,
+    seeded: bool,
+    users: Vec<MemUser>,
+    ships: Vec<MemShip>,
+    battles: Vec<MemBattle>,
+}
+
+impl MemDb {
+    fn new() -> MemDb {
+        MemDb { next_user_id: 1, next_ship_number: 1, next_battle_id: 1, ..Default::default() }
+    }
+}
+
+enum Db {
+    #[cfg(not(target_arch = "wasm32"))]
+    Sqlite(Connection),
+    Mem(RefCell<MemDb>),
+}
+
 pub struct World {
-    db: Connection,
+    db: Db,
     /// When `Some`, all battle/work randomness is drawn from this deterministic
     /// generator so runs are reproducible. `None` keeps the entropy behaviour
     /// used by normal play. `RefCell` so the existing `&self` methods can draw
@@ -29,8 +89,16 @@ pub struct World {
     rng: RefCell<Option<ChaCha8Rng>>,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn now_unix() -> i64 {
+    use std::time::{SystemTime, UNIX_EPOCH};
     SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0)
+}
+
+/// `SystemTime::now` panics in the browser; use the JS clock instead.
+#[cfg(target_arch = "wasm32")]
+fn now_unix() -> i64 {
+    (js_sys::Date::now() / 1000.0) as i64
 }
 
 fn hash_password(nickname: &str, password: &str) -> String {
@@ -46,9 +114,10 @@ fn map_err<E: std::fmt::Display>(e: E) -> String {
 impl World {
     /// Open (or create) the world database at `path` (use ":memory:" for a
     /// transient world). Creates the schema and seeds NPCs on first use.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn open(path: &str) -> WorldResult<World> {
         let db = Connection::open(path).map_err(map_err)?;
-        let world = World { db, rng: RefCell::new(None) };
+        let world = World { db: Db::Sqlite(db), rng: RefCell::new(None) };
         world.init_schema()?;
         world.seed_if_empty()?;
         Ok(world)
@@ -58,12 +127,47 @@ impl World {
     /// deterministic `ChaCha8Rng` seeded with `seed`, so identical action
     /// sequences produce identical random outcomes (cooldown checks still use
     /// wall-clock time).
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn open_seeded(path: &str, seed: u64) -> WorldResult<World> {
         let db = Connection::open(path).map_err(map_err)?;
-        let world = World { db, rng: RefCell::new(Some(ChaCha8Rng::seed_from_u64(seed))) };
+        let world =
+            World { db: Db::Sqlite(db), rng: RefCell::new(Some(ChaCha8Rng::seed_from_u64(seed))) };
         world.init_schema()?;
         world.seed_if_empty()?;
         Ok(world)
+    }
+
+    /// Open a fresh in-memory world (NPCs seeded). Persist it with
+    /// [`World::to_json`] and restore it with [`World::from_json`].
+    pub fn open_mem() -> WorldResult<World> {
+        let world = World { db: Db::Mem(RefCell::new(MemDb::new())), rng: RefCell::new(None) };
+        world.seed_if_empty()?;
+        Ok(world)
+    }
+
+    /// In-memory world with deterministic battle/work randomness.
+    pub fn open_mem_seeded(seed: u64) -> WorldResult<World> {
+        let world = World {
+            db: Db::Mem(RefCell::new(MemDb::new())),
+            rng: RefCell::new(Some(ChaCha8Rng::seed_from_u64(seed))),
+        };
+        world.seed_if_empty()?;
+        Ok(world)
+    }
+
+    /// Restore an in-memory world from a [`World::to_json`] export.
+    pub fn from_json(json: &str) -> WorldResult<World> {
+        let mem: MemDb = serde_json::from_str(json).map_err(map_err)?;
+        Ok(World { db: Db::Mem(RefCell::new(mem)), rng: RefCell::new(None) })
+    }
+
+    /// Export the whole world as JSON. Only supported on the in-memory backend.
+    pub fn to_json(&self) -> WorldResult<String> {
+        match &self.db {
+            Db::Mem(mem) => serde_json::to_string(&*mem.borrow()).map_err(map_err),
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(_) => Err("export is only supported for in-memory worlds".into()),
+        }
     }
 
     /// Run `f` with a mutable RNG: the deterministic one when seeded, otherwise
@@ -81,125 +185,356 @@ impl World {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn init_schema(&self) -> WorldResult<()> {
-        self.db
-            .execute_batch(
-                "CREATE TABLE IF NOT EXISTS users (
-                    user_id       INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nickname      TEXT UNIQUE NOT NULL,
-                    password_hash TEXT NOT NULL,
-                    last_work_at  INTEGER NOT NULL DEFAULT 0,
-                    data          TEXT NOT NULL
-                 );
-                 CREATE TABLE IF NOT EXISTS owned_ships (
-                    ship_number    INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_id        INTEGER NOT NULL,
-                    last_repair_at INTEGER NOT NULL DEFAULT 0,
-                    data           TEXT NOT NULL
-                 );
-                 CREATE INDEX IF NOT EXISTS idx_owned_user ON owned_ships(user_id);
-                 CREATE TABLE IF NOT EXISTS battle_history (
-                    battle_id      INTEGER PRIMARY KEY AUTOINCREMENT,
-                    timestamp      INTEGER NOT NULL,
-                    winner_user_id INTEGER,
-                    user1_id       INTEGER NOT NULL,
-                    user2_id       INTEGER NOT NULL,
-                    data           TEXT NOT NULL
-                 );
-                 CREATE TABLE IF NOT EXISTS meta ( key TEXT PRIMARY KEY, value TEXT );",
-            )
-            .map_err(map_err)?;
+        let Db::Sqlite(db) = &self.db else { return Ok(()) };
+        db.execute_batch(
+            "CREATE TABLE IF NOT EXISTS users (
+                user_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+                nickname      TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                last_work_at  INTEGER NOT NULL DEFAULT 0,
+                data          TEXT NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS owned_ships (
+                ship_number    INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id        INTEGER NOT NULL,
+                last_repair_at INTEGER NOT NULL DEFAULT 0,
+                data           TEXT NOT NULL
+             );
+             CREATE INDEX IF NOT EXISTS idx_owned_user ON owned_ships(user_id);
+             CREATE TABLE IF NOT EXISTS battle_history (
+                battle_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp      INTEGER NOT NULL,
+                winner_user_id INTEGER,
+                user1_id       INTEGER NOT NULL,
+                user2_id       INTEGER NOT NULL,
+                data           TEXT NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS meta ( key TEXT PRIMARY KEY, value TEXT );",
+        )
+        .map_err(map_err)?;
         Ok(())
     }
 
     // -- persistence helpers ------------------------------------------------
 
     fn load_user_by_id(&self, user_id: u32) -> WorldResult<Option<User>> {
-        self.db
-            .query_row("SELECT data FROM users WHERE user_id = ?1", params![user_id], |row| {
-                row.get::<_, String>(0)
-            })
-            .optional()
-            .map_err(map_err)?
-            .map(|json| serde_json::from_str::<User>(&json).map_err(map_err))
-            .transpose()
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => db
+                .query_row("SELECT data FROM users WHERE user_id = ?1", params![user_id], |row| {
+                    row.get::<_, String>(0)
+                })
+                .optional()
+                .map_err(map_err)?
+                .map(|json| serde_json::from_str::<User>(&json).map_err(map_err))
+                .transpose(),
+            Db::Mem(mem) => {
+                Ok(mem.borrow().users.iter().find(|u| u.user_id == user_id).map(|u| u.data.clone()))
+            }
+        }
     }
 
     fn user_id_by_nickname(&self, nickname: &str) -> WorldResult<Option<(u32, String)>> {
-        self.db
-            .query_row(
-                "SELECT user_id, password_hash FROM users WHERE nickname = ?1 COLLATE NOCASE",
-                params![nickname],
-                |row| Ok((row.get::<_, u32>(0)?, row.get::<_, String>(1)?)),
-            )
-            .optional()
-            .map_err(map_err)
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => db
+                .query_row(
+                    "SELECT user_id, password_hash FROM users WHERE nickname = ?1 COLLATE NOCASE",
+                    params![nickname],
+                    |row| Ok((row.get::<_, u32>(0)?, row.get::<_, String>(1)?)),
+                )
+                .optional()
+                .map_err(map_err),
+            Db::Mem(mem) => Ok(mem
+                .borrow()
+                .users
+                .iter()
+                .find(|u| u.nickname.eq_ignore_ascii_case(nickname))
+                .map(|u| (u.user_id, u.password_hash.clone()))),
+        }
     }
 
     fn save_user(&self, user: &User) -> WorldResult<()> {
-        let json = serde_json::to_string(user).map_err(map_err)?;
-        self.db
-            .execute("UPDATE users SET data = ?1 WHERE user_id = ?2", params![json, user.user_id])
-            .map_err(map_err)?;
-        Ok(())
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                let json = serde_json::to_string(user).map_err(map_err)?;
+                db.execute(
+                    "UPDATE users SET data = ?1 WHERE user_id = ?2",
+                    params![json, user.user_id],
+                )
+                .map_err(map_err)?;
+                Ok(())
+            }
+            Db::Mem(mem) => {
+                if let Some(row) =
+                    mem.borrow_mut().users.iter_mut().find(|u| u.user_id == user.user_id)
+                {
+                    row.data = user.clone();
+                }
+                Ok(())
+            }
+        }
     }
 
     fn load_ships(&self, user_id: u32) -> WorldResult<Vec<OwnedShip>> {
-        let mut stmt = self
-            .db
-            .prepare("SELECT data FROM owned_ships WHERE user_id = ?1 ORDER BY ship_number")
-            .map_err(map_err)?;
-        let rows = stmt
-            .query_map(params![user_id], |row| row.get::<_, String>(0))
-            .map_err(map_err)?;
-        let mut ships = Vec::new();
-        for r in rows {
-            let json = r.map_err(map_err)?;
-            ships.push(serde_json::from_str::<OwnedShip>(&json).map_err(map_err)?);
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                let mut stmt = db
+                    .prepare("SELECT data FROM owned_ships WHERE user_id = ?1 ORDER BY ship_number")
+                    .map_err(map_err)?;
+                let rows = stmt
+                    .query_map(params![user_id], |row| row.get::<_, String>(0))
+                    .map_err(map_err)?;
+                let mut ships = Vec::new();
+                for r in rows {
+                    let json = r.map_err(map_err)?;
+                    ships.push(serde_json::from_str::<OwnedShip>(&json).map_err(map_err)?);
+                }
+                Ok(ships)
+            }
+            Db::Mem(mem) => {
+                // Rows are stored in insertion order == ship_number order.
+                Ok(mem
+                    .borrow()
+                    .ships
+                    .iter()
+                    .filter(|s| s.user_id == user_id)
+                    .map(|s| s.data.clone())
+                    .collect())
+            }
         }
-        Ok(ships)
     }
 
     fn save_ship(&self, ship: &OwnedShip) -> WorldResult<()> {
-        let json = serde_json::to_string(ship).map_err(map_err)?;
-        self.db
-            .execute(
-                "UPDATE owned_ships SET data = ?1 WHERE ship_number = ?2",
-                params![json, ship.ship_number],
-            )
-            .map_err(map_err)?;
-        Ok(())
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                let json = serde_json::to_string(ship).map_err(map_err)?;
+                db.execute(
+                    "UPDATE owned_ships SET data = ?1 WHERE ship_number = ?2",
+                    params![json, ship.ship_number],
+                )
+                .map_err(map_err)?;
+                Ok(())
+            }
+            Db::Mem(mem) => {
+                if let Some(row) =
+                    mem.borrow_mut().ships.iter_mut().find(|s| s.ship_number == ship.ship_number)
+                {
+                    row.data = ship.clone();
+                }
+                Ok(())
+            }
+        }
     }
 
     fn insert_ship(&self, user_id: u32, mut ship: OwnedShip) -> WorldResult<OwnedShip> {
-        // Insert with a placeholder, then patch the JSON with the real rowid.
-        self.db
-            .execute(
-                "INSERT INTO owned_ships (user_id, last_repair_at, data) VALUES (?1, 0, ?2)",
-                params![user_id, "{}"],
-            )
-            .map_err(map_err)?;
-        let ship_number = self.db.last_insert_rowid() as u32;
-        ship.ship_number = ship_number;
-        self.save_ship(&ship)?;
-        Ok(ship)
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                // Insert with a placeholder, then patch the JSON with the real rowid.
+                db.execute(
+                    "INSERT INTO owned_ships (user_id, last_repair_at, data) VALUES (?1, 0, ?2)",
+                    params![user_id, "{}"],
+                )
+                .map_err(map_err)?;
+                let ship_number = db.last_insert_rowid() as u32;
+                ship.ship_number = ship_number;
+                self.save_ship(&ship)?;
+                Ok(ship)
+            }
+            Db::Mem(mem) => {
+                let mut mem = mem.borrow_mut();
+                let ship_number = mem.next_ship_number;
+                mem.next_ship_number += 1;
+                ship.ship_number = ship_number;
+                mem.ships.push(MemShip {
+                    ship_number,
+                    user_id,
+                    last_repair_at: 0,
+                    data: ship.clone(),
+                });
+                Ok(ship)
+            }
+        }
+    }
+
+    fn last_work_at(&self, user_id: u32) -> WorldResult<i64> {
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => Ok(db
+                .query_row(
+                    "SELECT last_work_at FROM users WHERE user_id = ?1",
+                    params![user_id],
+                    |r| r.get(0),
+                )
+                .optional()
+                .map_err(map_err)?
+                .unwrap_or(0)),
+            Db::Mem(mem) => Ok(mem
+                .borrow()
+                .users
+                .iter()
+                .find(|u| u.user_id == user_id)
+                .map(|u| u.last_work_at)
+                .unwrap_or(0)),
+        }
+    }
+
+    fn set_last_work_at(&self, user_id: u32, at: i64) -> WorldResult<()> {
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                db.execute(
+                    "UPDATE users SET last_work_at = ?1 WHERE user_id = ?2",
+                    params![at, user_id],
+                )
+                .map_err(map_err)?;
+                Ok(())
+            }
+            Db::Mem(mem) => {
+                if let Some(row) = mem.borrow_mut().users.iter_mut().find(|u| u.user_id == user_id)
+                {
+                    row.last_work_at = at;
+                }
+                Ok(())
+            }
+        }
+    }
+
+    fn last_repair_at(&self, user_id: u32, ship_number: u32) -> WorldResult<i64> {
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => db
+                .query_row(
+                    "SELECT last_repair_at FROM owned_ships WHERE ship_number = ?1 AND user_id = ?2",
+                    params![ship_number, user_id],
+                    |r| r.get(0),
+                )
+                .optional()
+                .map_err(map_err)?
+                .ok_or_else(|| "Owned ship not found".to_string()),
+            Db::Mem(mem) => mem
+                .borrow()
+                .ships
+                .iter()
+                .find(|s| s.ship_number == ship_number && s.user_id == user_id)
+                .map(|s| s.last_repair_at)
+                .ok_or_else(|| "Owned ship not found".to_string()),
+        }
+    }
+
+    fn set_last_repair_at(&self, ship_number: u32, at: i64) -> WorldResult<()> {
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                db.execute(
+                    "UPDATE owned_ships SET last_repair_at = ?1 WHERE ship_number = ?2",
+                    params![at, ship_number],
+                )
+                .map_err(map_err)?;
+                Ok(())
+            }
+            Db::Mem(mem) => {
+                if let Some(row) =
+                    mem.borrow_mut().ships.iter_mut().find(|s| s.ship_number == ship_number)
+                {
+                    row.last_repair_at = at;
+                }
+                Ok(())
+            }
+        }
+    }
+
+    fn insert_battle(
+        &self,
+        timestamp: i64,
+        winner_user_id: u32,
+        user1_id: u32,
+        user2_id: u32,
+        dto: &BattleResultDto,
+    ) -> WorldResult<()> {
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                let history_json = serde_json::to_string(dto).map_err(map_err)?;
+                db.execute(
+                    "INSERT INTO battle_history (timestamp, winner_user_id, user1_id, user2_id, data) VALUES (?1, ?2, ?3, ?4, ?5)",
+                    params![timestamp, winner_user_id, user1_id, user2_id, history_json],
+                )
+                .map_err(map_err)?;
+                Ok(())
+            }
+            Db::Mem(mem) => {
+                let mut mem = mem.borrow_mut();
+                let battle_id = mem.next_battle_id;
+                mem.next_battle_id += 1;
+                mem.battles.push(MemBattle {
+                    battle_id,
+                    timestamp,
+                    winner_user_id: Some(winner_user_id),
+                    user1_id,
+                    user2_id,
+                    data: dto.clone(),
+                });
+                Ok(())
+            }
+        }
+    }
+
+    fn all_users(&self) -> WorldResult<Vec<(u32, User)>> {
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                let mut stmt = db.prepare("SELECT user_id, data FROM users").map_err(map_err)?;
+                let rows = stmt
+                    .query_map([], |row| {
+                        Ok((row.get::<_, u32>(0)?, row.get::<_, String>(1)?))
+                    })
+                    .map_err(map_err)?;
+                let mut out = Vec::new();
+                for r in rows {
+                    let (id, json) = r.map_err(map_err)?;
+                    out.push((id, serde_json::from_str::<User>(&json).map_err(map_err)?));
+                }
+                Ok(out)
+            }
+            Db::Mem(mem) => {
+                Ok(mem.borrow().users.iter().map(|u| (u.user_id, u.data.clone())).collect())
+            }
+        }
     }
 
     // -- seeding ------------------------------------------------------------
 
     fn seed_if_empty(&self) -> WorldResult<()> {
-        let seeded: Option<String> = self
-            .db
-            .query_row("SELECT value FROM meta WHERE key = 'seeded'", [], |row| row.get(0))
-            .optional()
-            .map_err(map_err)?;
-        if seeded.is_some() {
+        let seeded = match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => db
+                .query_row("SELECT value FROM meta WHERE key = 'seeded'", [], |row| {
+                    row.get::<_, String>(0)
+                })
+                .optional()
+                .map_err(map_err)?
+                .is_some(),
+            Db::Mem(mem) => mem.borrow().seeded,
+        };
+        if seeded {
             return Ok(());
         }
         self.seed_npcs()?;
-        self.db
-            .execute("INSERT INTO meta (key, value) VALUES ('seeded', '1')", [])
-            .map_err(map_err)?;
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                db.execute("INSERT INTO meta (key, value) VALUES ('seeded', '1')", [])
+                    .map_err(map_err)?;
+            }
+            Db::Mem(mem) => mem.borrow_mut().seeded = true,
+        }
         Ok(())
     }
 
@@ -243,27 +578,48 @@ impl World {
     /// Insert a fresh user row and return its assigned id. `data`'s `user_id`
     /// is patched to match the row id.
     fn create_user_row(&self, nickname: &str, password_hash: &str, user: &User) -> WorldResult<u32> {
-        let json = serde_json::to_string(user).map_err(map_err)?;
-        self.db
-            .execute(
-                "INSERT INTO users (nickname, password_hash, last_work_at, data) VALUES (?1, ?2, 0, ?3)",
-                params![nickname, password_hash, json],
-            )
-            .map_err(|e| {
-                if e.to_string().contains("UNIQUE") {
-                    "Nickname already taken".to_string()
-                } else {
-                    e.to_string()
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                let json = serde_json::to_string(user).map_err(map_err)?;
+                db.execute(
+                    "INSERT INTO users (nickname, password_hash, last_work_at, data) VALUES (?1, ?2, 0, ?3)",
+                    params![nickname, password_hash, json],
+                )
+                .map_err(|e| {
+                    if e.to_string().contains("UNIQUE") {
+                        "Nickname already taken".to_string()
+                    } else {
+                        e.to_string()
+                    }
+                })?;
+                let user_id = db.last_insert_rowid() as u32;
+                let mut fixed = user.clone();
+                fixed.user_id = user_id;
+                let json = serde_json::to_string(&fixed).map_err(map_err)?;
+                db.execute("UPDATE users SET data = ?1 WHERE user_id = ?2", params![json, user_id])
+                    .map_err(map_err)?;
+                Ok(user_id)
+            }
+            Db::Mem(mem) => {
+                let mut mem = mem.borrow_mut();
+                if mem.users.iter().any(|u| u.nickname == nickname) {
+                    return Err("Nickname already taken".to_string());
                 }
-            })?;
-        let user_id = self.db.last_insert_rowid() as u32;
-        let mut fixed = user.clone();
-        fixed.user_id = user_id;
-        let json = serde_json::to_string(&fixed).map_err(map_err)?;
-        self.db
-            .execute("UPDATE users SET data = ?1 WHERE user_id = ?2", params![json, user_id])
-            .map_err(map_err)?;
-        Ok(user_id)
+                let user_id = mem.next_user_id;
+                mem.next_user_id += 1;
+                let mut fixed = user.clone();
+                fixed.user_id = user_id;
+                mem.users.push(MemUser {
+                    user_id,
+                    nickname: nickname.to_string(),
+                    password_hash: password_hash.to_string(),
+                    last_work_at: 0,
+                    data: fixed,
+                });
+                Ok(user_id)
+            }
+        }
     }
 
     // -- public API ---------------------------------------------------------
@@ -301,12 +657,7 @@ impl World {
         let bonus = user.rank.bonus();
 
         // Work cooldown remaining.
-        let last_work_at: i64 = self
-            .db
-            .query_row("SELECT last_work_at FROM users WHERE user_id = ?1", params![user_id], |r| r.get(0))
-            .optional()
-            .map_err(map_err)?
-            .unwrap_or(0);
+        let last_work_at = self.last_work_at(user_id)?;
         let cooldown = bonus.work_cooldown_minutes * 60;
         let elapsed = now_unix() - last_work_at;
         let work_cooldown_remaining = (cooldown - elapsed).max(0);
@@ -340,16 +691,7 @@ impl World {
 
     pub fn repair(&self, user_id: u32, ship_number: u32) -> WorldResult<()> {
         // Enforce the repair cooldown.
-        let last_repair_at: i64 = self
-            .db
-            .query_row(
-                "SELECT last_repair_at FROM owned_ships WHERE ship_number = ?1 AND user_id = ?2",
-                params![ship_number, user_id],
-                |r| r.get(0),
-            )
-            .optional()
-            .map_err(map_err)?
-            .ok_or("Owned ship not found")?;
+        let last_repair_at = self.last_repair_at(user_id, ship_number)?;
         let elapsed = now_unix() - last_repair_at;
         if elapsed < SHIPYARD_REPAIR_COOLDOWN_SECONDS {
             return Err(format!("Shipyard busy — wait {}s", SHIPYARD_REPAIR_COOLDOWN_SECONDS - elapsed));
@@ -360,12 +702,7 @@ impl World {
         }
         ship.repair();
         self.save_ship(&ship)?;
-        self.db
-            .execute(
-                "UPDATE owned_ships SET last_repair_at = ?1 WHERE ship_number = ?2",
-                params![now_unix(), ship_number],
-            )
-            .map_err(map_err)?;
+        self.set_last_repair_at(ship_number, now_unix())?;
         Ok(())
     }
 
@@ -415,24 +752,16 @@ impl World {
         }
         let (work_type, income) = self.with_rng(|mut rng| economy::perform_work(&mut user, &mut rng));
         self.save_user(&user)?;
-        self.db
-            .execute("UPDATE users SET last_work_at = ?1 WHERE user_id = ?2", params![now_unix(), user_id])
-            .map_err(map_err)?;
+        self.set_last_work_at(user_id, now_unix())?;
         Ok((work_type.to_string(), income))
     }
 
     pub fn list_opponents(&self, user_id: u32) -> WorldResult<Vec<OpponentInfo>> {
-        let mut stmt = self
-            .db
-            .prepare("SELECT user_id, data FROM users WHERE user_id != ?1")
-            .map_err(map_err)?;
-        let rows = stmt
-            .query_map(params![user_id], |row| Ok((row.get::<_, u32>(0)?, row.get::<_, String>(1)?)))
-            .map_err(map_err)?;
         let mut out = Vec::new();
-        for r in rows {
-            let (id, json) = r.map_err(map_err)?;
-            let user: User = serde_json::from_str(&json).map_err(map_err)?;
+        for (id, user) in self.all_users()? {
+            if id == user_id {
+                continue;
+            }
             let ships = self.load_ships(id)?;
             let active = ships.iter().filter(|s| s.status == ShipStatus::Active).count() as u32;
             if active == 0 {
@@ -519,23 +848,14 @@ impl World {
 
         // Record history.
         let winner_user_id = if player_won { user_id } else { opponent_id };
-        let history_json = serde_json::to_string(&dto).map_err(map_err)?;
-        self.db
-            .execute(
-                "INSERT INTO battle_history (timestamp, winner_user_id, user1_id, user2_id, data) VALUES (?1, ?2, ?3, ?4, ?5)",
-                params![now_unix(), winner_user_id, user_id, opponent_id, history_json],
-            )
-            .map_err(map_err)?;
+        self.insert_battle(now_unix(), winner_user_id, user_id, opponent_id, &dto)?;
 
         Ok(dto)
     }
 
     pub fn leaderboard(&self) -> WorldResult<Vec<LeaderboardEntry>> {
-        let mut stmt = self.db.prepare("SELECT data FROM users").map_err(map_err)?;
-        let rows = stmt.query_map([], |row| row.get::<_, String>(0)).map_err(map_err)?;
         let mut entries = Vec::new();
-        for r in rows {
-            let user: User = serde_json::from_str(&r.map_err(map_err)?).map_err(map_err)?;
+        for (_, user) in self.all_users()? {
             entries.push(LeaderboardEntry {
                 nickname: user.nickname.clone(),
                 elo: user.elo_rank,
@@ -551,43 +871,63 @@ impl World {
     }
 
     pub fn history(&self, user_id: u32) -> WorldResult<Vec<BattleSummary>> {
-        let mut stmt = self
-            .db
-            .prepare(
-                "SELECT battle_id, timestamp, winner_user_id, data FROM battle_history
-                 WHERE user1_id = ?1 OR user2_id = ?1 ORDER BY battle_id DESC LIMIT 50",
-            )
-            .map_err(map_err)?;
-        let rows = stmt
-            .query_map(params![user_id], |row| {
-                Ok((
-                    row.get::<_, i64>(0)?,
-                    row.get::<_, i64>(1)?,
-                    row.get::<_, Option<u32>>(2)?,
-                    row.get::<_, String>(3)?,
-                ))
-            })
-            .map_err(map_err)?;
-        let mut out = Vec::new();
-        for r in rows {
-            let (battle_id, timestamp, winner_user_id, json) = r.map_err(map_err)?;
-            let dto: BattleResultDto = serde_json::from_str(&json).map_err(map_err)?;
-            out.push(BattleSummary {
+        let rows: Vec<(i64, i64, Option<u32>, BattleResultDto)> = match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                let mut stmt = db
+                    .prepare(
+                        "SELECT battle_id, timestamp, winner_user_id, data FROM battle_history
+                         WHERE user1_id = ?1 OR user2_id = ?1 ORDER BY battle_id DESC LIMIT 50",
+                    )
+                    .map_err(map_err)?;
+                let mapped = stmt
+                    .query_map(params![user_id], |row| {
+                        Ok((
+                            row.get::<_, i64>(0)?,
+                            row.get::<_, i64>(1)?,
+                            row.get::<_, Option<u32>>(2)?,
+                            row.get::<_, String>(3)?,
+                        ))
+                    })
+                    .map_err(map_err)?;
+                let mut out = Vec::new();
+                for r in mapped {
+                    let (battle_id, timestamp, winner_user_id, json) = r.map_err(map_err)?;
+                    out.push((
+                        battle_id,
+                        timestamp,
+                        winner_user_id,
+                        serde_json::from_str(&json).map_err(map_err)?,
+                    ));
+                }
+                out
+            }
+            Db::Mem(mem) => mem
+                .borrow()
+                .battles
+                .iter()
+                .filter(|b| b.user1_id == user_id || b.user2_id == user_id)
+                .rev()
+                .take(50)
+                .map(|b| (b.battle_id, b.timestamp, b.winner_user_id, b.data.clone()))
+                .collect(),
+        };
+
+        Ok(rows
+            .into_iter()
+            .map(|(battle_id, timestamp, winner_user_id, dto)| BattleSummary {
                 battle_id,
                 opponent_nickname: dto.opponent_nickname.clone(),
                 won: winner_user_id == Some(user_id),
                 message: dto.message.clone(),
                 timestamp,
-            });
-        }
-        Ok(out)
+            })
+            .collect())
     }
 
     /// All non-NPC and NPC user ids — used by the bot tick on the server.
     pub fn all_user_ids(&self) -> WorldResult<Vec<u32>> {
-        let mut stmt = self.db.prepare("SELECT user_id FROM users").map_err(map_err)?;
-        let rows = stmt.query_map([], |row| row.get::<_, u32>(0)).map_err(map_err)?;
-        rows.map(|r| r.map_err(map_err)).collect()
+        Ok(self.all_users()?.into_iter().map(|(id, _)| id).collect())
     }
 
     /// Load a NPC user (for the bot tick).
@@ -600,17 +940,28 @@ impl World {
     }
 
     fn load_one_ship(&self, user_id: u32, ship_number: u32) -> WorldResult<OwnedShip> {
-        let json: String = self
-            .db
-            .query_row(
-                "SELECT data FROM owned_ships WHERE ship_number = ?1 AND user_id = ?2",
-                params![ship_number, user_id],
-                |r| r.get(0),
-            )
-            .optional()
-            .map_err(map_err)?
-            .ok_or("Owned ship not found")?;
-        serde_json::from_str(&json).map_err(map_err)
+        match &self.db {
+            #[cfg(not(target_arch = "wasm32"))]
+            Db::Sqlite(db) => {
+                let json: String = db
+                    .query_row(
+                        "SELECT data FROM owned_ships WHERE ship_number = ?1 AND user_id = ?2",
+                        params![ship_number, user_id],
+                        |r| r.get(0),
+                    )
+                    .optional()
+                    .map_err(map_err)?
+                    .ok_or("Owned ship not found")?;
+                serde_json::from_str(&json).map_err(map_err)
+            }
+            Db::Mem(mem) => mem
+                .borrow()
+                .ships
+                .iter()
+                .find(|s| s.ship_number == ship_number && s.user_id == user_id)
+                .map(|s| s.data.clone())
+                .ok_or_else(|| "Owned ship not found".to_string()),
+        }
     }
 }
 
@@ -690,5 +1041,51 @@ mod tests {
         let a = World::open_seeded(":memory:", 1).unwrap();
         let b = World::open_seeded(":memory:", 2).unwrap();
         assert_ne!(play_one_battle(&a), play_one_battle(&b));
+    }
+
+    // -- in-memory backend (what the mobile/web build ships) -----------------
+
+    #[test]
+    fn mem_world_matches_sqlite_behaviour() {
+        let w = World::open_mem().unwrap();
+        let id = w.register("Pilot", "secret").unwrap();
+        assert_eq!(w.login("Pilot", "secret").unwrap(), id);
+        assert!(w.login("Pilot", "wrong").is_err());
+
+        w.buy(id, sim::ship::template_by_name("Falcon").unwrap().ship_id).unwrap();
+        let snap = w.snapshot(id).unwrap();
+        w.activate(id, snap.ships[0].ship_number).unwrap();
+
+        let opponents = w.list_opponents(id).unwrap();
+        assert!(opponents.iter().any(|o| o.nickname == "NPC_Astro"));
+
+        let astro = opponents.into_iter().find(|o| o.nickname == "NPC_Astro").unwrap();
+        let result = w.battle(id, astro.user_id, Formation::Aggressive, None).unwrap();
+        assert_eq!(result.opponent_nickname, "NPC_Astro");
+        assert_eq!(w.history(id).unwrap().len(), 1);
+        assert!(!w.leaderboard().unwrap().is_empty());
+    }
+
+    #[test]
+    fn mem_world_seeded_matches_sqlite_seeded() {
+        // The two backends must produce identical battles for the same seed:
+        // the rules and RNG stream are shared, only storage differs.
+        let sqlite = World::open_seeded(":memory:", 42).unwrap();
+        let mem = World::open_mem_seeded(42).unwrap();
+        assert_eq!(play_one_battle(&sqlite), play_one_battle(&mem));
+    }
+
+    #[test]
+    fn mem_world_json_round_trip() {
+        let w = World::open_mem().unwrap();
+        let id = w.register("Pilot", "secret").unwrap();
+        w.buy(id, sim::ship::template_by_name("Falcon").unwrap().ship_id).unwrap();
+
+        let json = w.to_json().unwrap();
+        let restored = World::from_json(&json).unwrap();
+        assert_eq!(restored.login("Pilot", "secret").unwrap(), id);
+        let snap = restored.snapshot(id).unwrap();
+        assert_eq!(snap.ships.len(), 1);
+        assert_eq!(snap.user.nickname, "Pilot");
     }
 }

@@ -109,7 +109,7 @@ impl BoardingRenderer {
             let mut shaders = Vec::new();
             for (kind, src) in [(glow::VERTEX_SHADER, VERT), (glow::FRAGMENT_SHADER, FRAG)] {
                 let shader = gl.create_shader(kind).map_err(|e| format!("create_shader: {e}"))?;
-                gl.shader_source(shader, src);
+                gl.shader_source(shader, &format!("{}{}", super::shaders::GLSL_HEADER, src));
                 gl.compile_shader(shader);
                 if !gl.get_shader_compile_status(shader) {
                     return Err(format!("shader compile: {}", gl.get_shader_info_log(shader)));

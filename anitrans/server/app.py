@@ -18,6 +18,15 @@ from torchvision import models, transforms
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT.parent  # the portfolio site lives at the repo root (deployed via GitHub Pages)
 MODEL_PATH = ROOT / "model" / "anitrans.pt"
+MOOD_MODEL_PATH = ROOT / "model" / "anitrans_mood.pt"
+
+# What each detected mood means the pet probably wants.
+MOOD_WANTS = {
+    "happy": "Playtime! They're in a great mood — grab a toy or keep doing what you're doing.",
+    "relaxed": "Nothing much — they're content and just want to chill, ideally near you.",
+    "sad": "Comfort. Some attention, gentle pets, or a treat would go a long way right now.",
+    "angry": "Space. Something's bugging them — back off a little and check what's bothering them.",
+}
 
 # The 12 cat breeds in the Oxford-IIIT Pet dataset; the other 25 are dogs.
 CAT_BREEDS = {
@@ -37,24 +46,41 @@ app = FastAPI(title="AniTrans")
 
 model: nn.Module | None = None
 classes: list[str] = []
+mood_model: nn.Module | None = None
+mood_classes: list[str] = []
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def load_resnet(path: Path) -> tuple[nn.Module, list[str]]:
+    checkpoint = torch.load(path, map_location=device, weights_only=True)
+    net = models.resnet50(weights=None)
+    net.fc = nn.Linear(net.fc.in_features, len(checkpoint["classes"]))
+    net.load_state_dict(checkpoint["state_dict"])
+    net.eval().to(device)
+    return net, checkpoint["classes"]
 
 
 @app.on_event("startup")
 def load_model():
-    global model, classes
-    if not MODEL_PATH.exists():
+    global model, classes, mood_model, mood_classes
+    import sys
+    if sys.platform == "win32":
+        # Keep the machine awake while serving — Modern Standby's idle timeout
+        # otherwise kills the server (and breaks phones using it over the LAN).
+        import ctypes
+        ctypes.windll.kernel32.SetThreadExecutionState(0x80000000 | 0x00000001)
+    if MODEL_PATH.exists():
+        model, classes = load_resnet(MODEL_PATH)
+        print(f"Breed model loaded ({len(classes)} breeds) on {device}")
+    else:
         print(f"WARNING: no trained model at {MODEL_PATH} — run train/train.py first. "
               "/predict will return 503 until then.")
-        return
-    checkpoint = torch.load(MODEL_PATH, map_location=device, weights_only=True)
-    classes = checkpoint["classes"]
-    net = models.resnet50(weights=None)
-    net.fc = nn.Linear(net.fc.in_features, len(classes))
-    net.load_state_dict(checkpoint["state_dict"])
-    net.eval().to(device)
-    model = net
-    print(f"Model loaded ({len(classes)} breeds) on {device}")
+    if MOOD_MODEL_PATH.exists():
+        mood_model, mood_classes = load_resnet(MOOD_MODEL_PATH)
+        print(f"Mood model loaded ({len(mood_classes)} moods) on {device}")
+    else:
+        print(f"WARNING: no mood model at {MOOD_MODEL_PATH} — run train/train_mood.py first. "
+              "/predict-mood will return 503 until then.")
 
 
 @app.post("/predict")
@@ -80,6 +106,28 @@ async def predict(file: UploadFile = File(...)):
         for p, i in zip(top.values, top.indices)
     ]
     return {"predictions": results}
+
+
+@app.post("/predict-mood")
+async def predict_mood(file: UploadFile = File(...)):
+    if mood_model is None:
+        raise HTTPException(503, "Mood model not trained yet — run train/train_mood.py first.")
+    try:
+        image = Image.open(io.BytesIO(await file.read())).convert("RGB")
+    except Exception:
+        raise HTTPException(400, "Couldn't read that file as an image.")
+
+    batch = PREPROCESS(image).unsqueeze(0).to(device)
+    with torch.no_grad():
+        probs = torch.softmax(mood_model(batch)[0], dim=0)
+
+    order = torch.argsort(probs, descending=True)
+    moods = [
+        {"mood": mood_classes[i], "confidence": round(probs[i].item(), 4)}
+        for i in order
+    ]
+    top = moods[0]["mood"]
+    return {"moods": moods, "wants": MOOD_WANTS.get(top, "")}
 
 
 # The portfolio site shares this server locally so /predict works from the

@@ -1,5 +1,8 @@
 target/
 
+# Trunk build output — the deployable copy is committed at www/play/ instead
+web/dist/
+
 # Lavish spec-review artifacts — transient, never committed
 .lavish/
 .lavish-axi/

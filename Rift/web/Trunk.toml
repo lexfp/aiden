@@ -1,0 +1,12 @@
+[build]
+target = "index.html"
+dist = "dist"
+# Relative asset URLs so the app works when served from a subpath (/play/).
+public_url = "./"
+# Stable file names (no content hashes) so sw.js can precache them by name.
+filehash = false
+
+[serve]
+# Bind to all interfaces so a phone on the same Wi-Fi can open the dev server.
+addresses = ["0.0.0.0"]
+port = 8080

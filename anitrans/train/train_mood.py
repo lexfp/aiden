@@ -91,6 +91,8 @@ def evaluate(model, loader, device) -> float:
 
 
 def main():
+    from keep_awake import keep_awake
+    keep_awake()
     parser = argparse.ArgumentParser()
     parser.add_argument("--epochs", type=int, default=8)
     parser.add_argument("--batch-size", type=int, default=16)  # small to fit a 4GB GPU

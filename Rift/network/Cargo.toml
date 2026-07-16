@@ -12,5 +12,14 @@ log = "0.4"
 rand = "0.8"
 rand_chacha = "0.3"
 sha2 = "0.10"
+
+# Native only: SQLite persistence and the TCP/WebSocket client + server. The
+# wasm (mobile/web) build uses the in-memory world instead.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 rusqlite = { version = "0.31", features = ["bundled"] }
 tungstenite = "0.21"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys = "0.3"
+# rand's entropy source needs the JS bindings in the browser.
+getrandom = { version = "0.2", features = ["js"] }

@@ -1,0 +1,19 @@
+[package]
+name = "rift-web"
+version = "0.1.0"
+edition = "2021"
+description = "Rift for phones: the wasm entry point built by Trunk and shipped as an installable PWA."
+
+[dependencies]
+# No `agent` feature on the web: tiny_http and threads don't exist in a browser.
+game = { path = "../game", default-features = false }
+network = { path = "../network" }
+sim = { path = "../sim" }
+eframe = { version = "0.35", features = ["glow"] }
+log = "0.4"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlCanvasElement", "Storage"] }
+console_error_panic_hook = "0.1"
