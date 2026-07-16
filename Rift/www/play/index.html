@@ -96,6 +96,46 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
   </div>
 
   <script>
+    // Mobile-only gate (same pattern as the studio site's assets/mobile-only.js,
+    // inlined because /play/ is served standalone): Rift is a phone game, so
+    // desktop visitors get a notice instead of the game.
+    (function () {
+      'use strict';
+      function isMobile() {
+        if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
+          return navigator.userAgentData.mobile;
+        }
+        if (/Android|iPhone|iPad|iPod|webOS|Mobile|Silk/i.test(navigator.userAgent)) return true;
+        if (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1) return true;
+        return matchMedia('(pointer: coarse)').matches && navigator.maxTouchPoints > 0;
+      }
+      if (isMobile()) return;
+      var style = document.createElement('style');
+      style.textContent =
+        'body > :not(.mobile-gate) { display: none !important; }' +
+        '.mobile-gate { position: fixed; inset: 0; z-index: 99999; display: flex;' +
+        '  flex-direction: column; align-items: center; justify-content: center;' +
+        '  gap: 1rem; padding: 2rem; text-align: center; background: #08080A;' +
+        '  color: #DAD2BC; font-family: "Courier New", monospace; }' +
+        '.mobile-gate .emoji { font-size: 4rem; }' +
+        '.mobile-gate h1 { font-size: 1.4rem; margin: 0; letter-spacing: 0.15em; }' +
+        '.mobile-gate p { max-width: 34rem; margin: 0; color: #7A7260; line-height: 1.6; }' +
+        '.mobile-gate a { color: #E52A2A; }';
+      document.head.appendChild(style);
+      function showGate() {
+        var gate = document.createElement('div');
+        gate.className = 'mobile-gate';
+        gate.innerHTML =
+          '<div class="emoji">📱</div>' +
+          '<h1>RIFT IS A MOBILE GAME</h1>' +
+          '<p>Open this page on your Android or iPhone to play — then add it to your home screen to install it.</p>' +
+          '<p><a href="../">← Back</a></p>';
+        document.body.appendChild(gate);
+      }
+      if (document.body) showGate();
+      else document.addEventListener('DOMContentLoaded', showGate);
+    })();
+
     // Hide the loader once the wasm app has taken over the canvas.
     window.addEventListener('TrunkApplicationStarted', function () {
       var el = document.getElementById('loading');
