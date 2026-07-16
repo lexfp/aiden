@@ -91,10 +91,12 @@
     (function () {
       'use strict';
       function isMobile() {
+        // UA string first: it is definitive when it names a mobile OS, and
+        // client hints (userAgentData.mobile) are false on some tablets.
+        if (/Android|iPhone|iPad|iPod|webOS|Mobile|Silk/i.test(navigator.userAgent)) return true;
         if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
           return navigator.userAgentData.mobile;
         }
-        if (/Android|iPhone|iPad|iPod|webOS|Mobile|Silk/i.test(navigator.userAgent)) return true;
         if (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1) return true;
         return matchMedia('(pointer: coarse)').matches && navigator.maxTouchPoints > 0;
       }

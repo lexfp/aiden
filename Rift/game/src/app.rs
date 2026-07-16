@@ -93,6 +93,36 @@ struct FleetTravel {
     board: bool,
 }
 
+/// Where the boarding raid's on-screen touch controls sit inside the viewport.
+struct BoardingTouchLayout {
+    /// Resting spot of the virtual move stick (its base follows the finger).
+    stick_rest: egui::Pos2,
+    stick_radius: f32,
+    fire_center: egui::Pos2,
+    fire_radius: f32,
+    extract: egui::Rect,
+    pause: egui::Rect,
+}
+
+impl BoardingTouchLayout {
+    fn new(rect: egui::Rect) -> Self {
+        BoardingTouchLayout {
+            stick_rest: rect.left_bottom() + Vec2::new(110.0, -110.0),
+            stick_radius: 64.0,
+            fire_center: rect.right_bottom() + Vec2::new(-100.0, -110.0),
+            fire_radius: 46.0,
+            extract: egui::Rect::from_center_size(
+                rect.right_bottom() + Vec2::new(-100.0, -210.0),
+                Vec2::new(110.0, 40.0),
+            ),
+            pause: egui::Rect::from_center_size(
+                rect.right_top() + Vec2::new(-30.0, 64.0),
+                Vec2::new(36.0, 36.0),
+            ),
+        }
+    }
+}
+
 pub struct RiftApp {
     backend: Box<dyn GameApi>,
     online: bool,
@@ -138,6 +168,20 @@ pub struct RiftApp {
     /// Galaxy-card checkbox: board the flagship before the fleet battle.
     board_first: bool,
     cursor_grabbed: bool,
+
+    // Touch controls for the boarding raid (phones). A touchscreen has no
+    // WASD or mouse-look, so the raid gets a virtual stick (left half),
+    // drag-to-look (right half), and FIRE/EXTRACT/pause buttons. Activated
+    // the first time a touch event is seen.
+    touch_seen: bool,
+    /// Virtual move stick: (touch id, stick origin, current drag offset).
+    touch_move: Option<(u64, egui::Pos2, egui::Vec2)>,
+    /// Look drag: (touch id, last position).
+    touch_look: Option<(u64, egui::Pos2)>,
+    /// Touch id currently holding the FIRE button.
+    touch_fire: Option<u64>,
+    /// Touch id currently holding the EXTRACT button.
+    touch_extract: Option<u64>,
 
     // Status line.
     status: String,
@@ -192,6 +236,11 @@ impl RiftApp {
             boarding_paused: false,
             board_first: false,
             cursor_grabbed: false,
+            touch_seen: false,
+            touch_move: None,
+            touch_look: None,
+            touch_fire: None,
+            touch_extract: None,
             status: notice.clone().unwrap_or_default(),
             status_is_error: notice.is_some(),
             #[cfg(feature = "agent")]
@@ -1231,9 +1280,14 @@ impl RiftApp {
                         n => format!("Intel: {n} automated turret{} guarding the interior.", if n == 1 { "" } else { "s" }),
                     };
                     ui.label(RichText::new(defense_note).color(theme::AMBER));
+                    let controls_hint = if self.touch_seen {
+                        "left side move · right side aim · FIRE button shoots · hold EXTRACT at the airlock"
+                    } else {
+                        "WASD move · mouse aim · click fire · F extract · ESC pause"
+                    };
                     ui.label(
                         RichText::new(format!(
-                            "Time limit {:.0}s · WASD move · mouse aim · click fire · F extract · ESC pause",
+                            "Time limit {:.0}s · {controls_hint}",
                             crate::boarding::TIME_LIMIT_SECS
                         ))
                         .small()
@@ -1271,12 +1325,35 @@ impl RiftApp {
             self.set_cursor_grab(ctx, false);
         }
 
+        // Touch controls (phones): virtual stick + drag-to-look + buttons.
+        // Processed every frame so a tap on the on-screen pause button works
+        // even while paused.
+        let touch_look = self.process_boarding_touches(ui, rect, complete);
+
         // Map input and advance the simulation.
         let dt = ui.input(|i| i.stable_dt).min(0.05);
         let paused = self.boarding_paused;
         let grabbed = self.cursor_grabbed;
         let input = if paused || complete {
             FrameInput::default()
+        } else if self.touch_seen {
+            let (move_x, move_y) = match self.touch_move {
+                Some((_, _, offset)) => (
+                    (offset.x / 60.0).clamp(-1.0, 1.0),
+                    (-offset.y / 60.0).clamp(-1.0, 1.0),
+                ),
+                None => (0.0, 0.0),
+            };
+            FrameInput {
+                move_x,
+                move_y,
+                // A finger travels fewer points than a mouse: scale up so a
+                // half-screen drag is roughly a full turn.
+                look: (touch_look.x * 2.4, touch_look.y * 2.4),
+                shoot: self.touch_fire.is_some(),
+                extract: self.touch_extract.is_some(),
+                abort: false,
+            }
         } else {
             ui.input(|i| FrameInput {
                 move_x: (i.key_down(egui::Key::D) as i32 - i.key_down(egui::Key::A) as i32) as f32,
@@ -1300,7 +1377,7 @@ impl RiftApp {
 
         // 3D viewport via the glow paint callback.
         let resp = ui.allocate_rect(rect, egui::Sense::click());
-        if resp.clicked() && !self.cursor_grabbed && !paused && !complete {
+        if resp.clicked() && !self.touch_seen && !self.cursor_grabbed && !paused && !complete {
             self.set_cursor_grab(ctx, true);
         }
         if let (Some(game), Some(renderer)) = (&self.boarding, &self.boarding_renderer) {
@@ -1322,6 +1399,9 @@ impl RiftApp {
         }
 
         self.ui_boarding_hud(ui, rect, paused, complete);
+        if self.touch_seen && !paused && !complete {
+            self.draw_boarding_touch_controls(ui, rect);
+        }
 
         // Overlays with real buttons come last so they sit above the HUD.
         if paused && !complete {
@@ -1404,6 +1484,121 @@ impl RiftApp {
     }
 
     /// Painter-drawn HUD: crosshair, timer, HP, objectives, toasts, hints.
+    /// Consume this frame's touch events for the boarding raid and return the
+    /// accumulated look delta. Touch roles are assigned where the finger lands:
+    /// the FIRE/EXTRACT/pause buttons first, then left half = move stick,
+    /// right half = look.
+    fn process_boarding_touches(&mut self, ui: &egui::Ui, rect: egui::Rect, complete: bool) -> egui::Vec2 {
+        let events = ui.input(|i| i.events.clone());
+        let mut look_delta = egui::Vec2::ZERO;
+        for event in events {
+            let egui::Event::Touch { id, phase, pos, .. } = event else { continue };
+            self.touch_seen = true;
+            match phase {
+                egui::TouchPhase::Start => {
+                    let layout = BoardingTouchLayout::new(rect);
+                    if layout.pause.contains(pos) {
+                        if !complete {
+                            self.boarding_paused = !self.boarding_paused;
+                        }
+                    } else if pos.distance(layout.fire_center) <= layout.fire_radius {
+                        self.touch_fire = Some(id.0);
+                    } else if layout.extract.contains(pos) {
+                        self.touch_extract = Some(id.0);
+                    } else if pos.x < rect.center().x {
+                        self.touch_move = Some((id.0, pos, egui::Vec2::ZERO));
+                    } else {
+                        self.touch_look = Some((id.0, pos));
+                    }
+                }
+                egui::TouchPhase::Move => {
+                    if let Some((move_id, origin, offset)) = &mut self.touch_move {
+                        if *move_id == id.0 {
+                            *offset = pos - *origin;
+                        }
+                    }
+                    if let Some((look_id, last)) = &mut self.touch_look {
+                        if *look_id == id.0 {
+                            look_delta += pos - *last;
+                            *last = pos;
+                        }
+                    }
+                }
+                egui::TouchPhase::End | egui::TouchPhase::Cancel => {
+                    if matches!(self.touch_move, Some((move_id, ..)) if move_id == id.0) {
+                        self.touch_move = None;
+                    }
+                    if matches!(self.touch_look, Some((look_id, _)) if look_id == id.0) {
+                        self.touch_look = None;
+                    }
+                    if self.touch_fire == Some(id.0) {
+                        self.touch_fire = None;
+                    }
+                    if self.touch_extract == Some(id.0) {
+                        self.touch_extract = None;
+                    }
+                }
+            }
+        }
+        look_delta
+    }
+
+    /// Draw the on-screen boarding controls (only once a touch has been seen).
+    fn draw_boarding_touch_controls(&self, ui: &egui::Ui, rect: egui::Rect) {
+        let layout = BoardingTouchLayout::new(rect);
+        let painter = ui.painter();
+        let ring = egui::Stroke::new(1.5, Color32::from_white_alpha(70));
+
+        // Move stick: base ring at the touch origin (or resting spot), knob at
+        // the clamped drag offset.
+        let (base, offset) = match self.touch_move {
+            Some((_, origin, offset)) => (origin, offset),
+            None => (layout.stick_rest, egui::Vec2::ZERO),
+        };
+        let knob = base + offset.clamp(
+            egui::Vec2::splat(-layout.stick_radius),
+            egui::Vec2::splat(layout.stick_radius),
+        );
+        painter.circle_stroke(base, layout.stick_radius, ring);
+        painter.circle_filled(knob, 22.0, Color32::from_white_alpha(60));
+
+        // FIRE button.
+        let firing = self.touch_fire.is_some();
+        let fire_fill = if firing { theme::RED_BRIGHT } else { Color32::from_rgba_unmultiplied(0xC4, 0x1A, 0x1A, 90) };
+        painter.circle_filled(layout.fire_center, layout.fire_radius, fire_fill);
+        painter.circle_stroke(layout.fire_center, layout.fire_radius, ring);
+        painter.text(
+            layout.fire_center,
+            egui::Align2::CENTER_CENTER,
+            "FIRE",
+            theme::display_font(18.0),
+            Color32::WHITE,
+        );
+
+        // EXTRACT (hold) button.
+        let extracting = self.touch_extract.is_some();
+        let ex_fill = if extracting { theme::GREEN } else { Color32::from_white_alpha(24) };
+        painter.rect_filled(layout.extract, 8, ex_fill);
+        painter.rect_stroke(layout.extract, 8, ring, egui::StrokeKind::Inside);
+        painter.text(
+            layout.extract.center(),
+            egui::Align2::CENTER_CENTER,
+            "EXTRACT",
+            egui::FontId::proportional(13.0),
+            if extracting { Color32::BLACK } else { theme::TEXT },
+        );
+
+        // Pause button.
+        painter.rect_stroke(layout.pause, 6, ring, egui::StrokeKind::Inside);
+        painter.text(
+            layout.pause.center(),
+            egui::Align2::CENTER_CENTER,
+            "▮▮",
+            egui::FontId::proportional(12.0),
+            theme::TEXT_DIM,
+        );
+    }
+
     fn ui_boarding_hud(&mut self, ui: &mut egui::Ui, rect: egui::Rect, paused: bool, complete: bool) {
         let Some(game) = &self.boarding else { return };
         let painter = ui.painter();
@@ -1509,7 +1704,7 @@ impl RiftApp {
             painter.text(
                 egui::Pos2::new(rect.center().x, rect.bottom() - 64.0),
                 egui::Align2::CENTER_CENTER,
-                "Press F to extract",
+                if self.touch_seen { "Hold EXTRACT to extract" } else { "Press F to extract" },
                 theme::display_font(18.0),
                 theme::CYAN,
             );
@@ -1519,7 +1714,9 @@ impl RiftApp {
         painter.text(
             egui::Pos2::new(rect.center().x, rect.bottom() - 18.0),
             egui::Align2::CENTER_CENTER,
-            if self.cursor_grabbed {
+            if self.touch_seen {
+                "left side move · right side aim"
+            } else if self.cursor_grabbed {
                 "WASD move · mouse aim · click fire · F extract at the airlock · ESC pause"
             } else {
                 "Click to take control"
@@ -2011,6 +2208,13 @@ impl eframe::App for RiftApp {
         let ctx = &ctx;
         if self.backdrops.is_none() {
             self.backdrops = Some(crate::backdrops::Backdrops::load(ctx));
+        }
+        // A touchscreen player gets touch-first hints and on-screen boarding
+        // controls from the first tap anywhere in the app.
+        if !self.touch_seen
+            && ui.input(|i| i.events.iter().any(|e| matches!(e, egui::Event::Touch { .. })))
+        {
+            self.touch_seen = true;
         }
         #[cfg(feature = "agent")]
         self.drain_agent(ctx);
