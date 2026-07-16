@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AniTrans Breed Detector</title>
+<title>Breed Detector</title>
 <meta name="description" content="Upload a photo of your cat or dog and a self-trained ResNet-50 model tells you the breed. 37 breeds, photos never stored.">
 <script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
 <link rel="stylesheet" href="assets/site.css">
 <style>
-  /* The original AniTrans upload card, unchanged — uses the site's shared theme variables. */
+  /* The original breed-detector upload card, unchanged — uses the site's shared theme variables. */
   .detector-wrap { display: flex; flex-direction: column; align-items: center; }
   .card.upload-card {
     background: var(--card); border-radius: 16px; padding: 1.5rem;
@@ -73,7 +73,7 @@
 
 <main>
   <header class="page-header">
-    <h1>🐾 AniTrans Breed Detector</h1>
+    <h1>🐾 Breed Detector</h1>
     <p class="sub">Take or upload a photo of your cat or dog and our model will guess the breed.</p>
   </header>
 
@@ -139,7 +139,7 @@
 
 <script src="assets/site.js"></script>
 <script>
-  // On GitHub Pages there is no backend — point this at a hosted AniTrans server
+  // On GitHub Pages there is no backend — point this at a hosted breed-detector server
   // (e.g. 'https://your-api-host/predict') to make predictions work there.
   const PREDICT_URL = '/predict';
 
