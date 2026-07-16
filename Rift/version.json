@@ -1,7 +1,0 @@
-{
-  "version": "0.0.9",
-  "sha": "2c44e1d",
-  "windows": "https://rift.rivi.us/rift-setup.exe",
-  "linux": "https://rift.rivi.us/rift-linux.tar.gz",
-  "mac": "https://rift.rivi.us/rift-mac.dmg"
-}
