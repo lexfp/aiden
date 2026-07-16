@@ -238,10 +238,16 @@
     form.append('file', file, file.name || 'photo.jpg');
 
     try {
-      const res = await fetch(PREDICT_URL, { method: 'POST', body: form });
+      let res;
+      try {
+        res = await fetch(PREDICT_URL, { method: 'POST', body: form });
+      } catch {
+        throw new Error('Could not reach the prediction server. Is it running? (uvicorn server.app:app)');
+      }
       if (!res.ok) {
-        const detail = (await res.json()).detail || res.statusText;
-        throw new Error(detail);
+        // Error bodies aren't always JSON (e.g. a 404 page when no backend is deployed).
+        const detail = await res.json().then(d => d.detail).catch(() => null);
+        throw new Error(detail || `Prediction server error (HTTP ${res.status}).`);
       }
       render((await res.json()).predictions);
     } catch (err) {
