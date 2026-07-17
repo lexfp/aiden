@@ -98,6 +98,9 @@ struct BoardingTouchLayout {
     /// Resting spot of the virtual move stick (its base follows the finger).
     stick_rest: egui::Pos2,
     stick_radius: f32,
+    /// Resting spot of the virtual look stick (its base follows the finger).
+    look_rest: egui::Pos2,
+    look_radius: f32,
     fire_center: egui::Pos2,
     fire_radius: f32,
     extract: egui::Rect,
@@ -109,10 +112,12 @@ impl BoardingTouchLayout {
         BoardingTouchLayout {
             stick_rest: rect.left_bottom() + Vec2::new(110.0, -110.0),
             stick_radius: 64.0,
-            fire_center: rect.right_bottom() + Vec2::new(-100.0, -110.0),
-            fire_radius: 46.0,
+            look_rest: rect.right_bottom() + Vec2::new(-110.0, -110.0),
+            look_radius: 64.0,
+            fire_center: rect.right_bottom() + Vec2::new(-110.0, -240.0),
+            fire_radius: 44.0,
             extract: egui::Rect::from_center_size(
-                rect.right_bottom() + Vec2::new(-100.0, -210.0),
+                rect.left_bottom() + Vec2::new(110.0, -235.0),
                 Vec2::new(110.0, 40.0),
             ),
             pause: egui::Rect::from_center_size(
@@ -170,14 +175,14 @@ pub struct RiftApp {
     cursor_grabbed: bool,
 
     // Touch controls for the boarding raid (phones). A touchscreen has no
-    // WASD or mouse-look, so the raid gets a virtual stick (left half),
-    // drag-to-look (right half), and FIRE/EXTRACT/pause buttons. Activated
-    // the first time a touch event is seen.
+    // WASD or mouse-look, so the raid gets dual virtual joysticks — move
+    // (left half) and look (right half) — plus FIRE/EXTRACT/pause buttons.
+    // Activated the first time a touch event is seen.
     touch_seen: bool,
     /// Virtual move stick: (touch id, stick origin, current drag offset).
     touch_move: Option<(u64, egui::Pos2, egui::Vec2)>,
-    /// Look drag: (touch id, last position).
-    touch_look: Option<(u64, egui::Pos2)>,
+    /// Virtual look stick: (touch id, stick origin, current drag offset).
+    touch_look: Option<(u64, egui::Pos2, egui::Vec2)>,
     /// Touch id currently holding the FIRE button.
     touch_fire: Option<u64>,
     /// Touch id currently holding the EXTRACT button.
@@ -1281,7 +1286,7 @@ impl RiftApp {
                     };
                     ui.label(RichText::new(defense_note).color(theme::AMBER));
                     let controls_hint = if self.touch_seen {
-                        "left side move · right side aim · FIRE button shoots · hold EXTRACT at the airlock"
+                        "left stick move · right stick aim · FIRE button shoots · hold EXTRACT at the airlock"
                     } else {
                         "WASD move · mouse aim · click fire · F extract · ESC pause"
                     };
@@ -1325,10 +1330,10 @@ impl RiftApp {
             self.set_cursor_grab(ctx, false);
         }
 
-        // Touch controls (phones): virtual stick + drag-to-look + buttons.
+        // Touch controls (phones): dual virtual joysticks + buttons.
         // Processed every frame so a tap on the on-screen pause button works
         // even while paused.
-        let touch_look = self.process_boarding_touches(ui, rect, complete);
+        self.process_boarding_touches(ui, rect, complete);
 
         // Map input and advance the simulation.
         let dt = ui.input(|i| i.stable_dt).min(0.05);
@@ -1337,6 +1342,7 @@ impl RiftApp {
         let input = if paused || complete {
             FrameInput::default()
         } else if self.touch_seen {
+            let layout = BoardingTouchLayout::new(rect);
             let (move_x, move_y) = match self.touch_move {
                 Some((_, _, offset)) => (
                     (offset.x / 60.0).clamp(-1.0, 1.0),
@@ -1344,12 +1350,25 @@ impl RiftApp {
                 ),
                 None => (0.0, 0.0),
             };
+            // The look stick turns at a rate set by its deflection (squared
+            // for fine aim near center), expressed as mouse-pixels per second
+            // so it runs through the same LOOK_SENSITIVITY as a mouse. Full
+            // deflection is roughly a half turn per second.
+            let look = match self.touch_look {
+                Some((_, _, offset)) => {
+                    let mut v = offset / layout.look_radius;
+                    if v.length() > 1.0 {
+                        v = v.normalized();
+                    }
+                    let rate = v * v.length() * 1100.0;
+                    (rate.x * dt, rate.y * dt)
+                }
+                None => (0.0, 0.0),
+            };
             FrameInput {
                 move_x,
                 move_y,
-                // A finger travels fewer points than a mouse: scale up so a
-                // half-screen drag is roughly a full turn.
-                look: (touch_look.x * 2.4, touch_look.y * 2.4),
+                look,
                 shoot: self.touch_fire.is_some(),
                 extract: self.touch_extract.is_some(),
                 abort: false,
@@ -1484,13 +1503,12 @@ impl RiftApp {
     }
 
     /// Painter-drawn HUD: crosshair, timer, HP, objectives, toasts, hints.
-    /// Consume this frame's touch events for the boarding raid and return the
-    /// accumulated look delta. Touch roles are assigned where the finger lands:
-    /// the FIRE/EXTRACT/pause buttons first, then left half = move stick,
-    /// right half = look.
-    fn process_boarding_touches(&mut self, ui: &egui::Ui, rect: egui::Rect, complete: bool) -> egui::Vec2 {
+    /// Consume this frame's touch events for the boarding raid. Touch roles
+    /// are assigned where the finger lands: the FIRE/EXTRACT/pause buttons
+    /// first, then left half = move stick, right half = look stick. Each
+    /// stick's base is planted where its finger first touched.
+    fn process_boarding_touches(&mut self, ui: &egui::Ui, rect: egui::Rect, complete: bool) {
         let events = ui.input(|i| i.events.clone());
-        let mut look_delta = egui::Vec2::ZERO;
         for event in events {
             let egui::Event::Touch { id, phase, pos, .. } = event else { continue };
             self.touch_seen = true;
@@ -1508,7 +1526,7 @@ impl RiftApp {
                     } else if pos.x < rect.center().x {
                         self.touch_move = Some((id.0, pos, egui::Vec2::ZERO));
                     } else {
-                        self.touch_look = Some((id.0, pos));
+                        self.touch_look = Some((id.0, pos, egui::Vec2::ZERO));
                     }
                 }
                 egui::TouchPhase::Move => {
@@ -1517,10 +1535,9 @@ impl RiftApp {
                             *offset = pos - *origin;
                         }
                     }
-                    if let Some((look_id, last)) = &mut self.touch_look {
+                    if let Some((look_id, origin, offset)) = &mut self.touch_look {
                         if *look_id == id.0 {
-                            look_delta += pos - *last;
-                            *last = pos;
+                            *offset = pos - *origin;
                         }
                     }
                 }
@@ -1528,7 +1545,7 @@ impl RiftApp {
                     if matches!(self.touch_move, Some((move_id, ..)) if move_id == id.0) {
                         self.touch_move = None;
                     }
-                    if matches!(self.touch_look, Some((look_id, _)) if look_id == id.0) {
+                    if matches!(self.touch_look, Some((look_id, ..)) if look_id == id.0) {
                         self.touch_look = None;
                     }
                     if self.touch_fire == Some(id.0) {
@@ -1540,7 +1557,6 @@ impl RiftApp {
                 }
             }
         }
-        look_delta
     }
 
     /// Draw the on-screen boarding controls (only once a touch has been seen).
@@ -1549,18 +1565,38 @@ impl RiftApp {
         let painter = ui.painter();
         let ring = egui::Stroke::new(1.5, Color32::from_white_alpha(70));
 
-        // Move stick: base ring at the touch origin (or resting spot), knob at
-        // the clamped drag offset.
-        let (base, offset) = match self.touch_move {
-            Some((_, origin, offset)) => (origin, offset),
-            None => (layout.stick_rest, egui::Vec2::ZERO),
+        // Joysticks: base ring at the touch origin (or resting spot), knob at
+        // the drag offset clamped to the ring.
+        let stick = |state: Option<(u64, egui::Pos2, egui::Vec2)>, rest: egui::Pos2, radius: f32| {
+            let (base, offset) = match state {
+                Some((_, origin, offset)) => (origin, offset),
+                None => (rest, egui::Vec2::ZERO),
+            };
+            let clamped = if offset.length() > radius {
+                offset.normalized() * radius
+            } else {
+                offset
+            };
+            painter.circle_stroke(base, radius, ring);
+            painter.circle_filled(base + clamped, 22.0, Color32::from_white_alpha(60));
+            (base, radius)
         };
-        let knob = base + offset.clamp(
-            egui::Vec2::splat(-layout.stick_radius),
-            egui::Vec2::splat(layout.stick_radius),
+        let (move_base, move_radius) = stick(self.touch_move, layout.stick_rest, layout.stick_radius);
+        let (look_base, look_radius) = stick(self.touch_look, layout.look_rest, layout.look_radius);
+        painter.text(
+            move_base + Vec2::new(0.0, move_radius + 14.0),
+            egui::Align2::CENTER_CENTER,
+            "MOVE",
+            egui::FontId::proportional(11.0),
+            Color32::from_white_alpha(80),
         );
-        painter.circle_stroke(base, layout.stick_radius, ring);
-        painter.circle_filled(knob, 22.0, Color32::from_white_alpha(60));
+        painter.text(
+            look_base + Vec2::new(0.0, look_radius + 14.0),
+            egui::Align2::CENTER_CENTER,
+            "LOOK",
+            egui::FontId::proportional(11.0),
+            Color32::from_white_alpha(80),
+        );
 
         // FIRE button.
         let firing = self.touch_fire.is_some();
@@ -1715,7 +1751,7 @@ impl RiftApp {
             egui::Pos2::new(rect.center().x, rect.bottom() - 18.0),
             egui::Align2::CENTER_CENTER,
             if self.touch_seen {
-                "left side move · right side aim"
+                "left stick move · right stick aim"
             } else if self.cursor_grabbed {
                 "WASD move · mouse aim · click fire · F extract at the airlock · ESC pause"
             } else {

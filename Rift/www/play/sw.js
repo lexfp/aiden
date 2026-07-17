@@ -1,7 +1,7 @@
 // Rift service worker: precache the whole game so the installed app opens and
 // plays with no connection at all (the save lives in localStorage).
 // Bump the version whenever a new build is deployed so clients refresh.
-const CACHE = 'rift-v2';
+const CACHE = 'rift-v3';
 
 const ASSETS = [
   './',
