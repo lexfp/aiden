@@ -40,11 +40,26 @@
 
 .reader-body { padding: 2rem clamp(1.25rem, 4vw, 3rem); }
 .reader-body p { margin-bottom: 1rem; max-width: 680px; }
-.reader-body h2 {
+.reader-body h3 {
   font-size: 1.3rem;
   letter-spacing: -0.01em;
   margin: 2.5rem 0 1.1rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
 }
-.reader-body h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+.reader-body h2.book-title {
+  font-size: 1.7rem;
+  letter-spacing: -0.02em;
+  margin: 3.5rem 0 1.1rem;
+  padding-top: 2rem;
+  border-top: 3px double var(--border);
+  color: var(--accent-2);
+}
+.reader-body h2.book-title:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+.reader-toc a.toc-book {
+  font-weight: 700;
+  color: var(--accent-2);
+  margin-top: 0.6rem;
+}
+.reader-toc a.toc-book:first-of-type { margin-top: 0; }
