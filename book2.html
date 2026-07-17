@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Tournament of Maka</title>
+<meta name="description" content="The Tournament of Maka — a multiverse fighting-tournament novel where the brackets break, BEAST invades, and the reality-bender Sybrian Akaku rises. Read it online.">
+<script>document.documentElement.dataset.theme = localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');</script>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="stylesheet" href="assets/reader.css">
+</head>
+<body>
+
+<nav class="nav" id="site-nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">Software Studio</a>
+    <ul class="nav-links">
+      <li><a href="breed-detector.html">Breed Detector <span class="badge badge-live">Live</span></a></li>
+      <li><a href="rift.html">Rift <span class="badge badge-game">Game</span></a></li>
+      <li><a href="animal-translator.html">Animal Translator <span class="badge badge-live">Live</span></a></li>
+      <li><a href="book1.html">Evil's Eye <span class="badge badge-book">Book</span></a></li>
+      <li><a href="book2.html" class="active">Tournament of Maka <span class="badge badge-book">Book</span></a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle dark/light mode">☀️</button>
+      <a class="gh-btn" href="https://github.com/lexfp/aiden">GitHub</a>
+      <button class="icon-btn hamburger" id="hamburger" aria-label="Menu">☰</button>
+    </div>
+  </div>
+  <div class="mobile-menu">
+    <a href="breed-detector.html">Breed Detector <span class="badge badge-live">Live</span></a>
+    <a href="rift.html">Rift <span class="badge badge-game">Game</span></a>
+    <a href="animal-translator.html">Animal Translator <span class="badge badge-live">Live</span></a>
+    <a href="book1.html">Evil's Eye <span class="badge badge-book">Book</span></a>
+    <a href="book2.html" class="active">Tournament of Maka <span class="badge badge-book">Book</span></a>
+    <a href="about.html">About</a>
+    <a href="https://github.com/lexfp/aiden">GitHub ↗</a>
+  </div>
+</nav>
+
+<main>
+  <header class="page-header">
+    <h1>⚔️ The Tournament of Maka</h1>
+    <p class="sub">
+      The first fighting tournament to span every realm draws legends, cyborgs, and things
+      older than the brackets themselves. When BEAST invades and the arena collapses into war,
+      the reality-bender Sybrian Akaku and his sword-headed hound step in.
+    </p>
+  </header>
+
+  <div class="reader-layout">
+    <aside class="reader-toc card" id="toc" aria-label="Chapters"></aside>
+    <article class="reader-body card" id="book">
+      <p class="muted">Loading book…</p>
+    </article>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <p class="footer-name">Software Studio</p>
+      <p class="footer-tag">An independent software studio building ML tools and games.</p>
+    </div>
+    <ul class="footer-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="breed-detector.html">Breed Detector</a></li>
+      <li><a href="rift.html">Rift</a></li>
+      <li><a href="animal-translator.html">Animal Translator</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="https://github.com/lexfp/aiden">GitHub</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+<script src="assets/reader.js" data-book="book2.txt"></script>
+</body>
+</html>

@@ -162,6 +162,7 @@ main { flex: 1; width: 100%; max-width: 1060px; margin: 0 auto; padding: 2.5rem 
 .badge-live { background: rgba(52, 199, 123, 0.16); color: #34c77b; }
 .badge-game { background: rgba(124, 156, 255, 0.16); color: var(--accent); }
 .badge-soon { background: rgba(154, 160, 166, 0.18); color: var(--muted); }
+.badge-book { background: rgba(180, 140, 255, 0.16); color: var(--accent-2); }
 
 /* ── Intro (homepage header) ────────────────────────────── */
 .hero { text-align: left; padding: 2rem 0 1rem; }
